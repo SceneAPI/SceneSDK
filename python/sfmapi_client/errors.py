@@ -1,8 +1,4 @@
-"""Client-side error hierarchy.
-
-Mirrors the server's `app.core.errors` so callers can catch
-domain-specific exceptions without re-parsing problem+json.
-"""
+"""Client-side error hierarchy for sfmapi problem+json responses."""
 
 from __future__ import annotations
 

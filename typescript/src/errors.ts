@@ -1,4 +1,4 @@
-// Client-side error hierarchy. Mirrors the server's `app.core.errors`.
+// Client-side error hierarchy for sfmapi problem+json responses.
 
 export interface ProblemJson {
   type?: string;
