@@ -1,0 +1,42 @@
+[project]
+name = "sfmapi-client"
+version = "0.0.1"
+description = "Typed Python SDK for sfmapi (sync + async) plus the sfmapi-client CLI."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.28",
+    "pydantic>=2.9",
+]
+
+[project.optional-dependencies]
+cli = [
+    "click>=8.1",
+    "rich>=13.9",
+]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "respx>=0.21",
+    "ruff>=0.8",
+    "click>=8.1",
+    "rich>=13.9",
+]
+
+[project.scripts]
+sfmapi-client = "sfmapi_client.cli:main"
+
+[project.urls]
+Repository = "https://github.com/SFMAPI/sfmapi-sdk"
+Documentation = "https://sfmapi.github.io/"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sfmapi_client"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts = "-ra"
