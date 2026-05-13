@@ -1,0 +1,114 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to release (vX.Y.Z). Required for manual run."
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+  python:
+    needs: resolve
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+      - name: Check package version
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          import tomllib
+          from pathlib import Path
+
+          actual = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
+          expected = os.environ["VERSION"]
+          if actual != expected:
+              raise SystemExit(f"python package version {actual!r} does not match tag {expected!r}")
+          generated = tomllib.loads(Path("sfmapi_client_gen/pyproject.toml").read_text())["project"]["version"]
+          if generated != expected:
+              raise SystemExit(
+                  f"generated package version {generated!r} does not match tag {expected!r}"
+              )
+          PY
+      - name: Build packages
+        run: |
+          uv venv --seed
+          uv pip install build
+          .venv/bin/python -m build --sdist --wheel
+          .venv/bin/python -m build sfmapi_client_gen --sdist --wheel
+      - name: Publish Python SDK
+        if: github.event_name == 'push'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist
+      - name: Publish generated Python SDK
+        if: github.event_name == 'push'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/sfmapi_client_gen/dist
+
+  typescript:
+    needs: resolve
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: typescript
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - name: Check package version
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: |
+          node -e "const p=require('./package.json'); if (p.version !== process.env.VERSION) throw new Error(`${p.version} !== ${process.env.VERSION}`)"
+      - name: Install and build
+        run: |
+          npm ci
+          npm run lint
+          npm test
+          npm run build
+      - name: Publish npm package
+        if: github.event_name == 'push'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "NPM_TOKEN is not configured; skipping npm publish."
+            exit 0
+          fi
+          npm publish --access public --provenance
