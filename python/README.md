@@ -103,3 +103,8 @@ Each exception carries `status_code`, `problem` (parsed
 `stream_events(job_id, last_event_id=...)` yields parsed `ProgressEvent`
 dicts (see server-side schema). The `last_event_id` parameter triggers
 SSE replay so reconnects don't drop history.
+
+## License
+
+The Python SDK source and package are licensed under `AGPL-3.0-or-later`; see
+`LICENSE`.

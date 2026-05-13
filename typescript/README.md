@@ -77,3 +77,8 @@ Each error carries `.statusCode`, `.problem` (parsed
 
 The SDK pins to the major version of the server's REST API (`/v1`).
 Minor server bumps are non-breaking by contract.
+
+## License
+
+The TypeScript SDK source and npm package are licensed under
+`AGPL-3.0-or-later`; see `LICENSE`.

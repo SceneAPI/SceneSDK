@@ -56,3 +56,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 ```
+
+## License
+
+The viewer example is licensed under the same `AGPL-3.0-or-later` terms as the
+SDK repository.

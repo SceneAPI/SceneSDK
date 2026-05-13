@@ -189,3 +189,8 @@ Eigen::Quaterniond ToEigen(const sfmapi::Rotation& r) {
   return Eigen::Quaterniond(r.w, r.x, r.y, r.z);  // ctor is (w, x, y, z)
 }
 ```
+
+## License
+
+The header-only C++ SDK is licensed under `AGPL-3.0-or-later`; see `LICENSE`.
+It does not include COLMAP, pycolmap, or any HTTP transport library.
