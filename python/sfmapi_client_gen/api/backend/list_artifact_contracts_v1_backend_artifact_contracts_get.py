@@ -14,6 +14,7 @@ def _get_kwargs(
     *,
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
+    provider: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
 
     params: dict[str, Any] = {}
@@ -26,6 +27,13 @@ def _get_kwargs(
     params["page_token"] = json_page_token
 
     params["page_size"] = page_size
+
+    json_provider: None | str | Unset
+    if isinstance(provider, Unset):
+        json_provider = UNSET
+    else:
+        json_provider = provider
+    params["provider"] = json_provider
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
@@ -73,6 +81,7 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
+    provider: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | PageBackendArtifactContractOut]:
     """List Artifact Contracts
 
@@ -81,6 +90,7 @@ def sync_detailed(
     Args:
         page_token (None | str | Unset):
         page_size (int | Unset):  Default: 50.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -93,6 +103,7 @@ def sync_detailed(
     kwargs = _get_kwargs(
         page_token=page_token,
         page_size=page_size,
+        provider=provider,
     )
 
     response = client.get_httpx_client().request(
@@ -107,6 +118,7 @@ def sync(
     client: AuthenticatedClient | Client,
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
+    provider: None | str | Unset = UNSET,
 ) -> HTTPValidationError | PageBackendArtifactContractOut | None:
     """List Artifact Contracts
 
@@ -115,6 +127,7 @@ def sync(
     Args:
         page_token (None | str | Unset):
         page_size (int | Unset):  Default: 50.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -128,6 +141,7 @@ def sync(
         client=client,
         page_token=page_token,
         page_size=page_size,
+        provider=provider,
     ).parsed
 
 
@@ -136,6 +150,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
+    provider: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | PageBackendArtifactContractOut]:
     """List Artifact Contracts
 
@@ -144,6 +159,7 @@ async def asyncio_detailed(
     Args:
         page_token (None | str | Unset):
         page_size (int | Unset):  Default: 50.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -156,6 +172,7 @@ async def asyncio_detailed(
     kwargs = _get_kwargs(
         page_token=page_token,
         page_size=page_size,
+        provider=provider,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -168,6 +185,7 @@ async def asyncio(
     client: AuthenticatedClient | Client,
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
+    provider: None | str | Unset = UNSET,
 ) -> HTTPValidationError | PageBackendArtifactContractOut | None:
     """List Artifact Contracts
 
@@ -176,6 +194,7 @@ async def asyncio(
     Args:
         page_token (None | str | Unset):
         page_size (int | Unset):  Default: 50.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -190,5 +209,6 @@ async def asyncio(
             client=client,
             page_token=page_token,
             page_size=page_size,
+            provider=provider,
         )
     ).parsed

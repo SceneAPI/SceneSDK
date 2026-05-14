@@ -116,10 +116,10 @@ void TestSphericalCameraHelper() {
 
 void TestCapabilitySupports() {
   sfmapi::Capabilities caps;
-  caps.features["dense.patch_match_stereo"] = true;
-  caps.features["mesh.poisson"] = false;
-  assert(caps.Supports("dense.patch_match_stereo"));
-  assert(!caps.Supports("mesh.poisson"));
+  caps.features["ba.standard"] = true;
+  caps.features["ba.featuremetric"] = false;
+  assert(caps.Supports("ba.standard"));
+  assert(!caps.Supports("ba.featuremetric"));
   assert(!caps.Supports("not.a.real.flag"));
   std::cout << "  capabilities helper OK\n";
 }

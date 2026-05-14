@@ -8,18 +8,32 @@ from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.backend_config_schema_out import BackendConfigSchemaOut
 from ...models.http_validation_error import HTTPValidationError
-from ...types import Response
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     config_id: str,
+    *,
+    provider: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
+
+    params: dict[str, Any] = {}
+
+    json_provider: None | str | Unset
+    if isinstance(provider, Unset):
+        json_provider = UNSET
+    else:
+        json_provider = provider
+    params["provider"] = json_provider
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
     _kwargs: dict[str, Any] = {
         "method": "get",
         "url": "/v1/backend/config-schemas/{config_id}".format(
             config_id=quote(str(config_id), safe=""),
         ),
+        "params": params,
     }
 
     return _kwargs
@@ -59,6 +73,7 @@ def sync_detailed(
     config_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> Response[BackendConfigSchemaOut | HTTPValidationError]:
     """Get Config Schema
 
@@ -66,6 +81,7 @@ def sync_detailed(
 
     Args:
         config_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -77,6 +93,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         config_id=config_id,
+        provider=provider,
     )
 
     response = client.get_httpx_client().request(
@@ -90,6 +107,7 @@ def sync(
     config_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> BackendConfigSchemaOut | HTTPValidationError | None:
     """Get Config Schema
 
@@ -97,6 +115,7 @@ def sync(
 
     Args:
         config_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -109,6 +128,7 @@ def sync(
     return sync_detailed(
         config_id=config_id,
         client=client,
+        provider=provider,
     ).parsed
 
 
@@ -116,6 +136,7 @@ async def asyncio_detailed(
     config_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> Response[BackendConfigSchemaOut | HTTPValidationError]:
     """Get Config Schema
 
@@ -123,6 +144,7 @@ async def asyncio_detailed(
 
     Args:
         config_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -134,6 +156,7 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         config_id=config_id,
+        provider=provider,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -145,6 +168,7 @@ async def asyncio(
     config_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> BackendConfigSchemaOut | HTTPValidationError | None:
     """Get Config Schema
 
@@ -152,6 +176,7 @@ async def asyncio(
 
     Args:
         config_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -165,5 +190,6 @@ async def asyncio(
         await asyncio_detailed(
             config_id=config_id,
             client=client,
+            provider=provider,
         )
     ).parsed

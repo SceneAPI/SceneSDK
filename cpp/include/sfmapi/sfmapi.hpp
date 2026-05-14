@@ -20,7 +20,7 @@
 //     auto pts = sfmapi::ParsePointsBinary(buffer, len);
 //     auto depth = sfmapi::ParseDepthMap(buffer, len);
 //     auto caps = sfmapi::Capabilities{};   // populate from JSON yourself
-//     if (caps.Supports("dense.patch_match_stereo")) { ... }
+//     if (caps.Supports("ba.standard")) { ... }
 //
 // JSON parsing is intentionally NOT included — pick your favorite
 // (nlohmann::json, RapidJSON, simdjson, ...) and map fields manually.
@@ -234,8 +234,15 @@ struct CorrespondenceGraphFile { std::vector<CorrespondencePair> pairs; };
 struct PoseGraphFile { PoseGraph pose_graph; };
 
 // ====================================================================
-//  Localization + dense + mesh
+//  Localization
 // ====================================================================
+//
+// Dense MVS and mesh / texture generation are out of scope for sfmapi
+// (separate ``mvsapi`` / ``meshapi`` specs — see SFMAPI-SPEC.md
+// Appendix D). No dense/mesh manifest structs ship here. The
+// ``x-sfm-depth-v1`` / ``x-sfm-normal-v1`` binary structs (DepthMap /
+// NormalMap, below) stay — they decode wire formats a backend may
+// emit as artifacts, independent of any dense route.
 
 struct LocalizationResult {
   bool success = false;
@@ -243,52 +250,6 @@ struct LocalizationResult {
   std::int32_t num_inliers = 0;
   /// `(query_keypoint_idx, point3d_id)` inliers.
   std::vector<std::pair<std::int32_t, std::int64_t>> inlier_matches;
-};
-
-struct DepthMapInfo {
-  std::int32_t image_id = 0;
-  std::string image_name;
-  std::int32_t width = 0;
-  std::int32_t height = 0;
-  double depth_min = 0.0;
-  double depth_max = 0.0;
-  bool has_normal_map = false;
-};
-
-struct DenseSummary {
-  std::int32_t num_images = 0;
-  std::int32_t num_depth_maps = 0;
-  std::int32_t num_normal_maps = 0;
-  std::int32_t fused_points = 0;
-  std::optional<std::array<double, 3>> bbox_min;
-  std::optional<std::array<double, 3>> bbox_max;
-};
-
-struct DenseManifestFile {
-  DenseSummary summary{};
-  std::vector<DepthMapInfo> depth_maps;
-};
-
-enum class MeshMethod { kPoisson, kDelaunay };
-
-inline MeshMethod MeshMethodFromWire(const std::string& s) {
-  if (s == "delaunay") return MeshMethod::kDelaunay;
-  return MeshMethod::kPoisson;  // default + fallback
-}
-
-struct MeshSummary {
-  MeshMethod method = MeshMethod::kPoisson;
-  std::int64_t num_vertices = 0;
-  std::int64_t num_faces = 0;
-  bool has_vertex_colors = false;
-  bool has_vertex_normals = false;
-  std::optional<std::array<double, 3>> bbox_min;
-  std::optional<std::array<double, 3>> bbox_max;
-};
-
-struct MeshFile {
-  MeshSummary summary{};
-  std::optional<std::string> mesh_url;
 };
 
 // ====================================================================
@@ -480,6 +441,10 @@ struct JobSubmitResponse {
   std::string job_id;
   std::vector<std::string> task_ids;
   std::string recon_id;        // empty when not applicable
+  std::string dataset_id;      // empty when not applicable
+  /// sfm_hub provider id resolved for execution; echoed back from the
+  /// request so clients can confirm routing. Empty when unset.
+  std::string provider;
 };
 
 struct HealthResponse {

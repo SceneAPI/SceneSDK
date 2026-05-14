@@ -19,6 +19,7 @@ class ArtifactConversionStepOut:
         to_format (str):
         contract_id (None | str | Unset):
         backend (None | str | Unset):
+        provider (None | str | Unset):
         lossless (bool | Unset):  Default: False.
         description (None | str | Unset):
     """
@@ -27,6 +28,7 @@ class ArtifactConversionStepOut:
     to_format: str
     contract_id: None | str | Unset = UNSET
     backend: None | str | Unset = UNSET
+    provider: None | str | Unset = UNSET
     lossless: bool | Unset = False
     description: None | str | Unset = UNSET
 
@@ -46,6 +48,12 @@ class ArtifactConversionStepOut:
             backend = UNSET
         else:
             backend = self.backend
+
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
 
         lossless = self.lossless
 
@@ -67,6 +75,8 @@ class ArtifactConversionStepOut:
             field_dict["contract_id"] = contract_id
         if backend is not UNSET:
             field_dict["backend"] = backend
+        if provider is not UNSET:
+            field_dict["provider"] = provider
         if lossless is not UNSET:
             field_dict["lossless"] = lossless
         if description is not UNSET:
@@ -99,6 +109,15 @@ class ArtifactConversionStepOut:
 
         backend = _parse_backend(d.pop("backend", UNSET))
 
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
+
         lossless = d.pop("lossless", UNSET)
 
         def _parse_description(data: object) -> None | str | Unset:
@@ -115,6 +134,7 @@ class ArtifactConversionStepOut:
             to_format=to_format,
             contract_id=contract_id,
             backend=backend,
+            provider=provider,
             lossless=lossless,
             description=description,
         )

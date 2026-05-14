@@ -21,6 +21,7 @@ class PluginInstallRequest:
         package_name (None | str | Unset):
         dry_run (bool | Unset):  Default: True.
         allow_unsafe_execution (bool | Unset):  Default: False.
+        force (bool | Unset):  Default: False.
     """
 
     method: PluginInstallRequestMethod | Unset = PluginInstallRequestMethod.UV
@@ -29,6 +30,7 @@ class PluginInstallRequest:
     package_name: None | str | Unset = UNSET
     dry_run: bool | Unset = True
     allow_unsafe_execution: bool | Unset = False
+    force: bool | Unset = False
 
     def to_dict(self) -> dict[str, Any]:
         method: str | Unset = UNSET
@@ -57,6 +59,8 @@ class PluginInstallRequest:
 
         allow_unsafe_execution = self.allow_unsafe_execution
 
+        force = self.force
+
         field_dict: dict[str, Any] = {}
 
         field_dict.update({})
@@ -72,6 +76,8 @@ class PluginInstallRequest:
             field_dict["dry_run"] = dry_run
         if allow_unsafe_execution is not UNSET:
             field_dict["allow_unsafe_execution"] = allow_unsafe_execution
+        if force is not UNSET:
+            field_dict["force"] = force
 
         return field_dict
 
@@ -116,6 +122,8 @@ class PluginInstallRequest:
 
         allow_unsafe_execution = d.pop("allow_unsafe_execution", UNSET)
 
+        force = d.pop("force", UNSET)
+
         plugin_install_request = cls(
             method=method,
             github_url=github_url,
@@ -123,6 +131,7 @@ class PluginInstallRequest:
             package_name=package_name,
             dry_run=dry_run,
             allow_unsafe_execution=allow_unsafe_execution,
+            force=force,
         )
 
         return plugin_install_request

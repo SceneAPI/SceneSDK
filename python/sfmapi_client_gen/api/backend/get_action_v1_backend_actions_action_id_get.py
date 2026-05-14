@@ -8,18 +8,32 @@ from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.backend_action_out import BackendActionOut
 from ...models.http_validation_error import HTTPValidationError
-from ...types import Response
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     action_id: str,
+    *,
+    provider: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
+
+    params: dict[str, Any] = {}
+
+    json_provider: None | str | Unset
+    if isinstance(provider, Unset):
+        json_provider = UNSET
+    else:
+        json_provider = provider
+    params["provider"] = json_provider
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
     _kwargs: dict[str, Any] = {
         "method": "get",
         "url": "/v1/backend/actions/{action_id}".format(
             action_id=quote(str(action_id), safe=""),
         ),
+        "params": params,
     }
 
     return _kwargs
@@ -59,6 +73,7 @@ def sync_detailed(
     action_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> Response[BackendActionOut | HTTPValidationError]:
     """Get Action
 
@@ -66,6 +81,7 @@ def sync_detailed(
 
     Args:
         action_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -77,6 +93,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         action_id=action_id,
+        provider=provider,
     )
 
     response = client.get_httpx_client().request(
@@ -90,6 +107,7 @@ def sync(
     action_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> BackendActionOut | HTTPValidationError | None:
     """Get Action
 
@@ -97,6 +115,7 @@ def sync(
 
     Args:
         action_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -109,6 +128,7 @@ def sync(
     return sync_detailed(
         action_id=action_id,
         client=client,
+        provider=provider,
     ).parsed
 
 
@@ -116,6 +136,7 @@ async def asyncio_detailed(
     action_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> Response[BackendActionOut | HTTPValidationError]:
     """Get Action
 
@@ -123,6 +144,7 @@ async def asyncio_detailed(
 
     Args:
         action_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -134,6 +156,7 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         action_id=action_id,
+        provider=provider,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -145,6 +168,7 @@ async def asyncio(
     action_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> BackendActionOut | HTTPValidationError | None:
     """Get Action
 
@@ -152,6 +176,7 @@ async def asyncio(
 
     Args:
         action_id (str):
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -165,5 +190,6 @@ async def asyncio(
         await asyncio_detailed(
             action_id=action_id,
             client=client,
+            provider=provider,
         )
     ).parsed

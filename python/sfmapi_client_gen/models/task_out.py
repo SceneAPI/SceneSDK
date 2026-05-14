@@ -36,6 +36,7 @@ class TaskOut:
             cache_key (str):
             inputs_hash (str):
             params_hash (str):
+            provider (None | str | Unset):
             outputs_ref (None | TaskOutOutputsRefType0 | Unset):
     """
 
@@ -46,6 +47,7 @@ class TaskOut:
     cache_key: str
     inputs_hash: str
     params_hash: str
+    provider: None | str | Unset = UNSET
     outputs_ref: None | TaskOutOutputsRefType0 | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -65,6 +67,12 @@ class TaskOut:
         inputs_hash = self.inputs_hash
 
         params_hash = self.params_hash
+
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
 
         outputs_ref: dict[str, Any] | None | Unset
         if isinstance(self.outputs_ref, Unset):
@@ -87,6 +95,8 @@ class TaskOut:
                 "params_hash": params_hash,
             }
         )
+        if provider is not UNSET:
+            field_dict["provider"] = provider
         if outputs_ref is not UNSET:
             field_dict["outputs_ref"] = outputs_ref
 
@@ -110,6 +120,15 @@ class TaskOut:
         inputs_hash = d.pop("inputs_hash")
 
         params_hash = d.pop("params_hash")
+
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
 
         def _parse_outputs_ref(data: object) -> None | TaskOutOutputsRefType0 | Unset:
             if data is None:
@@ -136,6 +155,7 @@ class TaskOut:
             cache_key=cache_key,
             inputs_hash=inputs_hash,
             params_hash=params_hash,
+            provider=provider,
             outputs_ref=outputs_ref,
         )
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 
@@ -21,12 +21,20 @@ class BackendActionValidateRequest:
     """Validate action input without submitting work.
 
     Attributes:
+        provider (None | str | Unset):
         inputs (BackendActionValidateRequestInputs | Unset):
     """
 
+    provider: None | str | Unset = UNSET
     inputs: BackendActionValidateRequestInputs | Unset = UNSET
 
     def to_dict(self) -> dict[str, Any]:
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
+
         inputs: dict[str, Any] | Unset = UNSET
         if not isinstance(self.inputs, Unset):
             inputs = self.inputs.to_dict()
@@ -34,6 +42,8 @@ class BackendActionValidateRequest:
         field_dict: dict[str, Any] = {}
 
         field_dict.update({})
+        if provider is not UNSET:
+            field_dict["provider"] = provider
         if inputs is not UNSET:
             field_dict["inputs"] = inputs
 
@@ -46,6 +56,16 @@ class BackendActionValidateRequest:
         )
 
         d = dict(src_dict)
+
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
+
         _inputs = d.pop("inputs", UNSET)
         inputs: BackendActionValidateRequestInputs | Unset
         if isinstance(_inputs, Unset):
@@ -54,6 +74,7 @@ class BackendActionValidateRequest:
             inputs = BackendActionValidateRequestInputs.from_dict(_inputs)
 
         backend_action_validate_request = cls(
+            provider=provider,
             inputs=inputs,
         )
 

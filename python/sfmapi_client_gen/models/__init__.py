@@ -58,6 +58,10 @@ from .batch_create_images_response import BatchCreateImagesResponse
 from .bulk_set_pose_priors_v1_datasets_dataset_id_pose_priors_put_body import (
     BulkSetPosePriorsV1DatasetsDatasetIdPosePriorsPutBody,
 )
+from .bundle_adjustment_spec import BundleAdjustmentSpec
+from .bundle_adjustment_spec_backend_options import BundleAdjustmentSpecBackendOptions
+from .bundle_adjustment_spec_loss_kernel import BundleAdjustmentSpecLossKernel
+from .bundle_adjustment_spec_mode import BundleAdjustmentSpecMode
 from .camera_model_out import CameraModelOut
 from .camera_model_out_distortion import CameraModelOutDistortion
 from .camera_model_out_projection import CameraModelOutProjection
@@ -84,6 +88,9 @@ from .doctor_check import DoctorCheck
 from .doctor_check_status import DoctorCheckStatus
 from .equirectangular_projection_request import EquirectangularProjectionRequest
 from .equirectangular_projection_spec import EquirectangularProjectionSpec
+from .export_spec import ExportSpec
+from .export_spec_backend_options import ExportSpecBackendOptions
+from .export_spec_format import ExportSpecFormat
 from .external_tool_runtime import ExternalToolRuntime
 from .features_request import FeaturesRequest
 from .features_spec import FeaturesSpec
@@ -93,6 +100,9 @@ from .features_spec_type import FeaturesSpecType
 from .finalize_v1_uploads_upload_id_finalize_post_payload import (
     FinalizeV1UploadsUploadIdFinalizePostPayload,
 )
+from .georegister_request import GeoregisterRequest
+from .georegister_request_backend_options import GeoregisterRequestBackendOptions
+from .georegister_request_mode import GeoregisterRequestMode
 from .global_spec import GlobalSpec
 from .global_spec_backend import GlobalSpecBackend
 from .global_spec_backend_options import GlobalSpecBackendOptions
@@ -199,6 +209,8 @@ from .plugin_registry_item_out import PluginRegistryItemOut
 from .plugin_registry_item_out_links_type_0 import PluginRegistryItemOutLinksType0
 from .point_observation_row import PointObservationRow
 from .point_visibility_response import PointVisibilityResponse
+from .pose_graph_spec import PoseGraphSpec
+from .pose_graph_spec_backend_options import PoseGraphSpecBackendOptions
 from .pose_prior import PosePrior
 from .pose_priors_bulk_response import PosePriorsBulkResponse
 from .pose_priors_bulk_response_pose_priors import PosePriorsBulkResponsePosePriors
@@ -221,6 +233,11 @@ from .readyz_response_checks import ReadyzResponseChecks
 from .reconstruction_out import ReconstructionOut
 from .reconstruction_out_links_type_0 import ReconstructionOutLinksType0
 from .reconstruction_out_status import ReconstructionOutStatus
+from .relocalize_spec import RelocalizeSpec
+from .relocalize_spec_backend_options import RelocalizeSpecBackendOptions
+from .rig_config_spec import RigConfigSpec
+from .rig_config_spec_backend_options import RigConfigSpecBackendOptions
+from .rig_config_spec_rig_config import RigConfigSpecRigConfig
 from .rigid_3 import Rigid3
 from .rotation import Rotation
 from .routing_out import RoutingOut
@@ -266,6 +283,12 @@ from .tool_detection import ToolDetection
 from .tool_detection_out import ToolDetectionOut
 from .tool_detection_out_tools import ToolDetectionOutTools
 from .tool_detection_source import ToolDetectionSource
+from .triangulate_spec import TriangulateSpec
+from .triangulate_spec_backend_options import TriangulateSpecBackendOptions
+from .two_view_spec import TwoViewSpec
+from .two_view_spec_backend_options import TwoViewSpecBackendOptions
+from .undistort_spec import UndistortSpec
+from .undistort_spec_backend_options import UndistortSpecBackendOptions
 from .upload_entry_spec import UploadEntrySpec
 from .upload_init import UploadInit
 from .upload_out import UploadOut
@@ -282,6 +305,8 @@ from .verify_spec_backend_options import VerifySpecBackendOptions
 from .verify_spec_input_artifacts import VerifySpecInputArtifacts
 from .version_response import VersionResponse
 from .video_frames_request import VideoFramesRequest
+from .vocab_tree_spec import VocabTreeSpec
+from .vocab_tree_spec_backend_options import VocabTreeSpecBackendOptions
 
 __all__ = (
     "ApiKeyOut",
@@ -334,6 +359,10 @@ __all__ = (
     "BatchCreateImagesRequest",
     "BatchCreateImagesResponse",
     "BulkSetPosePriorsV1DatasetsDatasetIdPosePriorsPutBody",
+    "BundleAdjustmentSpec",
+    "BundleAdjustmentSpecBackendOptions",
+    "BundleAdjustmentSpecLossKernel",
+    "BundleAdjustmentSpecMode",
     "CameraModelOut",
     "CameraModelOutDistortion",
     "CameraModelOutProjection",
@@ -360,6 +389,9 @@ __all__ = (
     "DoctorCheckStatus",
     "EquirectangularProjectionRequest",
     "EquirectangularProjectionSpec",
+    "ExportSpec",
+    "ExportSpecBackendOptions",
+    "ExportSpecFormat",
     "ExternalToolRuntime",
     "FeaturesRequest",
     "FeaturesSpec",
@@ -367,6 +399,9 @@ __all__ = (
     "FeaturesSpecInputArtifacts",
     "FeaturesSpecType",
     "FinalizeV1UploadsUploadIdFinalizePostPayload",
+    "GeoregisterRequest",
+    "GeoregisterRequestBackendOptions",
+    "GeoregisterRequestMode",
     "GlobalSpec",
     "GlobalSpecBackend",
     "GlobalSpecBackendOptions",
@@ -469,6 +504,8 @@ __all__ = (
     "PluginRegistryItemOutLinksType0",
     "PointObservationRow",
     "PointVisibilityResponse",
+    "PoseGraphSpec",
+    "PoseGraphSpecBackendOptions",
     "PosePrior",
     "PosePriorsBulkResponse",
     "PosePriorsBulkResponsePosePriors",
@@ -491,6 +528,11 @@ __all__ = (
     "ReconstructionOut",
     "ReconstructionOutLinksType0",
     "ReconstructionOutStatus",
+    "RelocalizeSpec",
+    "RelocalizeSpecBackendOptions",
+    "RigConfigSpec",
+    "RigConfigSpecBackendOptions",
+    "RigConfigSpecRigConfig",
     "Rigid3",
     "Rotation",
     "RoutingOut",
@@ -534,6 +576,12 @@ __all__ = (
     "ToolDetectionOut",
     "ToolDetectionOutTools",
     "ToolDetectionSource",
+    "TriangulateSpec",
+    "TriangulateSpecBackendOptions",
+    "TwoViewSpec",
+    "TwoViewSpecBackendOptions",
+    "UndistortSpec",
+    "UndistortSpecBackendOptions",
     "UploadEntrySpec",
     "UploadInit",
     "UploadOut",
@@ -550,4 +598,6 @@ __all__ = (
     "VerifySpecInputArtifacts",
     "VersionResponse",
     "VideoFramesRequest",
+    "VocabTreeSpec",
+    "VocabTreeSpecBackendOptions",
 )

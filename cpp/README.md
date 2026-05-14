@@ -33,12 +33,12 @@ sfmapi::Client c({
 
 auto resp = sfmapi::Client::RaiseOnError(c.Capabilities());
 // resp.body is JSON bytes; decode with your JSON library into
-// sfmapi::Capabilities, then `.Supports("dense.patch_match_stereo")`.
+// sfmapi::Capabilities, then `.Supports("ba.standard")`.
 ```
 
 The client surface mirrors the Python and TypeScript SDKs — every
-endpoint has a method (`SubmitDense`, `SubmitMesh`, `SubmitLocalize`,
-`ReadDenseIndex`, `PutPosePrior`, `SimilarityNeighbors`,
+endpoint has a method (`SubmitLocalize`, `SubmitBundleAdjust`,
+`SubmitExport`, `PutPosePrior`, `SimilarityNeighbors`,
 `SubmitVideoFrames`, `ListJobArtifacts`, `GetArtifact`, ...). Errors come back as `HttpStatusError`
 exceptions whose `capability()` field carries the canonical name when
 the body is a problem+json with a `capability` extra.
@@ -108,8 +108,8 @@ Every wire type from `app/schemas/api/scene.py`:
   `FramesFile`, `TwoViewGeometriesFile`, `CorrespondenceGraphFile`,
   `PoseGraphFile`
 - Localization: `LocalizationResult`
-- Dense MVS: `DepthMapInfo`, `DenseSummary`, `DenseManifestFile`
-- Mesh: `MeshSummary`, `MeshFile`, `MeshMethod`
+- Stage request bodies (in `specs.hpp`): `LocalizationRequest`,
+  `MergeRequest`, `ProjectionJobRequest`
 - Stage artifacts: `ArtifactKind`, `StageArtifact`, plus
   `ArtifactRef` / `ArtifactInputMap` in `specs.hpp` for selecting
   previous stage outputs.

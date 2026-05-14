@@ -1388,6 +1388,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/datasets/{dataset_id}:buildVocabTree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Build Vocab Tree
+         * @description Build a reusable vocabulary-tree retrieval index for the dataset.
+         */
+        post: operations["build_vocab_tree_v1_datasets__dataset_id__buildVocabTree_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}:configureRig": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Configure Rig
+         * @description Declare or calibrate a multi-camera rig over the dataset's feature DB.
+         */
+        post: operations["configure_rig_v1_datasets__dataset_id__configureRig_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datasets/{dataset_id}:estimateTwoView": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Estimate Two View
+         * @description Estimate two-view geometry (E/F/H + relative pose) for image pairs.
+         */
+        post: operations["estimate_two_view_v1_datasets__dataset_id__estimateTwoView_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/reconstructions/{recon_id}": {
         parameters: {
             query?: never;
@@ -1709,6 +1769,129 @@ export interface paths {
         get: operations["get_submodel_v1_submodels__submodel_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reconstructions/{recon_id}:bundleAdjust": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bundle Adjust
+         * @description Run standalone bundle adjustment over the reconstruction.
+         *
+         *     ``mode`` selects the algorithm + gating capability (``ba.standard``
+         *     / ``ba.two_stage`` / ``ba.featuremetric`` / ``ba.rig``).
+         */
+        post: operations["bundle_adjust_v1_reconstructions__recon_id__bundleAdjust_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reconstructions/{recon_id}:triangulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Triangulate
+         * @description Re-triangulate the reconstruction against its feature database.
+         */
+        post: operations["triangulate_v1_reconstructions__recon_id__triangulate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reconstructions/{recon_id}:poseGraphOptimize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pose Graph Optimize
+         * @description Run pose-graph optimization over the reconstruction.
+         */
+        post: operations["pose_graph_optimize_v1_reconstructions__recon_id__poseGraphOptimize_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reconstructions/{recon_id}:export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export
+         * @description Export the reconstruction's sparse model to a portable format.
+         */
+        post: operations["export_v1_reconstructions__recon_id__export_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reconstructions/{recon_id}:relocalize": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Relocalize
+         * @description Register additional images into the existing reconstruction.
+         */
+        post: operations["relocalize_v1_reconstructions__recon_id__relocalize_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reconstructions/{recon_id}:undistort": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Undistort
+         * @description Undistort the reconstruction's images + emit adjusted intrinsics.
+         */
+        post: operations["undistort_v1_reconstructions__recon_id__undistort_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2163,11 +2346,12 @@ export interface paths {
         put?: never;
         /**
          * Georegister
-         * @description Apply a Sim(3) similarity transform to the reconstruction.
+         * @description Georegister the reconstruction.
          *
-         *     The worker rewrites every camera + 3D point and seals a fresh
-         *     snapshot. Clients then read the new snapshot the same way they
-         *     read post-mapping snapshots.
+         *     ``mode=sim3`` (default) applies the supplied ``sim3`` transform;
+         *     ``mode=gps`` solves the transform from georeferenced inputs. Either
+         *     way the worker rewrites every camera + 3D point and seals a fresh
+         *     snapshot, which clients read like post-mapping snapshots.
          */
         post: operations["georegister_v1_reconstructions__recon_id__georegister_post"];
         delete?: never;
@@ -2363,6 +2547,11 @@ export interface components {
          */
         ArtifactConversionPlanRequest: {
             /**
+             * Provider
+             * @description Optional provider id to use when planning backend-native conversions.
+             */
+            provider?: string | null;
+            /**
              * To Format
              * @description Exact target format id. Mutually compatible with accepted_formats.
              */
@@ -2387,6 +2576,8 @@ export interface components {
             contract_id?: string | null;
             /** Backend */
             backend?: string | null;
+            /** Provider */
+            provider?: string | null;
             /** From Format */
             from_format: string;
             /** To Format */
@@ -2404,6 +2595,11 @@ export interface components {
          * @description Submit a conversion job for one artifact.
          */
         ArtifactConvertRequest: {
+            /**
+             * Provider
+             * @description Optional provider id to use when planning backend-native conversions.
+             */
+            provider?: string | null;
             /**
              * To Format
              * @description Exact target format id. Mutually compatible with accepted_formats.
@@ -2672,6 +2868,8 @@ export interface components {
         BackendActionRunRequest: {
             /** Project Id */
             project_id: string;
+            /** Provider */
+            provider?: string | null;
             /** Inputs */
             inputs?: {
                 [key: string]: unknown;
@@ -2682,6 +2880,8 @@ export interface components {
          * @description Validate action input without submitting work.
          */
         BackendActionValidateRequest: {
+            /** Provider */
+            provider?: string | null;
             /** Inputs */
             inputs?: {
                 [key: string]: unknown;
@@ -2880,6 +3080,83 @@ export interface components {
             images?: components["schemas"]["ImageOut"][];
         };
         /**
+         * BundleAdjustmentSpec
+         * @description Standalone bundle-adjustment spec.
+         *
+         *     ``mode`` selects the algorithm:
+         *       - ``standard``: a single ceres / baxx solve over all
+         *         registered cameras + 3D points (capability ``ba.standard``).
+         *       - ``two_stage``: a two-pass refinement (capability ``ba.two_stage``).
+         *       - ``featuremetric``: Pixel-Perfect SfM-style refinement that
+         *         minimizes a CNN-feature error, not raw reprojection
+         *         (capability ``ba.featuremetric``). Requires a backend with
+         *         learned-feature support.
+         *       - ``rig``: rig-aware refinement that shares intrinsics + relative
+         *         extrinsics across a multi-camera rig (capability ``ba.rig``).
+         *
+         *     ``loss_kernel`` chooses the robust loss applied to per-residual
+         *     cost: ``squared`` (no robustification), ``huber``, ``cauchy``,
+         *     ``soft_l1``, ``tukey``. ``loss_threshold`` is the kernel scale
+         *     (in pixels for reprojection loss).
+         */
+        BundleAdjustmentSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Mode
+             * @default standard
+             * @enum {string}
+             */
+            mode: "standard" | "two_stage" | "featuremetric" | "rig";
+            /**
+             * Provider
+             * @description Optional backend implementation selector for bundle adjustment when multiple providers expose the requested ba.* capability.
+             */
+            provider?: string | null;
+            /**
+             * Refine Focal Length
+             * @default true
+             */
+            refine_focal_length: boolean;
+            /**
+             * Refine Principal Point
+             * @default false
+             */
+            refine_principal_point: boolean;
+            /**
+             * Refine Extra Params
+             * @default true
+             */
+            refine_extra_params: boolean;
+            /**
+             * Max Num Iterations
+             * @default 100
+             */
+            max_num_iterations: number;
+            /**
+             * Loss Kernel
+             * @default squared
+             * @enum {string}
+             */
+            loss_kernel: "squared" | "huber" | "cauchy" | "soft_l1" | "tukey";
+            /**
+             * Loss Threshold
+             * @default 1
+             */
+            loss_threshold: number;
+            /**
+             * Backend Options
+             * @description Backend-specific bundle-adjustment options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
          * CameraModelOut
          * @description Portable description of a camera model's parameter layout.
          */
@@ -2977,6 +3254,11 @@ export interface components {
             cubemap?: components["schemas"]["CubemapProjectionSpec"] | null;
             equirectangular?: components["schemas"]["EquirectangularProjectionSpec"] | null;
             perspective?: components["schemas"]["PerspectiveProjectionSpec"] | null;
+            /**
+             * Provider
+             * @description Optional provider id to execute this projection job.
+             */
+            provider?: string | null;
         };
         /**
          * CubemapProjectionSpec
@@ -3135,6 +3417,11 @@ export interface components {
             cubemap?: components["schemas"]["CubemapProjectionSpec"] | null;
             equirectangular?: components["schemas"]["EquirectangularProjectionSpec"] | null;
             perspective?: components["schemas"]["PerspectiveProjectionSpec"] | null;
+            /**
+             * Provider
+             * @description Optional provider id to execute this projection job.
+             */
+            provider?: string | null;
         };
         /**
          * EquirectangularProjectionSpec
@@ -3153,6 +3440,37 @@ export interface components {
             height?: number | null;
             sampling?: components["schemas"]["ProjectionSampling"];
             output?: components["schemas"]["ProjectionOutputOptions"];
+        };
+        /**
+         * ExportSpec
+         * @description ``POST /v1/reconstructions/{rid}:export`` — export the sparse model
+         *     to a portable interchange format (capability ``export.{format}``).
+         */
+        ExportSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Format
+             * @default ply
+             * @enum {string}
+             */
+            format: "ply" | "nvm" | "colmap_text" | "colmap_bin" | "nerfstudio" | "gaussian_splatting" | "instant_ngp" | "kapture";
         };
         /** ExternalToolRuntime */
         ExternalToolRuntime: {
@@ -3235,6 +3553,45 @@ export interface components {
             input_artifacts?: {
                 [key: string]: components["schemas"]["ArtifactRef"];
             };
+        };
+        /**
+         * GeoregisterRequest
+         * @description ``POST /v1/reconstructions/{rid}:georegister`` request body.
+         *
+         *     ``mode=sim3`` (default) applies the supplied :class:`Sim3` transform
+         *     via the backend's ``apply_sim3`` (capability ``georegister.sim3``).
+         *     ``mode=gps`` solves the transform from georeferenced inputs via
+         *     ``align_reconstruction`` (capability ``georegister.gps``); the
+         *     georeferenced inputs are read from the reconstruction + the
+         *     ``backend_options`` bag.
+         */
+        GeoregisterRequest: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Mode
+             * @default sim3
+             * @enum {string}
+             */
+            mode: "sim3" | "gps";
+            /** @description Required when mode='sim3'; rejected when mode='gps'. */
+            sim3?: components["schemas"]["Sim3"] | null;
         };
         /** GlobalSpec */
         GlobalSpec: {
@@ -3611,11 +3968,14 @@ export interface components {
          * JobAcceptedResponse
          * @description Canonical 202 envelope for endpoints that submit a Job.
          *
-         *     Returned by every ``POST`` that enqueues SfM work
-         *     (`/datasets/{id}/features`, `/matches`, `/verify`, the
-         *     `/pipelines/{recipe}` recipes, and the localize / dense / mesh /
-         *     cubemap stages). Clients should follow ``Location`` to ``GET
-         *     /v1/jobs/{job_id}`` for status.
+         *     Returned by every ``POST`` that enqueues SfM work — the decomposed
+         *     pipeline stages (``features`` / ``matches`` / ``verify`` / ``map`` /
+         *     ``ba`` / ``triangulate`` / ``relocalize`` / ``pgo`` / ``export`` /
+         *     ``undistort`` / ...), the ``/pipelines/{recipe}`` recipe sugar, the
+         *     ``localize`` / ``georegister`` / ``reconstructions:merge`` /
+         *     ``similarity:build`` / ``artifacts:convert`` stages, and
+         *     backend-native extension actions. Clients should follow
+         *     ``Location`` to ``GET /v1/jobs/{job_id}`` for status.
          *
          *     Stage-specific optional fields are typed here so SDK codegen can
          *     surface them as named accessors:
@@ -3627,6 +3987,10 @@ export interface components {
          *     - ``target_recon_id`` / ``source_recon_ids`` — ``reconstructions:merge``
          *     - ``strategy`` — ``similarity:build``
          *     - ``action_id`` / ``backend`` — backend-native extension actions
+         *     - ``provider`` — sfm_hub provider id selected for execution (echoed
+         *       from the request so clients can confirm routing)
+         *     - ``artifact_id`` / ``target_format`` — ``artifacts:convert`` echoes
+         *       the source artifact and the chosen conversion target format
          */
         JobAcceptedResponse: {
             /** Job Id */
@@ -3652,6 +4016,8 @@ export interface components {
             action_id?: string | null;
             /** Backend */
             backend?: string | null;
+            /** Provider */
+            provider?: string | null;
             /** Artifact Id */
             artifact_id?: string | null;
             /** Target Format */
@@ -3849,6 +4215,11 @@ export interface components {
             sift?: {
                 [key: string]: unknown;
             } | null;
+            /**
+             * Provider
+             * @description Optional provider id to execute this localize job.
+             */
+            provider?: string | null;
         };
         /**
          * MatcherSpec
@@ -3962,6 +4333,11 @@ export interface components {
             sim3_aligners?: {
                 [key: string]: unknown;
             }[] | null;
+            /**
+             * Provider
+             * @description Optional provider id to execute the merge.
+             */
+            provider?: string | null;
         };
         /**
          * OneShotFeaturesPayload
@@ -4295,6 +4671,11 @@ export interface components {
             cubemap?: components["schemas"]["CubemapProjectionSpec"] | null;
             equirectangular?: components["schemas"]["EquirectangularProjectionSpec"] | null;
             perspective?: components["schemas"]["PerspectiveProjectionSpec"] | null;
+            /**
+             * Provider
+             * @description Optional provider id to execute this projection job.
+             */
+            provider?: string | null;
         };
         /**
          * PerspectiveProjectionSpec
@@ -4488,6 +4869,11 @@ export interface components {
              * @default false
              */
             allow_unsafe_execution: boolean;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
         };
         /** PluginInstallResponse */
         PluginInstallResponse: {
@@ -4618,6 +5004,36 @@ export interface components {
             count: number;
         };
         /**
+         * PoseGraphSpec
+         * @description ``POST /v1/reconstructions/{rid}:poseGraphOptimize`` — pose-graph
+         *     optimization over the reconstruction (capability ``pgo.optimize``).
+         */
+        PoseGraphSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Max Num Iterations
+             * @default 100
+             */
+            max_num_iterations: number;
+        };
+        /**
          * PosePrior
          * @description Prior on a camera's ``cam_from_world`` pose.
          *
@@ -4712,6 +5128,11 @@ export interface components {
             cubemap?: components["schemas"]["CubemapProjectionSpec"] | null;
             equirectangular?: components["schemas"]["EquirectangularProjectionSpec"] | null;
             perspective?: components["schemas"]["PerspectiveProjectionSpec"] | null;
+            /**
+             * Provider
+             * @description Optional provider id to execute this projection job.
+             */
+            provider?: string | null;
         };
         /**
          * ProjectionOutputOptions
@@ -4871,6 +5292,70 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+        };
+        /**
+         * RelocalizeSpec
+         * @description ``POST /v1/reconstructions/{rid}:relocalize`` — register additional
+         *     images into an existing reconstruction (capability
+         *     ``relocalize.images``).
+         */
+        RelocalizeSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Image Ids
+             * @description Backend image ids to relocalize. Empty means the backend relocalizes every not-yet-registered image it can.
+             */
+            image_ids?: number[];
+        };
+        /**
+         * RigConfigSpec
+         * @description ``POST /v1/datasets/{did}:configureRig`` — declare or calibrate a
+         *     multi-camera rig over the dataset's feature database
+         *     (capability ``rigs.configure``).
+         */
+        RigConfigSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Rig Config
+             * @description Portable rig declaration. Backend-specific calibration controls go in backend_options.
+             */
+            rig_config?: {
+                [key: string]: unknown;
+            };
         };
         /**
          * Rigid3
@@ -5242,6 +5727,8 @@ export interface components {
             inputs_hash: string;
             /** Params Hash */
             params_hash: string;
+            /** Provider */
+            provider?: string | null;
             /** Outputs Ref */
             outputs_ref?: {
                 [key: string]: unknown;
@@ -5306,6 +5793,84 @@ export interface components {
             /** Tools */
             tools: {
                 [key: string]: components["schemas"]["ToolDetection"][];
+            };
+        };
+        /**
+         * TriangulateSpec
+         * @description ``POST /v1/reconstructions/{rid}:triangulate`` — re-triangulate
+         *     against the reconstruction's existing feature database
+         *     (capability ``triangulate.retri``).
+         */
+        TriangulateSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * TwoViewSpec
+         * @description ``POST /v1/datasets/{did}:estimateTwoView`` — estimate two-view
+         *     geometry (E/F/H + relative pose) for image pairs in the dataset's
+         *     feature database (capability ``geometry.two_view``).
+         */
+        TwoViewSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * UndistortSpec
+         * @description ``POST /v1/reconstructions/{rid}:undistort`` — rewrite images to a
+         *     distortion-free camera model and emit adjusted intrinsics
+         *     (capability ``image.undistort``).
+         */
+        UndistortSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
             };
         };
         /**
@@ -5484,6 +6049,32 @@ export interface components {
              * @default 1000
              */
             max_frames: number;
+        };
+        /**
+         * VocabTreeSpec
+         * @description ``POST /v1/datasets/{did}:buildVocabTree`` — build a reusable
+         *     vocabulary-tree retrieval index from the dataset's feature database
+         *     (capability ``index.vocab_tree``).
+         */
+        VocabTreeSpec: {
+            /**
+             * Version
+             * @default 1
+             * @constant
+             */
+            version: 1;
+            /**
+             * Provider
+             * @description Optional sfm_hub provider id to execute this stage. When unset, the server resolves one through routing profiles.
+             */
+            provider?: string | null;
+            /**
+             * Backend Options
+             * @description Backend-specific options. Discover supported keys with GET /v1/backend/config-schemas.
+             */
+            backend_options?: {
+                [key: string]: unknown;
+            };
         };
     };
     responses: never;
@@ -6057,7 +6648,10 @@ export interface operations {
     };
     get_backend_v1_backend_get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Optional provider id to inspect instead of the process default backend. */
+                provider?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6073,6 +6667,15 @@ export interface operations {
                     "application/json": components["schemas"]["BackendOut"];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
     list_actions_v1_backend_actions_get: {
@@ -6082,6 +6685,8 @@ export interface operations {
                 page_size?: number;
                 /** @description Include each action's input/output schema in the list response. */
                 include_schemas?: boolean;
+                /** @description Optional provider id to inspect. */
+                provider?: string | null;
             };
             header?: never;
             path?: never;
@@ -6116,6 +6721,8 @@ export interface operations {
                 page_size?: number;
                 /** @description Include JSON Schemas for each backend_options object. */
                 include_schemas?: boolean;
+                /** @description Optional provider id to inspect. */
+                provider?: string | null;
             };
             header?: never;
             path?: never;
@@ -6148,6 +6755,8 @@ export interface operations {
             query?: {
                 page_token?: string | null;
                 page_size?: number;
+                /** @description Optional provider id to inspect. */
+                provider?: string | null;
             };
             header?: never;
             path?: never;
@@ -6247,7 +6856,10 @@ export interface operations {
     };
     get_action_v1_backend_actions__action_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Optional provider id to inspect. */
+                provider?: string | null;
+            };
             header?: never;
             path: {
                 action_id: string;
@@ -6278,7 +6890,10 @@ export interface operations {
     };
     get_config_schema_v1_backend_config_schemas__config_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Optional provider id to inspect. */
+                provider?: string | null;
+            };
             header?: never;
             path: {
                 config_id: string;
@@ -6309,7 +6924,10 @@ export interface operations {
     };
     get_artifact_contract_v1_backend_artifact_contracts__contract_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Optional provider id to inspect. */
+                provider?: string | null;
+            };
             header?: never;
             path: {
                 contract_id: string;
@@ -7623,6 +8241,111 @@ export interface operations {
             };
         };
     };
+    build_vocab_tree_v1_datasets__dataset_id__buildVocabTree_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VocabTreeSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    configure_rig_v1_datasets__dataset_id__configureRig_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RigConfigSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    estimate_two_view_v1_datasets__dataset_id__estimateTwoView_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                dataset_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoViewSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_v1_reconstructions__recon_id__get: {
         parameters: {
             query?: never;
@@ -8081,6 +8804,216 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SubModelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    bundle_adjust_v1_reconstructions__recon_id__bundleAdjust_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BundleAdjustmentSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    triangulate_v1_reconstructions__recon_id__triangulate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TriangulateSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    pose_graph_optimize_v1_reconstructions__recon_id__poseGraphOptimize_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PoseGraphSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    export_v1_reconstructions__recon_id__export_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    relocalize_v1_reconstructions__recon_id__relocalize_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelocalizeSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    undistort_v1_reconstructions__recon_id__undistort_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                recon_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UndistortSpec"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
                 };
             };
             /** @description Validation Error */
@@ -8664,6 +9597,8 @@ export interface operations {
             query?: {
                 strategy?: string;
                 force?: boolean;
+                /** @description Optional provider id to execute a vlad build job. */
+                provider?: string | null;
             };
             header?: never;
             path: {
@@ -8748,7 +9683,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["Sim3"];
+                "application/json": components["schemas"]["GeoregisterRequest"];
             };
         };
         responses: {
@@ -8774,7 +9709,10 @@ export interface operations {
     };
     to_cubemap_v1_reconstructions__recon_id__to_cubemap_post: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Optional provider id to execute this conversion. */
+                provider?: string | null;
+            };
             header?: never;
             path: {
                 recon_id: string;
@@ -8828,6 +9766,8 @@ export interface operations {
             query?: {
                 /** @description Local feature extractor. */
                 type?: "sift" | "superpoint" | "aliked" | "disk" | "r2d2" | "d2net";
+                /** @description Optional provider id to execute this call. */
+                provider?: string | null;
                 max_num_features?: number;
                 use_gpu?: boolean;
                 seed?: number;
@@ -8867,6 +9807,8 @@ export interface operations {
                 recon_id: string;
                 /** @description Local feature extractor. */
                 type?: "sift" | "superpoint" | "aliked" | "disk" | "r2d2" | "d2net";
+                /** @description Optional provider id to execute this call. */
+                provider?: string | null;
                 max_num_features?: number;
                 use_gpu?: boolean;
                 seed?: number;

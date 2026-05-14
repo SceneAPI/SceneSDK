@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 
@@ -20,14 +20,22 @@ class BackendActionRunRequest:
 
     Attributes:
         project_id (str):
+        provider (None | str | Unset):
         inputs (BackendActionRunRequestInputs | Unset):
     """
 
     project_id: str
+    provider: None | str | Unset = UNSET
     inputs: BackendActionRunRequestInputs | Unset = UNSET
 
     def to_dict(self) -> dict[str, Any]:
         project_id = self.project_id
+
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
 
         inputs: dict[str, Any] | Unset = UNSET
         if not isinstance(self.inputs, Unset):
@@ -40,6 +48,8 @@ class BackendActionRunRequest:
                 "project_id": project_id,
             }
         )
+        if provider is not UNSET:
+            field_dict["provider"] = provider
         if inputs is not UNSET:
             field_dict["inputs"] = inputs
 
@@ -54,6 +64,15 @@ class BackendActionRunRequest:
         d = dict(src_dict)
         project_id = d.pop("project_id")
 
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
+
         _inputs = d.pop("inputs", UNSET)
         inputs: BackendActionRunRequestInputs | Unset
         if isinstance(_inputs, Unset):
@@ -63,6 +82,7 @@ class BackendActionRunRequest:
 
         backend_action_run_request = cls(
             project_id=project_id,
+            provider=provider,
             inputs=inputs,
         )
 

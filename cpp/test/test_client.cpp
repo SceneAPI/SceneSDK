@@ -52,9 +52,10 @@ void TestPostBodyAndContentType() {
   sfmapi::Client c({"http://x", "", [mock](const sfmapi::HttpRequest& r) {
                       return (*mock)(r);
                     }});
-  c.SubmitDense("01HGABC");
+  c.SubmitBundleAdjust("01HGABC");
   assert(mock->last_req.method == "POST");
-  assert(mock->last_req.url == "http://x/v1/reconstructions/01HGABC/dense");
+  assert(mock->last_req.url ==
+         "http://x/v1/reconstructions/01HGABC:bundleAdjust");
   assert(mock->last_req.headers.at("Content-Type") == "application/json");
   std::cout << "  POST shape OK\n";
 }
@@ -63,7 +64,7 @@ void TestRaiseOnErrorExtractsCapability() {
   sfmapi::HttpResponse resp;
   resp.status = 501;
   std::string body =
-      R"({"type":"...","title":"x","status":501,"detail":"y","capability":"dense.patch_match_stereo"})";
+      R"({"type":"...","title":"x","status":501,"detail":"y","capability":"ba.standard"})";
   resp.body.assign(body.begin(), body.end());
   bool threw = false;
   try {
@@ -71,7 +72,7 @@ void TestRaiseOnErrorExtractsCapability() {
   } catch (const sfmapi::HttpStatusError& e) {
     threw = true;
     assert(e.status() == 501);
-    assert(e.capability() == "dense.patch_match_stereo");
+    assert(e.capability() == "ba.standard");
   }
   assert(threw && "expected HttpStatusError on 501");
   std::cout << "  RaiseOnError extracts capability OK\n";

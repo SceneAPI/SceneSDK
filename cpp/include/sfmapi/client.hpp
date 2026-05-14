@@ -27,8 +27,8 @@
 //     sfmapi::Client c{"http://localhost:8080", MakeCurlTransport(),
 //                      MakeNlohmannJsonAdapter()};
 //     auto caps = c.Capabilities();
-//     if (caps.Supports("dense.patch_match_stereo")) {
-//         auto job = c.SubmitDense(recon_id);
+//     if (caps.Supports("ba.standard")) {
+//         auto job = c.SubmitBundleAdjust(recon_id);
 //     }
 
 #ifndef SFMAPI_CLIENT_HPP_
@@ -411,39 +411,15 @@ class Client {
     return Get("/v1/reconstructions/" + recon_id + "/correspondence_graph.json");
   }
 
-  HttpResponse ReadDenseIndex(const std::string& recon_id, int seq) const {
-    return Get("/v1/reconstructions/" + recon_id + "/snapshots/" +
-               std::to_string(seq) + "/dense/index.json");
-  }
-
-  HttpResponse ReadDenseFused(const std::string& recon_id, int seq) const {
-    return Get("/v1/reconstructions/" + recon_id + "/snapshots/" +
-               std::to_string(seq) + "/dense/fused.bin");
-  }
-
-  HttpResponse ReadDepthMap(const std::string& recon_id, int seq,
-                            const std::string& image_name) const {
-    return Get("/v1/reconstructions/" + recon_id + "/snapshots/" +
-               std::to_string(seq) + "/dense/depth_maps/" + image_name + ".bin");
-  }
-
-  HttpResponse ReadNormalMap(const std::string& recon_id, int seq,
-                             const std::string& image_name) const {
-    return Get("/v1/reconstructions/" + recon_id + "/snapshots/" +
-               std::to_string(seq) + "/dense/normal_maps/" + image_name + ".bin");
-  }
-
-  HttpResponse ReadMeshManifest(const std::string& recon_id, int seq) const {
-    return Get("/v1/reconstructions/" + recon_id + "/snapshots/" +
-               std::to_string(seq) + "/mesh.json");
-  }
-
-  HttpResponse ReadMeshPly(const std::string& recon_id, int seq) const {
-    return Get("/v1/reconstructions/" + recon_id + "/snapshots/" +
-               std::to_string(seq) + "/mesh.ply");
-  }
-
-  // --- localize / georegister / cubemap / dense / mesh / merge -----
+  // --- localize / georegister / cubemap / merge -------------------
+  //
+  // Dense MVS and mesh / texture generation are out of scope for
+  // sfmapi by design (separate ``mvsapi`` / ``meshapi`` specs — see
+  // SFMAPI-SPEC.md Appendix D). The SDK ships no Submit/Read methods
+  // for them. The ``x-sfm-depth-v1`` / ``x-sfm-normal-v1`` binary
+  // PARSERS (ParseDepthMap / ParseNormalMap) remain — they decode
+  // wire formats a backend may emit as artifacts, independent of any
+  // dense route.
 
   HttpResponse SubmitLocalize(const std::string& recon_id,
                               const std::string& json_body) const {
@@ -466,17 +442,55 @@ class Client {
     return Post(url, "");
   }
 
-  HttpResponse SubmitDense(const std::string& recon_id) const {
-    return Post("/v1/reconstructions/" + recon_id + "/dense", "");
-  }
-
-  HttpResponse SubmitMesh(const std::string& recon_id,
-                          const std::string& json_body = R"({"method":"poisson"})") const {
-    return Post("/v1/reconstructions/" + recon_id + "/mesh", json_body);
-  }
-
   HttpResponse SubmitMergeRecons(const std::string& json_body) const {
     return Post("/v1/reconstructions:merge", json_body);
+  }
+
+  // --- portable post-mapping + dataset-prep stages ----------------
+
+  HttpResponse SubmitBundleAdjust(const std::string& recon_id,
+                                  const std::string& json_body = "{}") const {
+    return Post("/v1/reconstructions/" + recon_id + ":bundleAdjust", json_body);
+  }
+
+  HttpResponse SubmitTriangulate(const std::string& recon_id,
+                                 const std::string& json_body = "{}") const {
+    return Post("/v1/reconstructions/" + recon_id + ":triangulate", json_body);
+  }
+
+  HttpResponse SubmitPoseGraphOptimize(const std::string& recon_id,
+                                       const std::string& json_body = "{}") const {
+    return Post("/v1/reconstructions/" + recon_id + ":poseGraphOptimize", json_body);
+  }
+
+  HttpResponse SubmitExport(const std::string& recon_id,
+                            const std::string& json_body = "{}") const {
+    return Post("/v1/reconstructions/" + recon_id + ":export", json_body);
+  }
+
+  HttpResponse SubmitRelocalize(const std::string& recon_id,
+                                const std::string& json_body = "{}") const {
+    return Post("/v1/reconstructions/" + recon_id + ":relocalize", json_body);
+  }
+
+  HttpResponse SubmitUndistort(const std::string& recon_id,
+                               const std::string& json_body = "{}") const {
+    return Post("/v1/reconstructions/" + recon_id + ":undistort", json_body);
+  }
+
+  HttpResponse SubmitBuildVocabTree(const std::string& dataset_id,
+                                    const std::string& json_body = "{}") const {
+    return Post("/v1/datasets/" + dataset_id + ":buildVocabTree", json_body);
+  }
+
+  HttpResponse SubmitConfigureRig(const std::string& dataset_id,
+                                  const std::string& json_body = "{}") const {
+    return Post("/v1/datasets/" + dataset_id + ":configureRig", json_body);
+  }
+
+  HttpResponse SubmitEstimateTwoView(const std::string& dataset_id,
+                                     const std::string& json_body = "{}") const {
+    return Post("/v1/datasets/" + dataset_id + ":estimateTwoView", json_body);
   }
 
   // --- pose priors -------------------------------------------------
@@ -898,6 +912,12 @@ class Client {
     if (body.contains("job_id")) out.job_id = body["job_id"].as_string();
     if (body.contains("recon_id") && !body["recon_id"].is_null()) {
       out.recon_id = body["recon_id"].as_string();
+    }
+    if (body.contains("dataset_id") && !body["dataset_id"].is_null()) {
+      out.dataset_id = body["dataset_id"].as_string();
+    }
+    if (body.contains("provider") && !body["provider"].is_null()) {
+      out.provider = body["provider"].as_string();
     }
     if (body.contains("task_ids")) {
       for (const auto& t : body["task_ids"].as_array()) {

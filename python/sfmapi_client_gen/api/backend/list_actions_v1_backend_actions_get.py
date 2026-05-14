@@ -15,6 +15,7 @@ def _get_kwargs(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     include_schemas: bool | Unset = False,
+    provider: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
 
     params: dict[str, Any] = {}
@@ -29,6 +30,13 @@ def _get_kwargs(
     params["page_size"] = page_size
 
     params["include_schemas"] = include_schemas
+
+    json_provider: None | str | Unset
+    if isinstance(provider, Unset):
+        json_provider = UNSET
+    else:
+        json_provider = provider
+    params["provider"] = json_provider
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
@@ -77,6 +85,7 @@ def sync_detailed(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     include_schemas: bool | Unset = False,
+    provider: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | PageBackendActionOut]:
     """List Actions
 
@@ -92,6 +101,7 @@ def sync_detailed(
         page_size (int | Unset):  Default: 50.
         include_schemas (bool | Unset): Include each action's input/output schema in the list
             response. Default: False.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -105,6 +115,7 @@ def sync_detailed(
         page_token=page_token,
         page_size=page_size,
         include_schemas=include_schemas,
+        provider=provider,
     )
 
     response = client.get_httpx_client().request(
@@ -120,6 +131,7 @@ def sync(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     include_schemas: bool | Unset = False,
+    provider: None | str | Unset = UNSET,
 ) -> HTTPValidationError | PageBackendActionOut | None:
     """List Actions
 
@@ -135,6 +147,7 @@ def sync(
         page_size (int | Unset):  Default: 50.
         include_schemas (bool | Unset): Include each action's input/output schema in the list
             response. Default: False.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -149,6 +162,7 @@ def sync(
         page_token=page_token,
         page_size=page_size,
         include_schemas=include_schemas,
+        provider=provider,
     ).parsed
 
 
@@ -158,6 +172,7 @@ async def asyncio_detailed(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     include_schemas: bool | Unset = False,
+    provider: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | PageBackendActionOut]:
     """List Actions
 
@@ -173,6 +188,7 @@ async def asyncio_detailed(
         page_size (int | Unset):  Default: 50.
         include_schemas (bool | Unset): Include each action's input/output schema in the list
             response. Default: False.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -186,6 +202,7 @@ async def asyncio_detailed(
         page_token=page_token,
         page_size=page_size,
         include_schemas=include_schemas,
+        provider=provider,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -199,6 +216,7 @@ async def asyncio(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     include_schemas: bool | Unset = False,
+    provider: None | str | Unset = UNSET,
 ) -> HTTPValidationError | PageBackendActionOut | None:
     """List Actions
 
@@ -214,6 +232,7 @@ async def asyncio(
         page_size (int | Unset):  Default: 50.
         include_schemas (bool | Unset): Include each action's input/output schema in the list
             response. Default: False.
+        provider (None | str | Unset): Optional provider id to inspect.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -229,5 +248,6 @@ async def asyncio(
             page_token=page_token,
             page_size=page_size,
             include_schemas=include_schemas,
+            provider=provider,
         )
     ).parsed

@@ -31,6 +31,7 @@ class CubemapProjectionRequest:
         cubemap (CubemapProjectionSpec | None | Unset):
         equirectangular (EquirectangularProjectionSpec | None | Unset):
         perspective (None | PerspectiveProjectionSpec | Unset):
+        provider (None | str | Unset): Optional provider id to execute this projection job.
     """
 
     operation: Literal["equirectangular_to_cubemap"] | Unset = (
@@ -39,6 +40,7 @@ class CubemapProjectionRequest:
     cubemap: CubemapProjectionSpec | None | Unset = UNSET
     equirectangular: EquirectangularProjectionSpec | None | Unset = UNSET
     perspective: None | PerspectiveProjectionSpec | Unset = UNSET
+    provider: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -74,6 +76,12 @@ class CubemapProjectionRequest:
         else:
             perspective = self.perspective
 
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({})
@@ -85,6 +93,8 @@ class CubemapProjectionRequest:
             field_dict["equirectangular"] = equirectangular
         if perspective is not UNSET:
             field_dict["perspective"] = perspective
+        if provider is not UNSET:
+            field_dict["provider"] = provider
 
         return field_dict
 
@@ -162,11 +172,21 @@ class CubemapProjectionRequest:
 
         perspective = _parse_perspective(d.pop("perspective", UNSET))
 
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
+
         cubemap_projection_request = cls(
             operation=operation,
             cubemap=cubemap,
             equirectangular=equirectangular,
             perspective=perspective,
+            provider=provider,
         )
 
         cubemap_projection_request.additional_properties = d

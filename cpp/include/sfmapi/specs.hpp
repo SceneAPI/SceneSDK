@@ -222,6 +222,7 @@ struct VerifySpec {
 constexpr const char* kBaModeStandard = "standard";
 constexpr const char* kBaModeTwoStage = "two_stage";
 constexpr const char* kBaModeFeaturemetric = "featuremetric";
+constexpr const char* kBaModeRig = "rig";
 
 constexpr const char* kBaLossSquared = "squared";
 constexpr const char* kBaLossHuber = "huber";
@@ -399,6 +400,88 @@ struct SphericalSpec {
       o["backend_options"] = Json(backend_options);
     }
     AddInputArtifacts(o, input_artifacts);
+    return Json(std::move(o));
+  }
+  std::string ToJsonString() const { return ToJson().Dump(); }
+};
+
+// ====================================================================
+//  Reconstruction-level stage request bodies
+// ====================================================================
+
+/// Body for `POST /v1/reconstructions/{rid}/localize`.
+struct LocalizationRequest {
+  std::string blob_sha;
+  std::optional<std::string> provider;
+  Json::Object sift;  // optional SIFT extraction overrides
+
+  Json ToJson() const {
+    Json::Object o{{"blob_sha", blob_sha}};
+    if (provider) {
+      o["provider"] = *provider;
+    }
+    if (!sift.empty()) {
+      o["sift"] = Json(sift);
+    }
+    return Json(std::move(o));
+  }
+  std::string ToJsonString() const { return ToJson().Dump(); }
+};
+
+/// Body for `POST /v1/reconstructions:merge`.
+struct MergeRequest {
+  std::string target_recon_id;
+  std::vector<std::string> source_recon_ids;
+  std::optional<std::string> provider;
+  std::vector<Json::Object> sim3_aligners;
+
+  Json ToJson() const {
+    Json::Object o{{"target_recon_id", target_recon_id}};
+    Json::Array sources;
+    for (const auto& rid : source_recon_ids) {
+      sources.push_back(Json(rid));
+    }
+    o["source_recon_ids"] = Json(std::move(sources));
+    if (provider) {
+      o["provider"] = *provider;
+    }
+    if (!sim3_aligners.empty()) {
+      Json::Array aligners;
+      for (const auto& aligner : sim3_aligners) {
+        aligners.push_back(Json(aligner));
+      }
+      o["sim3_aligners"] = Json(std::move(aligners));
+    }
+    return Json(std::move(o));
+  }
+  std::string ToJsonString() const { return ToJson().Dump(); }
+};
+
+/// Body for the dataset-scoped projection routes
+/// (`:project_images` / `:render_cubemap` / `:render_equirectangular`
+/// / `:render_perspective`). Exactly one of `cubemap` / `perspective`
+/// / `equirectangular` is set, matching `operation`.
+struct ProjectionJobRequest {
+  std::string operation;
+  std::optional<std::string> provider;
+  Json::Object cubemap;
+  Json::Object perspective;
+  Json::Object equirectangular;
+
+  Json ToJson() const {
+    Json::Object o{{"operation", operation}};
+    if (provider) {
+      o["provider"] = *provider;
+    }
+    if (!cubemap.empty()) {
+      o["cubemap"] = Json(cubemap);
+    }
+    if (!perspective.empty()) {
+      o["perspective"] = Json(perspective);
+    }
+    if (!equirectangular.empty()) {
+      o["equirectangular"] = Json(equirectangular);
+    }
     return Json(std::move(o));
   }
   std::string ToJsonString() const { return ToJson().Dump(); }

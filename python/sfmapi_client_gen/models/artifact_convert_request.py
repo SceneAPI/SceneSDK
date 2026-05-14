@@ -19,6 +19,7 @@ class ArtifactConvertRequest:
     """Submit a conversion job for one artifact.
 
     Attributes:
+        provider (None | str | Unset): Optional provider id to use when planning backend-native conversions.
         to_format (None | str | Unset): Exact target format id. Mutually compatible with accepted_formats.
         accepted_formats (list[str] | Unset): Acceptable target format ids in preference order.
         require_lossless (bool | Unset):  Default: False.
@@ -27,6 +28,7 @@ class ArtifactConvertRequest:
         options (ArtifactConvertRequestOptions | Unset):
     """
 
+    provider: None | str | Unset = UNSET
     to_format: None | str | Unset = UNSET
     accepted_formats: list[str] | Unset = UNSET
     require_lossless: bool | Unset = False
@@ -35,6 +37,12 @@ class ArtifactConvertRequest:
     options: ArtifactConvertRequestOptions | Unset = UNSET
 
     def to_dict(self) -> dict[str, Any]:
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
+
         to_format: None | str | Unset
         if isinstance(self.to_format, Unset):
             to_format = UNSET
@@ -66,6 +74,8 @@ class ArtifactConvertRequest:
         field_dict: dict[str, Any] = {}
 
         field_dict.update({})
+        if provider is not UNSET:
+            field_dict["provider"] = provider
         if to_format is not UNSET:
             field_dict["to_format"] = to_format
         if accepted_formats is not UNSET:
@@ -88,6 +98,15 @@ class ArtifactConvertRequest:
         )
 
         d = dict(src_dict)
+
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
 
         def _parse_to_format(data: object) -> None | str | Unset:
             if data is None:
@@ -128,6 +147,7 @@ class ArtifactConvertRequest:
             options = ArtifactConvertRequestOptions.from_dict(_options)
 
         artifact_convert_request = cls(
+            provider=provider,
             to_format=to_format,
             accepted_formats=accepted_formats,
             require_lossless=require_lossless,

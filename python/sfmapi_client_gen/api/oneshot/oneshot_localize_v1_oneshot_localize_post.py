@@ -18,6 +18,7 @@ def _get_kwargs(
     recon_id: str,
     type_: OneshotLocalizeV1OneshotLocalizePostType
     | Unset = OneshotLocalizeV1OneshotLocalizePostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -36,6 +37,13 @@ def _get_kwargs(
         json_type_ = type_.value
 
     params["type"] = json_type_
+
+    json_provider: None | str | Unset
+    if isinstance(provider, Unset):
+        json_provider = UNSET
+    else:
+        json_provider = provider
+    params["provider"] = json_provider
 
     params["max_num_features"] = max_num_features
 
@@ -91,6 +99,7 @@ def sync_detailed(
     recon_id: str,
     type_: OneshotLocalizeV1OneshotLocalizePostType
     | Unset = OneshotLocalizeV1OneshotLocalizePostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -110,6 +119,7 @@ def sync_detailed(
         recon_id (str): Existing reconstruction to localize against.
         type_ (OneshotLocalizeV1OneshotLocalizePostType | Unset): Local feature extractor.
             Default: OneshotLocalizeV1OneshotLocalizePostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -126,6 +136,7 @@ def sync_detailed(
     kwargs = _get_kwargs(
         recon_id=recon_id,
         type_=type_,
+        provider=provider,
         max_num_features=max_num_features,
         use_gpu=use_gpu,
         seed=seed,
@@ -145,6 +156,7 @@ def sync(
     recon_id: str,
     type_: OneshotLocalizeV1OneshotLocalizePostType
     | Unset = OneshotLocalizeV1OneshotLocalizePostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -164,6 +176,7 @@ def sync(
         recon_id (str): Existing reconstruction to localize against.
         type_ (OneshotLocalizeV1OneshotLocalizePostType | Unset): Local feature extractor.
             Default: OneshotLocalizeV1OneshotLocalizePostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -181,6 +194,7 @@ def sync(
         client=client,
         recon_id=recon_id,
         type_=type_,
+        provider=provider,
         max_num_features=max_num_features,
         use_gpu=use_gpu,
         seed=seed,
@@ -194,6 +208,7 @@ async def asyncio_detailed(
     recon_id: str,
     type_: OneshotLocalizeV1OneshotLocalizePostType
     | Unset = OneshotLocalizeV1OneshotLocalizePostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -213,6 +228,7 @@ async def asyncio_detailed(
         recon_id (str): Existing reconstruction to localize against.
         type_ (OneshotLocalizeV1OneshotLocalizePostType | Unset): Local feature extractor.
             Default: OneshotLocalizeV1OneshotLocalizePostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -229,6 +245,7 @@ async def asyncio_detailed(
     kwargs = _get_kwargs(
         recon_id=recon_id,
         type_=type_,
+        provider=provider,
         max_num_features=max_num_features,
         use_gpu=use_gpu,
         seed=seed,
@@ -246,6 +263,7 @@ async def asyncio(
     recon_id: str,
     type_: OneshotLocalizeV1OneshotLocalizePostType
     | Unset = OneshotLocalizeV1OneshotLocalizePostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -265,6 +283,7 @@ async def asyncio(
         recon_id (str): Existing reconstruction to localize against.
         type_ (OneshotLocalizeV1OneshotLocalizePostType | Unset): Local feature extractor.
             Default: OneshotLocalizeV1OneshotLocalizePostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -283,6 +302,7 @@ async def asyncio(
             client=client,
             recon_id=recon_id,
             type_=type_,
+            provider=provider,
             max_num_features=max_num_features,
             use_gpu=use_gpu,
             seed=seed,

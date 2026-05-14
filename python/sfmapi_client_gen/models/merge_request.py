@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
-from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
@@ -25,12 +24,13 @@ class MergeRequest:
         target_recon_id (str):
         source_recon_ids (list[str]):
         sim3_aligners (list[MergeRequestSim3AlignersType0Item] | None | Unset):
+        provider (None | str | Unset): Optional provider id to execute the merge.
     """
 
     target_recon_id: str
     source_recon_ids: list[str]
     sim3_aligners: list[MergeRequestSim3AlignersType0Item] | None | Unset = UNSET
-    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+    provider: None | str | Unset = UNSET
 
     def to_dict(self) -> dict[str, Any]:
         target_recon_id = self.target_recon_id
@@ -49,8 +49,14 @@ class MergeRequest:
         else:
             sim3_aligners = self.sim3_aligners
 
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
+
         field_dict: dict[str, Any] = {}
-        field_dict.update(self.additional_properties)
+
         field_dict.update(
             {
                 "target_recon_id": target_recon_id,
@@ -59,6 +65,8 @@ class MergeRequest:
         )
         if sim3_aligners is not UNSET:
             field_dict["sim3_aligners"] = sim3_aligners
+        if provider is not UNSET:
+            field_dict["provider"] = provider
 
         return field_dict
 
@@ -101,27 +109,20 @@ class MergeRequest:
 
         sim3_aligners = _parse_sim3_aligners(d.pop("sim3_aligners", UNSET))
 
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
+
         merge_request = cls(
             target_recon_id=target_recon_id,
             source_recon_ids=source_recon_ids,
             sim3_aligners=sim3_aligners,
+            provider=provider,
         )
 
-        merge_request.additional_properties = d
         return merge_request
-
-    @property
-    def additional_keys(self) -> list[str]:
-        return list(self.additional_properties.keys())
-
-    def __getitem__(self, key: str) -> Any:
-        return self.additional_properties[key]
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        self.additional_properties[key] = value
-
-    def __delitem__(self, key: str) -> None:
-        del self.additional_properties[key]
-
-    def __contains__(self, key: str) -> bool:
-        return key in self.additional_properties

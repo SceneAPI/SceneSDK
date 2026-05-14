@@ -8,18 +8,32 @@ from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
 from ...models.job_accepted_response import JobAcceptedResponse
-from ...types import Response
+from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     recon_id: str,
+    *,
+    provider: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
+
+    params: dict[str, Any] = {}
+
+    json_provider: None | str | Unset
+    if isinstance(provider, Unset):
+        json_provider = UNSET
+    else:
+        json_provider = provider
+    params["provider"] = json_provider
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
         "url": "/v1/reconstructions/{recon_id}:to_cubemap".format(
             recon_id=quote(str(recon_id), safe=""),
         ),
+        "params": params,
     }
 
     return _kwargs
@@ -59,6 +73,7 @@ def sync_detailed(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | JobAcceptedResponse]:
     """To Cubemap
 
@@ -71,6 +86,7 @@ def sync_detailed(
 
     Args:
         recon_id (str):
+        provider (None | str | Unset): Optional provider id to execute this conversion.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -82,6 +98,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         recon_id=recon_id,
+        provider=provider,
     )
 
     response = client.get_httpx_client().request(
@@ -95,6 +112,7 @@ def sync(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> HTTPValidationError | JobAcceptedResponse | None:
     """To Cubemap
 
@@ -107,6 +125,7 @@ def sync(
 
     Args:
         recon_id (str):
+        provider (None | str | Unset): Optional provider id to execute this conversion.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -119,6 +138,7 @@ def sync(
     return sync_detailed(
         recon_id=recon_id,
         client=client,
+        provider=provider,
     ).parsed
 
 
@@ -126,6 +146,7 @@ async def asyncio_detailed(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | JobAcceptedResponse]:
     """To Cubemap
 
@@ -138,6 +159,7 @@ async def asyncio_detailed(
 
     Args:
         recon_id (str):
+        provider (None | str | Unset): Optional provider id to execute this conversion.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -149,6 +171,7 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         recon_id=recon_id,
+        provider=provider,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -160,6 +183,7 @@ async def asyncio(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
+    provider: None | str | Unset = UNSET,
 ) -> HTTPValidationError | JobAcceptedResponse | None:
     """To Cubemap
 
@@ -172,6 +196,7 @@ async def asyncio(
 
     Args:
         recon_id (str):
+        provider (None | str | Unset): Optional provider id to execute this conversion.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -185,5 +210,6 @@ async def asyncio(
         await asyncio_detailed(
             recon_id=recon_id,
             client=client,
+            provider=provider,
         )
     ).parsed

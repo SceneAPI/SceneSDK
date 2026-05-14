@@ -340,30 +340,38 @@ static void TestParseCapabilities() {
   sfmapi::HttpResponse r = OkJson(
       200,
       R"({"backend":{"name":"colmap_mod","version":"1.0","vendor":"v"},)"
-      R"("features":{"matchers.lightglue":true,"dense.pmvs":false}})");
+      R"("features":{"matchers.lightglue":true,"ba.featuremetric":false}})");
   auto caps = sfmapi::Client::ParseCapabilities(r);
   CHECK(caps.backend.name == "colmap_mod", "backend name");
   CHECK(caps.backend.version == "1.0", "backend version");
   CHECK(caps.Supports("matchers.lightglue"), "supports lightglue");
-  CHECK(!caps.Supports("dense.pmvs"), "doesn't support pmvs (false)");
+  CHECK(!caps.Supports("ba.featuremetric"), "doesn't support featuremetric (false)");
   CHECK(!caps.Supports("absent"), "absent => false");
   std::printf("  ParseCapabilities OK\n");
 }
 
 static void TestParseJobSubmitResponse() {
   sfmapi::HttpResponse r = OkJson(
-      200, R"({"job_id":"j_x","task_ids":["t_a","t_b"],"recon_id":"r_1"})");
+      200,
+      R"({"job_id":"j_x","task_ids":["t_a","t_b"],"recon_id":"r_1",)"
+      R"("provider":"colmap_cli"})");
   auto js = sfmapi::Client::ParseJobSubmitResponse(r);
   CHECK(js.job_id == "j_x", "job_id");
   CHECK(js.task_ids.size() == 2, "2 tasks");
   CHECK(js.task_ids[0] == "t_a", "task[0]");
   CHECK(js.recon_id == "r_1", "recon_id");
+  CHECK(js.provider == "colmap_cli", "provider echoed from 202");
 
-  auto r2 = OkJson(200, R"({"job_id":"j_y","task_ids":[],"recon_id":null})");
+  auto r2 = OkJson(
+      200,
+      R"({"job_id":"j_y","task_ids":[],"recon_id":null,"dataset_id":"d_1",)"
+      R"("provider":null})");
   auto js2 = sfmapi::Client::ParseJobSubmitResponse(r2);
   CHECK(js2.job_id == "j_y", "y job_id");
   CHECK(js2.task_ids.empty(), "no tasks");
   CHECK(js2.recon_id.empty(), "null recon_id => empty string");
+  CHECK(js2.dataset_id == "d_1", "dataset_id");
+  CHECK(js2.provider.empty(), "null provider => empty string");
   std::printf("  ParseJobSubmitResponse OK\n");
 }
 

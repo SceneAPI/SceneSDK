@@ -6,16 +6,16 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.georegister_request import GeoregisterRequest
 from ...models.http_validation_error import HTTPValidationError
 from ...models.job_accepted_response import JobAcceptedResponse
-from ...models.sim_3 import Sim3
 from ...types import Response
 
 
 def _get_kwargs(
     recon_id: str,
     *,
-    body: Sim3,
+    body: GeoregisterRequest,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
@@ -68,19 +68,27 @@ def sync_detailed(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: Sim3,
+    body: GeoregisterRequest,
 ) -> Response[HTTPValidationError | JobAcceptedResponse]:
     """Georegister
 
-     Apply a Sim(3) similarity transform to the reconstruction.
+     Georegister the reconstruction.
 
-    The worker rewrites every camera + 3D point and seals a fresh
-    snapshot. Clients then read the new snapshot the same way they
-    read post-mapping snapshots.
+    ``mode=sim3`` (default) applies the supplied ``sim3`` transform;
+    ``mode=gps`` solves the transform from georeferenced inputs. Either
+    way the worker rewrites every camera + 3D point and seals a fresh
+    snapshot, which clients read like post-mapping snapshots.
 
     Args:
         recon_id (str):
-        body (Sim3): Similarity Sim(3) transform: ``y = s * R @ x + t``.
+        body (GeoregisterRequest): ``POST /v1/reconstructions/{rid}:georegister`` request body.
+
+            ``mode=sim3`` (default) applies the supplied :class:`Sim3` transform
+            via the backend's ``apply_sim3`` (capability ``georegister.sim3``).
+            ``mode=gps`` solves the transform from georeferenced inputs via
+            ``align_reconstruction`` (capability ``georegister.gps``); the
+            georeferenced inputs are read from the reconstruction + the
+            ``backend_options`` bag.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -106,19 +114,27 @@ def sync(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: Sim3,
+    body: GeoregisterRequest,
 ) -> HTTPValidationError | JobAcceptedResponse | None:
     """Georegister
 
-     Apply a Sim(3) similarity transform to the reconstruction.
+     Georegister the reconstruction.
 
-    The worker rewrites every camera + 3D point and seals a fresh
-    snapshot. Clients then read the new snapshot the same way they
-    read post-mapping snapshots.
+    ``mode=sim3`` (default) applies the supplied ``sim3`` transform;
+    ``mode=gps`` solves the transform from georeferenced inputs. Either
+    way the worker rewrites every camera + 3D point and seals a fresh
+    snapshot, which clients read like post-mapping snapshots.
 
     Args:
         recon_id (str):
-        body (Sim3): Similarity Sim(3) transform: ``y = s * R @ x + t``.
+        body (GeoregisterRequest): ``POST /v1/reconstructions/{rid}:georegister`` request body.
+
+            ``mode=sim3`` (default) applies the supplied :class:`Sim3` transform
+            via the backend's ``apply_sim3`` (capability ``georegister.sim3``).
+            ``mode=gps`` solves the transform from georeferenced inputs via
+            ``align_reconstruction`` (capability ``georegister.gps``); the
+            georeferenced inputs are read from the reconstruction + the
+            ``backend_options`` bag.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -139,19 +155,27 @@ async def asyncio_detailed(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: Sim3,
+    body: GeoregisterRequest,
 ) -> Response[HTTPValidationError | JobAcceptedResponse]:
     """Georegister
 
-     Apply a Sim(3) similarity transform to the reconstruction.
+     Georegister the reconstruction.
 
-    The worker rewrites every camera + 3D point and seals a fresh
-    snapshot. Clients then read the new snapshot the same way they
-    read post-mapping snapshots.
+    ``mode=sim3`` (default) applies the supplied ``sim3`` transform;
+    ``mode=gps`` solves the transform from georeferenced inputs. Either
+    way the worker rewrites every camera + 3D point and seals a fresh
+    snapshot, which clients read like post-mapping snapshots.
 
     Args:
         recon_id (str):
-        body (Sim3): Similarity Sim(3) transform: ``y = s * R @ x + t``.
+        body (GeoregisterRequest): ``POST /v1/reconstructions/{rid}:georegister`` request body.
+
+            ``mode=sim3`` (default) applies the supplied :class:`Sim3` transform
+            via the backend's ``apply_sim3`` (capability ``georegister.sim3``).
+            ``mode=gps`` solves the transform from georeferenced inputs via
+            ``align_reconstruction`` (capability ``georegister.gps``); the
+            georeferenced inputs are read from the reconstruction + the
+            ``backend_options`` bag.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -175,19 +199,27 @@ async def asyncio(
     recon_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: Sim3,
+    body: GeoregisterRequest,
 ) -> HTTPValidationError | JobAcceptedResponse | None:
     """Georegister
 
-     Apply a Sim(3) similarity transform to the reconstruction.
+     Georegister the reconstruction.
 
-    The worker rewrites every camera + 3D point and seals a fresh
-    snapshot. Clients then read the new snapshot the same way they
-    read post-mapping snapshots.
+    ``mode=sim3`` (default) applies the supplied ``sim3`` transform;
+    ``mode=gps`` solves the transform from georeferenced inputs. Either
+    way the worker rewrites every camera + 3D point and seals a fresh
+    snapshot, which clients read like post-mapping snapshots.
 
     Args:
         recon_id (str):
-        body (Sim3): Similarity Sim(3) transform: ``y = s * R @ x + t``.
+        body (GeoregisterRequest): ``POST /v1/reconstructions/{rid}:georegister`` request body.
+
+            ``mode=sim3`` (default) applies the supplied :class:`Sim3` transform
+            via the backend's ``apply_sim3`` (capability ``georegister.sim3``).
+            ``mode=gps`` solves the transform from georeferenced inputs via
+            ``align_reconstruction`` (capability ``georegister.gps``); the
+            georeferenced inputs are read from the reconstruction + the
+            ``backend_options`` bag.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

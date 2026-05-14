@@ -19,11 +19,14 @@ T = TypeVar("T", bound="JobAcceptedResponse")
 class JobAcceptedResponse:
     """Canonical 202 envelope for endpoints that submit a Job.
 
-    Returned by every ``POST`` that enqueues SfM work
-    (`/datasets/{id}/features`, `/matches`, `/verify`, the
-    `/pipelines/{recipe}` recipes, and the localize / dense / mesh /
-    cubemap stages). Clients should follow ``Location`` to ``GET
-    /v1/jobs/{job_id}`` for status.
+    Returned by every ``POST`` that enqueues SfM work — the decomposed
+    pipeline stages (``features`` / ``matches`` / ``verify`` / ``map`` /
+    ``ba`` / ``triangulate`` / ``relocalize`` / ``pgo`` / ``export`` /
+    ``undistort`` / ...), the ``/pipelines/{recipe}`` recipe sugar, the
+    ``localize`` / ``georegister`` / ``reconstructions:merge`` /
+    ``similarity:build`` / ``artifacts:convert`` stages, and
+    backend-native extension actions. Clients should follow
+    ``Location`` to ``GET /v1/jobs/{job_id}`` for status.
 
     Stage-specific optional fields are typed here so SDK codegen can
     surface them as named accessors:
@@ -35,6 +38,10 @@ class JobAcceptedResponse:
     - ``target_recon_id`` / ``source_recon_ids`` — ``reconstructions:merge``
     - ``strategy`` — ``similarity:build``
     - ``action_id`` / ``backend`` — backend-native extension actions
+    - ``provider`` — sfm_hub provider id selected for execution (echoed
+      from the request so clients can confirm routing)
+    - ``artifact_id`` / ``target_format`` — ``artifacts:convert`` echoes
+      the source artifact and the chosen conversion target format
 
         Attributes:
             job_id (str):
@@ -49,6 +56,7 @@ class JobAcceptedResponse:
             strategy (None | str | Unset):
             action_id (None | str | Unset):
             backend (None | str | Unset):
+            provider (None | str | Unset):
             artifact_id (None | str | Unset):
             target_format (None | str | Unset):
     """
@@ -65,6 +73,7 @@ class JobAcceptedResponse:
     strategy: None | str | Unset = UNSET
     action_id: None | str | Unset = UNSET
     backend: None | str | Unset = UNSET
+    provider: None | str | Unset = UNSET
     artifact_id: None | str | Unset = UNSET
     target_format: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -143,6 +152,12 @@ class JobAcceptedResponse:
         else:
             backend = self.backend
 
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
+
         artifact_id: None | str | Unset
         if isinstance(self.artifact_id, Unset):
             artifact_id = UNSET
@@ -184,6 +199,8 @@ class JobAcceptedResponse:
             field_dict["action_id"] = action_id
         if backend is not UNSET:
             field_dict["backend"] = backend
+        if provider is not UNSET:
+            field_dict["provider"] = provider
         if artifact_id is not UNSET:
             field_dict["artifact_id"] = artifact_id
         if target_format is not UNSET:
@@ -306,6 +323,15 @@ class JobAcceptedResponse:
 
         backend = _parse_backend(d.pop("backend", UNSET))
 
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
+
         def _parse_artifact_id(data: object) -> None | str | Unset:
             if data is None:
                 return data
@@ -337,6 +363,7 @@ class JobAcceptedResponse:
             strategy=strategy,
             action_id=action_id,
             backend=backend,
+            provider=provider,
             artifact_id=artifact_id,
             target_format=target_format,
         )

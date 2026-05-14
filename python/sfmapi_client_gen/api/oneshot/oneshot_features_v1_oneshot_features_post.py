@@ -17,6 +17,7 @@ def _get_kwargs(
     *,
     type_: OneshotFeaturesV1OneshotFeaturesPostType
     | Unset = OneshotFeaturesV1OneshotFeaturesPostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -33,6 +34,13 @@ def _get_kwargs(
         json_type_ = type_.value
 
     params["type"] = json_type_
+
+    json_provider: None | str | Unset
+    if isinstance(provider, Unset):
+        json_provider = UNSET
+    else:
+        json_provider = provider
+    params["provider"] = json_provider
 
     params["max_num_features"] = max_num_features
 
@@ -87,6 +95,7 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     type_: OneshotFeaturesV1OneshotFeaturesPostType
     | Unset = OneshotFeaturesV1OneshotFeaturesPostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -109,6 +118,7 @@ def sync_detailed(
     Args:
         type_ (OneshotFeaturesV1OneshotFeaturesPostType | Unset): Local feature extractor.
             Default: OneshotFeaturesV1OneshotFeaturesPostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -124,6 +134,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         type_=type_,
+        provider=provider,
         max_num_features=max_num_features,
         use_gpu=use_gpu,
         seed=seed,
@@ -142,6 +153,7 @@ def sync(
     client: AuthenticatedClient | Client,
     type_: OneshotFeaturesV1OneshotFeaturesPostType
     | Unset = OneshotFeaturesV1OneshotFeaturesPostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -164,6 +176,7 @@ def sync(
     Args:
         type_ (OneshotFeaturesV1OneshotFeaturesPostType | Unset): Local feature extractor.
             Default: OneshotFeaturesV1OneshotFeaturesPostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -180,6 +193,7 @@ def sync(
     return sync_detailed(
         client=client,
         type_=type_,
+        provider=provider,
         max_num_features=max_num_features,
         use_gpu=use_gpu,
         seed=seed,
@@ -192,6 +206,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     type_: OneshotFeaturesV1OneshotFeaturesPostType
     | Unset = OneshotFeaturesV1OneshotFeaturesPostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -214,6 +229,7 @@ async def asyncio_detailed(
     Args:
         type_ (OneshotFeaturesV1OneshotFeaturesPostType | Unset): Local feature extractor.
             Default: OneshotFeaturesV1OneshotFeaturesPostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -229,6 +245,7 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         type_=type_,
+        provider=provider,
         max_num_features=max_num_features,
         use_gpu=use_gpu,
         seed=seed,
@@ -245,6 +262,7 @@ async def asyncio(
     client: AuthenticatedClient | Client,
     type_: OneshotFeaturesV1OneshotFeaturesPostType
     | Unset = OneshotFeaturesV1OneshotFeaturesPostType.SIFT,
+    provider: None | str | Unset = UNSET,
     max_num_features: int | Unset = 8192,
     use_gpu: bool | Unset = True,
     seed: int | Unset = 0,
@@ -267,6 +285,7 @@ async def asyncio(
     Args:
         type_ (OneshotFeaturesV1OneshotFeaturesPostType | Unset): Local feature extractor.
             Default: OneshotFeaturesV1OneshotFeaturesPostType.SIFT.
+        provider (None | str | Unset): Optional provider id to execute this call.
         max_num_features (int | Unset):  Default: 8192.
         use_gpu (bool | Unset):  Default: True.
         seed (int | Unset):  Default: 0.
@@ -284,6 +303,7 @@ async def asyncio(
         await asyncio_detailed(
             client=client,
             type_=type_,
+            provider=provider,
             max_num_features=max_num_features,
             use_gpu=use_gpu,
             seed=seed,

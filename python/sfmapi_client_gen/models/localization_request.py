@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
-from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
@@ -22,11 +21,12 @@ class LocalizationRequest:
     Attributes:
         blob_sha (str):
         sift (LocalizationRequestSiftType0 | None | Unset):
+        provider (None | str | Unset): Optional provider id to execute this localize job.
     """
 
     blob_sha: str
     sift: LocalizationRequestSiftType0 | None | Unset = UNSET
-    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+    provider: None | str | Unset = UNSET
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.localization_request_sift_type_0 import (
@@ -43,8 +43,14 @@ class LocalizationRequest:
         else:
             sift = self.sift
 
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
+
         field_dict: dict[str, Any] = {}
-        field_dict.update(self.additional_properties)
+
         field_dict.update(
             {
                 "blob_sha": blob_sha,
@@ -52,6 +58,8 @@ class LocalizationRequest:
         )
         if sift is not UNSET:
             field_dict["sift"] = sift
+        if provider is not UNSET:
+            field_dict["provider"] = provider
 
         return field_dict
 
@@ -81,26 +89,19 @@ class LocalizationRequest:
 
         sift = _parse_sift(d.pop("sift", UNSET))
 
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
+
         localization_request = cls(
             blob_sha=blob_sha,
             sift=sift,
+            provider=provider,
         )
 
-        localization_request.additional_properties = d
         return localization_request
-
-    @property
-    def additional_keys(self) -> list[str]:
-        return list(self.additional_properties.keys())
-
-    def __getitem__(self, key: str) -> Any:
-        return self.additional_properties[key]
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        self.additional_properties[key] = value
-
-    def __delitem__(self, key: str) -> None:
-        del self.additional_properties[key]
-
-    def __contains__(self, key: str) -> bool:
-        return key in self.additional_properties
