@@ -54,6 +54,11 @@ async function bootServer(): Promise<ServerHandle> {
     ...process.env,
     SFMAPI_EPHEMERAL: "true",
     SFMAPI_LOG_LEVEL: "WARNING",
+    // Auto-load now defaults true; these live tests assert the
+    // deterministic StubBackend surface, so a backend plugin that
+    // happens to be pip-installed in the test venv must not be picked
+    // up. Mirrors the pin in the server's pytest conftests.
+    SFMAPI_AUTO_LOAD_BACKEND_PLUGINS: "false",
   };
   // Strip any inherited overrides that would defeat ephemeral mode.
   for (const k of [
