@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright the sfmapi authors. See cpp/LICENSE (GNU AGPLv3).
 // sfmapi — pipeline / stage spec POD structs for C++.
 //
 // The C++ SDK historically asked callers to build JSON bodies as

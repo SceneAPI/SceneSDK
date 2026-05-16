@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright the sfmapi authors. See cpp/LICENSE (GNU AGPLv3).
 // sfmapi — SSE (Server-Sent Events) buffered parser.
 //
 // True streaming requires a `StreamingTransport` callback distinct

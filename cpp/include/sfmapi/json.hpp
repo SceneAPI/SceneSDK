@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright the sfmapi authors. See cpp/LICENSE (GNU AGPLv3).
 // sfmapi — minimal stdlib-only JSON value + parser + serializer.
 //
 // The full sfmapi C++ SDK can stay JSON-library-agnostic (consumers

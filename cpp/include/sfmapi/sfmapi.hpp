@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright the sfmapi authors. See cpp/LICENSE (GNU AGPLv3).
 // sfmapi — single-header C++ data abstractions for the wire standard.
 //
 // Mirrors the Python schemas in `app/schemas/api/scene.py`,
@@ -28,7 +30,8 @@
 // is a value type with a default, every container is std::vector
 // or std::map.
 //
-// License: same as the sfmapi project.
+// Licensed under the GNU Affero General Public License v3.0 or later;
+// see cpp/LICENSE. SPDX-License-Identifier: AGPL-3.0-or-later.
 
 #ifndef SFMAPI_SFMAPI_HPP_
 #define SFMAPI_SFMAPI_HPP_

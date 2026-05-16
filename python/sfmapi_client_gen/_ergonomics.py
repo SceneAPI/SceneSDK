@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright the sfmapi authors. See the package LICENSE (GNU AGPLv3).
 """Ergonomic helpers layered on top of the auto-generated client.
 
 The generated SDK is intentionally minimal: it exposes typed
