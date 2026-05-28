@@ -528,6 +528,66 @@ def submit_and_wait(
 
 
 # ---------------------------------------------------------------------
+# Typed wait/submit helpers — same logic as wait_for_job / submit_and_wait
+# but decode the terminal JobDetail body through the typed
+# `JobDetail.from_dict` decoder. Callers get attribute access plus
+# IDE / mypy support instead of having to remember dict-key spellings
+# (`body["status"]` vs `body.status`).
+# ---------------------------------------------------------------------
+
+
+from .models.job_detail import JobDetail  # noqa: E402  — keep grouped with the helpers below
+
+
+def wait_for_job_typed(
+    base_url: str,
+    job_id: str,
+    *,
+    api_key: str | None = None,
+    on_event: Any = None,  # callable(SseEvent) -> None
+    poll_interval: float = 0.25,
+    timeout: float = 600.0,
+) -> JobDetail:
+    """Typed sibling of :func:`wait_for_job`. Same polling + SSE-replay
+    semantics; returns a :class:`JobDetail` instead of a raw dict, so
+    callers get autocomplete on ``.status`` / ``.tasks`` / ``.outputs``
+    etc.
+    """
+    body = wait_for_job(
+        base_url,
+        job_id,
+        api_key=api_key,
+        on_event=on_event,
+        poll_interval=poll_interval,
+        timeout=timeout,
+    )
+    return JobDetail.from_dict(body)
+
+
+def submit_and_wait_typed(
+    base_url: str,
+    submit_fn: Any,  # callable() -> dict-like with a `job_id` key
+    *,
+    api_key: str | None = None,
+    on_event: Any = None,  # callable(SseEvent) -> None
+    poll_interval: float = 0.25,
+    timeout: float = 600.0,
+) -> JobDetail:
+    """Typed sibling of :func:`submit_and_wait`. Submit, block until
+    terminal, return :class:`JobDetail` rather than a raw dict.
+    """
+    body = submit_and_wait(
+        base_url,
+        submit_fn,
+        api_key=api_key,
+        on_event=on_event,
+        poll_interval=poll_interval,
+        timeout=timeout,
+    )
+    return JobDetail.from_dict(body)
+
+
+# ---------------------------------------------------------------------
 # iter_paginated — yield every item across every page of a paginated
 # list endpoint. The sfmapi list contract is uniform:
 #
