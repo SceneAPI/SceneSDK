@@ -528,6 +528,81 @@ def submit_and_wait(
 
 
 # ---------------------------------------------------------------------
+# iter_paginated — yield every item across every page of a paginated
+# list endpoint. The sfmapi list contract is uniform:
+#
+#   {"items": [...], "next_page_token": "...", "total": null | int}
+#
+# Consumers without this helper hand-thread `page_token` through a
+# while loop on every list-paginated endpoint. With this helper the
+# common case ("get me everything") is one line.
+# ---------------------------------------------------------------------
+
+
+from collections.abc import Callable, Iterable  # noqa: E402  — keep section grouped
+
+
+def iter_paginated(
+    fetch_page: Callable[[str | None], Any],
+) -> Iterator[Any]:
+    """Yield every item across all pages of a paginated list endpoint.
+
+    ``fetch_page(page_token)`` is any zero-or-one-arg callable that
+    accepts a ``page_token`` string (or None for the first page) and
+    returns a *page object* that exposes ``items`` (a sequence) and
+    ``next_page_token`` (a string or None). Both attribute-style
+    (typed generated models like ``ProjectListOut``) and dict-style
+    (``{"items": [...], "next_page_token": ...}``) page objects work.
+
+    Iteration stops when the page's ``next_page_token`` is falsy.
+
+    Usage with the generated typed API::
+
+        from sfmapi_client_gen.api.projects import list_projects
+        from sfmapi_client_gen._ergonomics import iter_paginated
+
+        with Client(base_url=base) as client:
+            for project in iter_paginated(
+                lambda tok: list_projects.sync(client=client, page_token=tok)
+            ):
+                print(project.project_id, project.name)
+
+    Usage with a hand-rolled httpx call::
+
+        for action in iter_paginated(
+            lambda tok: httpx.get(
+                f"{base}/v1/backend/actions",
+                params={"page_token": tok} if tok else None,
+            ).json()
+        ):
+            ...
+
+    The helper does not retry on transport errors; wrap ``fetch_page``
+    if you need retries. Pages are fetched lazily, so an infinite
+    ``next_page_token`` cycle would loop forever -- bound your iteration
+    with ``itertools.islice`` if you're not sure the server's pagination
+    terminates.
+    """
+    page_token: str | None = None
+    while True:
+        page = fetch_page(page_token)
+        # Check dict FIRST because dicts expose `.items` as a method
+        # (the {"key": "value", ...}.items() iterator) which would
+        # shadow the page payload's items[] list under getattr.
+        if isinstance(page, dict):
+            items: Iterable[Any] | None = page.get("items")
+            token: Any = page.get("next_page_token")
+        else:
+            items = getattr(page, "items", None)
+            token = getattr(page, "next_page_token", None)
+        if items:
+            yield from items
+        if not token:
+            return
+        page_token = str(token)
+
+
+# ---------------------------------------------------------------------
 # Binary wire-format parsers. Mirror `clients/python/sfmapi_client/binary.py`
 # (and `app/schemas/points_binary.py` / `app/schemas/depth_map_binary.py`
 # on the server). Pure-stdlib (struct + bytes); no NumPy required.
