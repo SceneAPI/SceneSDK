@@ -66,8 +66,23 @@ class StorageError(SfmApiError):
     pass
 
 
-class PycolmapUnavailableError(SfmApiError):
-    pass
+class CapabilityUnavailableError(SfmApiError):
+    """Server returned 501 — the requested capability isn't supported.
+
+    The specific capability id is in ``self.body["capability"]`` per the
+    RFC 7807 problem+json envelope.
+    """
+
+
+class PycolmapUnavailableError(CapabilityUnavailableError):
+    """Specialised :class:`CapabilityUnavailableError` for the ``pycolmap``
+    capability, kept for backwards-compat with the hand-rolled SDK. The
+    generic parent is preferred for new code so the same except clause
+    handles every 501 (e.g. ``radiance.metrics.lpips``, ``matchers.loftr``)."""
+
+
+class BackendUnavailableError(SfmApiError):
+    """Server returned 503 — the backend is temporarily unavailable."""
 
 
 class TransportError(SfmApiError):
@@ -80,9 +95,12 @@ _BY_STATUS: dict[int, type[SfmApiError]] = {
     403: AuthError,
     404: NotFoundError,
     409: ConflictError,
+    413: QuotaExceededError,  # payload too large -- quota cliff
     422: ValidationError,
     429: QuotaExceededError,
-    501: PycolmapUnavailableError,
+    501: CapabilityUnavailableError,
+    503: BackendUnavailableError,
+    507: StorageError,
 }
 
 
@@ -99,6 +117,12 @@ def raise_for_status(exc: UnexpectedStatus) -> None:
     except (ValueError, UnicodeDecodeError):
         pass
     cls = _BY_STATUS.get(exc.status_code, SfmApiError)
+    # 501 is generic CapabilityUnavailableError, but specialise to
+    # PycolmapUnavailableError when the server identifies pycolmap so older
+    # callers' `except PycolmapUnavailableError:` clauses still work.
+    if cls is CapabilityUnavailableError and isinstance(body, dict):
+        if str(body.get("capability") or "").lower() == "pycolmap":
+            cls = PycolmapUnavailableError
     raise cls(exc.status_code, detail=detail, body=body) from exc
 
 
