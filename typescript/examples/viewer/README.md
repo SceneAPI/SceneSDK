@@ -59,5 +59,5 @@ app.add_middleware(
 
 ## License
 
-The viewer example is licensed under the same `AGPL-3.0-or-later` terms as the
+The viewer example is licensed under the same `Apache-2.0` terms as the
 SDK repository.

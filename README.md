@@ -56,6 +56,6 @@ python scripts/regen_from_openapi.py
 
 ## License
 
-The SDK source in this repository is licensed under `AGPL-3.0-or-later`.
+The SDK source in this repository is licensed under `Apache-2.0`.
 Each published package carries the same license metadata and a local copy
 of the license text from this repository.

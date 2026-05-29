@@ -81,4 +81,4 @@ Minor server bumps are non-breaking by contract.
 ## License
 
 The TypeScript SDK source and npm package are licensed under
-`AGPL-3.0-or-later`; see `LICENSE`.
+`Apache-2.0`; see `LICENSE`.

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for sfmapi_client_gen._ergonomics.iter_paginated."""
 
 from __future__ import annotations

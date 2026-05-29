@@ -192,5 +192,5 @@ Eigen::Quaterniond ToEigen(const sfmapi::Rotation& r) {
 
 ## License
 
-The header-only C++ SDK is licensed under `AGPL-3.0-or-later`; see `LICENSE`.
+The header-only C++ SDK is licensed under `Apache-2.0`; see `LICENSE`.
 It does not include COLMAP, pycolmap, or any HTTP transport library.

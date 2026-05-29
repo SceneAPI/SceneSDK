@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
-// Copyright the sfmapi authors. See the package LICENSE (GNU AGPLv3).
+// SPDX-License-Identifier: Apache-2.0
+// Copyright the sfmapi authors. See the package LICENSE (Apache-2.0).
 // Ergonomic helpers layered on top of the generated `openapi-fetch`
 // client + types. The generated layer is intentionally minimal —
 // this module adds the typed-error hierarchy and `supports()`

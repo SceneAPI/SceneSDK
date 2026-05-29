@@ -9,13 +9,13 @@ dependencies = [
     "httpx>=0.28",
     "python-dateutil>=2.9",
 ]
-license = { text = "AGPL-3.0-or-later" }
+license = { text = "Apache-2.0" }
 keywords = ["sfmapi", "structure-from-motion", "colmap", "sdk", "generated"]
 authors = [{ name = "sfmapi authors" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Typing :: Typed",

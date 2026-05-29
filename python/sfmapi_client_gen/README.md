@@ -35,5 +35,5 @@ server repo replays recorded server responses through both.
 
 ## License
 
-The generated Python SDK package is licensed under `AGPL-3.0-or-later`; see
+The generated Python SDK package is licensed under `Apache-2.0`; see
 `LICENSE`.

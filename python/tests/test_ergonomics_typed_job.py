@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 """Unit tests for sfmapi_client_gen._ergonomics.wait_for_job_typed and
 submit_and_wait_typed."""
 

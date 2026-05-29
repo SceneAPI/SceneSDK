@@ -106,5 +106,5 @@ SSE replay so reconnects don't drop history.
 
 ## License
 
-The Python SDK source and package are licensed under `AGPL-3.0-or-later`; see
+The Python SDK source and package are licensed under `Apache-2.0`; see
 `LICENSE`.
