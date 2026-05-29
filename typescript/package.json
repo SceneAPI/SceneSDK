@@ -2,7 +2,7 @@
   "name": "@sfmapi/client",
   "version": "0.0.1",
   "description": "Typed TypeScript SDK for sfmapi (browser + Node).",
-  "license": "AGPL-3.0-or-later",
+  "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
