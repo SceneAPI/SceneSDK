@@ -1,5 +1,5 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
-// Copyright the sfmapi authors. See cpp/LICENSE (GNU AGPLv3).
+// SPDX-License-Identifier: Apache-2.0
+// Copyright the sfmapi authors. See cpp/LICENSE (Apache-2.0).
 // sfmapi C++ HTTP client — pluggable-transport.
 //
 // HTTP and JSON are platform-specific concerns; rather than picking
