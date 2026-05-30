@@ -13858,7 +13858,7 @@
     },
     "/v1/pipelines:validate": {
       "post": {
-        "description": "Type-check a linear pipeline. Returns ``valid`` + per-step ``errors``;\na type break or unsignatured action makes it invalid. Bridging a type\nmismatch requires an explicit conversion action (nominal typing).",
+        "description": "Type-check a pipeline of operations. Returns ``valid`` + per-step\n``errors``: an operation whose inputs are not produced upstream (or an\nunknown operation) makes it invalid. Bridging a missing input requires an\nexplicit conversion operation (nominal typing).",
         "operationId": "validate_pipeline_v1_pipelines_validate_post",
         "requestBody": {
           "content": {
