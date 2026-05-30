@@ -12786,6 +12786,30 @@
         ]
       }
     },
+    "/v1/datatypes": {
+      "get": {
+        "description": "The DataType registry: the logical data objects a pipeline flows.",
+        "operationId": "list_datatypes_v1_datatypes_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Datatypes V1 Datatypes Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Datatypes",
+        "tags": [
+          "dataflow"
+        ]
+      }
+    },
     "/v1/images/{image_id}": {
       "delete": {
         "description": "Unregister an image by canonical ``image_id``.\n\nThis is the AIP-122-aligned delete path. The legacy\n``DELETE /v1/datasets/{dataset_id}/images/{name}`` route remains\nfor compatibility with clients that address images by label.",
@@ -13856,6 +13880,30 @@
         ]
       }
     },
+    "/v1/operations": {
+      "get": {
+        "description": "The operation registry: typed transforms (consumes/produces) and the\ncapability family that implements each.",
+        "operationId": "list_operations_v1_operations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response List Operations V1 Operations Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Operations",
+        "tags": [
+          "dataflow"
+        ]
+      }
+    },
     "/v1/pipelines:validate": {
       "post": {
         "description": "Type-check a pipeline of operations. Returns ``valid`` + per-step\n``errors``: an operation whose inputs are not produced upstream (or an\nunknown operation) makes it invalid. Bridging a missing input requires an\nexplicit conversion operation (nominal typing).",
@@ -13894,7 +13942,7 @@
         },
         "summary": "Validate Pipeline",
         "tags": [
-          "pipelines"
+          "dataflow"
         ]
       }
     },
