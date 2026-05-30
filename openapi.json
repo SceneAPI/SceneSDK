@@ -5923,6 +5923,59 @@
         "title": "PipelineRequest",
         "type": "object"
       },
+      "PipelineRunRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "dataset_id": {
+            "title": "Dataset Id",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/PipelineStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "dataset_id",
+          "steps"
+        ],
+        "title": "PipelineRunRequest",
+        "type": "object"
+      },
+      "PipelineStep": {
+        "additionalProperties": false,
+        "description": "One operation in a custom typed pipeline.",
+        "properties": {
+          "op": {
+            "title": "Op",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "title": "PipelineStep",
+        "type": "object"
+      },
       "PipelineValidateRequest": {
         "additionalProperties": false,
         "properties": {
@@ -14711,6 +14764,59 @@
           }
         },
         "summary": "Run Recipe",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/pipelines:run": {
+      "post": {
+        "description": "Submit a custom typed-operation pipeline.\n\nThe operation sequence is type-checked against the operation contract\nBEFORE any job is created -- a type break or unknown operation is rejected\nwith 422. This is where the typed model guards real submissions (unlike the\nfixed recipes, an arbitrary pipeline can be invalid). Each step binds an\noperation to an optional provider + params; the binding is resolved at\nexecution by the bridge worker (shallow-by-contract submit), so submission\nis accepted once the pipeline type-checks.",
+        "operationId": "run_pipeline_v1_projects__project_id__pipelines_run_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PipelineRunRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAcceptedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Run Pipeline",
         "tags": [
           "pipelines"
         ]
