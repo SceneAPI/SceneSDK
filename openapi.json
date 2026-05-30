@@ -1730,6 +1730,24 @@
         "title": "CapabilitiesOut",
         "type": "object"
       },
+      "ChainErrorOut": {
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "where": {
+            "title": "Where",
+            "type": "string"
+          }
+        },
+        "required": [
+          "where",
+          "message"
+        ],
+        "title": "ChainErrorOut",
+        "type": "object"
+      },
       "Compatibility": {
         "additionalProperties": true,
         "properties": {
@@ -1774,6 +1792,16 @@
             },
             "title": "Tool Versions",
             "type": "object"
+          },
+          "torch": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TorchRuntime"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "title": "Compatibility",
@@ -1828,6 +1856,448 @@
           }
         },
         "title": "Conformance",
+        "type": "object"
+      },
+      "ContainerServiceBuild": {
+        "additionalProperties": false,
+        "properties": {
+          "args": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Args",
+            "type": "object"
+          },
+          "context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context"
+          },
+          "dockerfile": {
+            "default": "Dockerfile",
+            "title": "Dockerfile",
+            "type": "string"
+          },
+          "ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ref"
+          },
+          "source": {
+            "default": "git",
+            "enum": [
+              "git",
+              "local",
+              "release"
+            ],
+            "title": "Source",
+            "type": "string"
+          }
+        },
+        "title": "ContainerServiceBuild",
+        "type": "object"
+      },
+      "ContainerServiceCache": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Path"
+          },
+          "policy": {
+            "default": "none",
+            "enum": [
+              "none",
+              "read_only",
+              "read_write"
+            ],
+            "title": "Policy",
+            "type": "string"
+          },
+          "scope": {
+            "default": "request",
+            "enum": [
+              "request",
+              "plugin",
+              "global"
+            ],
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "title": "ContainerServiceCache",
+        "type": "object"
+      },
+      "ContainerServiceEndpoint": {
+        "additionalProperties": false,
+        "properties": {
+          "default_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Default Url"
+          },
+          "url_env": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Env"
+          }
+        },
+        "title": "ContainerServiceEndpoint",
+        "type": "object"
+      },
+      "ContainerServiceExecution": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_collection": {
+            "default": true,
+            "title": "Artifact Collection",
+            "type": "boolean"
+          },
+          "env": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Env",
+            "type": "array"
+          },
+          "gpu": {
+            "default": "optional",
+            "enum": [
+              "none",
+              "optional",
+              "required"
+            ],
+            "title": "Gpu",
+            "type": "string"
+          },
+          "log_collection": {
+            "default": "both",
+            "enum": [
+              "stdout",
+              "file",
+              "both"
+            ],
+            "title": "Log Collection",
+            "type": "string"
+          },
+          "mounts": {
+            "$ref": "#/components/schemas/ContainerServiceMounts"
+          },
+          "path": {
+            "default": "/execute",
+            "title": "Path",
+            "type": "string"
+          },
+          "retry": {
+            "$ref": "#/components/schemas/ContainerServiceRetry"
+          },
+          "secrets": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Secrets",
+            "type": "array"
+          },
+          "shutdown_timeout_seconds": {
+            "default": 10,
+            "minimum": 0.0,
+            "title": "Shutdown Timeout Seconds",
+            "type": "integer"
+          },
+          "timeout_seconds": {
+            "default": 3600,
+            "minimum": 1.0,
+            "title": "Timeout Seconds",
+            "type": "integer"
+          }
+        },
+        "title": "ContainerServiceExecution",
+        "type": "object"
+      },
+      "ContainerServiceHealthcheck": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "default": "/healthz",
+            "title": "Path",
+            "type": "string"
+          },
+          "timeout_seconds": {
+            "default": 5,
+            "minimum": 1.0,
+            "title": "Timeout Seconds",
+            "type": "integer"
+          }
+        },
+        "title": "ContainerServiceHealthcheck",
+        "type": "object"
+      },
+      "ContainerServiceImage": {
+        "additionalProperties": false,
+        "properties": {
+          "build": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContainerServiceBuild"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "digest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Digest"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
+          },
+          "registry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Registry"
+          }
+        },
+        "title": "ContainerServiceImage",
+        "type": "object"
+      },
+      "ContainerServiceMounts": {
+        "additionalProperties": false,
+        "properties": {
+          "input_path": {
+            "default": "/sfmapi/input",
+            "title": "Input Path",
+            "type": "string"
+          },
+          "log_path": {
+            "default": "/sfmapi/logs",
+            "title": "Log Path",
+            "type": "string"
+          },
+          "output_path": {
+            "default": "/sfmapi/output",
+            "title": "Output Path",
+            "type": "string"
+          },
+          "work_path": {
+            "default": "/sfmapi/work",
+            "title": "Work Path",
+            "type": "string"
+          }
+        },
+        "title": "ContainerServiceMounts",
+        "type": "object"
+      },
+      "ContainerServiceObjectStore": {
+        "additionalProperties": false,
+        "properties": {
+          "input_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Prefix"
+          },
+          "output_prefix": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Output Prefix"
+          },
+          "url_env": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url Env"
+          }
+        },
+        "title": "ContainerServiceObjectStore",
+        "type": "object"
+      },
+      "ContainerServiceProvenance": {
+        "additionalProperties": false,
+        "properties": {
+          "attestation_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attestation Url"
+          },
+          "image_digest_required": {
+            "default": true,
+            "title": "Image Digest Required",
+            "type": "boolean"
+          },
+          "sbom_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sbom Url"
+          },
+          "source_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Revision"
+          }
+        },
+        "title": "ContainerServiceProvenance",
+        "type": "object"
+      },
+      "ContainerServiceRetry": {
+        "additionalProperties": false,
+        "properties": {
+          "backoff_seconds": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Backoff Seconds",
+            "type": "integer"
+          },
+          "max_attempts": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Max Attempts",
+            "type": "integer"
+          }
+        },
+        "title": "ContainerServiceRetry",
+        "type": "object"
+      },
+      "ContainerServiceRuntime": {
+        "additionalProperties": false,
+        "properties": {
+          "cache": {
+            "$ref": "#/components/schemas/ContainerServiceCache"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/ContainerServiceExecution"
+          },
+          "healthcheck": {
+            "$ref": "#/components/schemas/ContainerServiceHealthcheck"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContainerServiceImage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "object_store": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContainerServiceObjectStore"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "protocol": {
+            "const": "sfmapi-plugin-http-v1",
+            "title": "Protocol",
+            "type": "string"
+          },
+          "protocol_version": {
+            "title": "Protocol Version",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ContainerServiceProvenance"
+          },
+          "service": {
+            "$ref": "#/components/schemas/ContainerServiceEndpoint"
+          }
+        },
+        "required": [
+          "protocol",
+          "protocol_version",
+          "service"
+        ],
+        "title": "ContainerServiceRuntime",
         "type": "object"
       },
       "CubemapProjectionRequest": {
@@ -2251,6 +2721,13 @@
           "detail": {
             "title": "Detail",
             "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Metadata",
+            "type": "object"
           },
           "name": {
             "title": "Name",
@@ -3460,6 +3937,28 @@
               }
             ],
             "title": "Provider"
+          },
+          "radiance_evaluation_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Radiance Evaluation Id"
+          },
+          "radiance_field_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Radiance Field Id"
           },
           "recon_id": {
             "anyOf": [
@@ -4882,6 +5381,82 @@
         "title": "Page[ProviderOut]",
         "type": "object"
       },
+      "Page_RadianceEvaluationOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RadianceEvaluationOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_page_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Page Token"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Page[RadianceEvaluationOut]",
+        "type": "object"
+      },
+      "Page_RadianceFieldOut_": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RadianceFieldOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_page_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Page Token"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "Page[RadianceFieldOut]",
+        "type": "object"
+      },
       "Page_StageArtifactOut_": {
         "properties": {
           "items": {
@@ -5348,6 +5923,44 @@
         "title": "PipelineRequest",
         "type": "object"
       },
+      "PipelineValidateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "steps": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "steps"
+        ],
+        "title": "PipelineValidateRequest",
+        "type": "object"
+      },
+      "PipelineValidateResponse": {
+        "properties": {
+          "errors": {
+            "items": {
+              "$ref": "#/components/schemas/ChainErrorOut"
+            },
+            "title": "Errors",
+            "type": "array"
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "valid",
+          "errors"
+        ],
+        "title": "PipelineValidateResponse",
+        "type": "object"
+      },
       "PluginDetailOut": {
         "additionalProperties": false,
         "properties": {
@@ -5519,6 +6132,7 @@
             "enum": [
               "uv",
               "docker",
+              "container_service",
               "external_tool"
             ],
             "title": "Method",
@@ -5535,6 +6149,11 @@
             ],
             "title": "Package Name"
           },
+          "provision_runtime": {
+            "default": true,
+            "title": "Provision Runtime",
+            "type": "boolean"
+          },
           "ref": {
             "anyOf": [
               {
@@ -5545,6 +6164,18 @@
               }
             ],
             "title": "Ref"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
           }
         },
         "title": "PluginInstallRequest",
@@ -5583,6 +6214,7 @@
             "enum": [
               "uv",
               "docker",
+              "container_service",
               "external_tool"
             ],
             "title": "Method",
@@ -5591,6 +6223,53 @@
           "plugin_id": {
             "title": "Plugin Id",
             "type": "string"
+          },
+          "provision_runtime": {
+            "default": false,
+            "title": "Provision Runtime",
+            "type": "boolean"
+          },
+          "provisioned": {
+            "default": false,
+            "title": "Provisioned",
+            "type": "boolean"
+          },
+          "provisioning": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PluginProvisioningOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provisioning_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provisioning Error"
+          },
+          "provisioning_status": {
+            "default": "not_requested",
+            "title": "Provisioning Status",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
           },
           "resolved_commit": {
             "anyOf": [
@@ -5731,6 +6410,103 @@
           "runtime_modes"
         ],
         "title": "PluginManifest",
+        "type": "object"
+      },
+      "PluginProvisionStepOut": {
+        "additionalProperties": true,
+        "properties": {
+          "action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "PluginProvisionStepOut",
+        "type": "object"
+      },
+      "PluginProvisioningOut": {
+        "additionalProperties": false,
+        "properties": {
+          "available": {
+            "default": false,
+            "title": "Available",
+            "type": "boolean"
+          },
+          "env_keys": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Env Keys",
+            "type": "array"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "outputs": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Outputs",
+            "type": "object"
+          },
+          "provisioned": {
+            "default": false,
+            "title": "Provisioned",
+            "type": "boolean"
+          },
+          "redacted_env": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Redacted Env",
+            "type": "object"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/PluginProvisionStepOut"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "title": "PluginProvisioningOut",
         "type": "object"
       },
       "PluginRegistryItemOut": {
@@ -6437,6 +7213,742 @@
         "title": "ProviderOut",
         "type": "object"
       },
+      "ProviderPriorityRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Providers",
+            "type": "array"
+          }
+        },
+        "title": "ProviderPriorityRequest",
+        "type": "object"
+      },
+      "RadianceEvalConfig": {
+        "additionalProperties": false,
+        "description": "Portable evaluation settings for splat providers.\n\nProvider-specific eval knobs stay in ``backend_options``; this shape\ncaptures the stable cross-provider contract exposed through the SDK.",
+        "properties": {
+          "background": {
+            "default": "dataset",
+            "enum": [
+              "dataset",
+              "black",
+              "white",
+              "random"
+            ],
+            "title": "Background",
+            "type": "string"
+          },
+          "crop_border_px": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Crop Border Px",
+            "type": "integer"
+          },
+          "enabled": {
+            "default": false,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "every_steps": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Every Steps"
+          },
+          "final": {
+            "default": true,
+            "title": "Final",
+            "type": "boolean"
+          },
+          "image_downscale": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Image Downscale",
+            "type": "integer"
+          },
+          "lpips_net": {
+            "default": "alex",
+            "enum": [
+              "alex",
+              "vgg",
+              "squeeze"
+            ],
+            "title": "Lpips Net",
+            "type": "string"
+          },
+          "max_images": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Images"
+          },
+          "metrics": {
+            "items": {
+              "enum": [
+                "psnr",
+                "ssim",
+                "lpips"
+              ],
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Metrics",
+            "type": "array"
+          },
+          "save_images": {
+            "default": false,
+            "title": "Save Images",
+            "type": "boolean"
+          },
+          "split": {
+            "default": "test",
+            "enum": [
+              "train",
+              "val",
+              "test",
+              "all"
+            ],
+            "title": "Split",
+            "type": "string"
+          }
+        },
+        "title": "RadianceEvalConfig",
+        "type": "object"
+      },
+      "RadianceEvaluateRequest": {
+        "additionalProperties": false,
+        "description": "Request body for ``POST /v1/radiance_fields/{id}:evaluate``.",
+        "properties": {
+          "backend_options": {
+            "additionalProperties": true,
+            "title": "Backend Options",
+            "type": "object"
+          },
+          "dataset_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Id"
+          },
+          "eval": {
+            "$ref": "#/components/schemas/RadianceEvalConfig"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "snapshot_seq": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Snapshot Seq"
+          }
+        },
+        "title": "RadianceEvaluateRequest",
+        "type": "object"
+      },
+      "RadianceEvaluationOut": {
+        "properties": {
+          "_links": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Link"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links"
+          },
+          "artifacts": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifacts"
+          },
+          "config": {
+            "additionalProperties": true,
+            "title": "Config",
+            "type": "object"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Id"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "evaluation_id": {
+            "title": "Evaluation Id",
+            "type": "string"
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Job Id"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RadianceMetrics"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "radiance_field_id": {
+            "title": "Radiance Field Id",
+            "type": "string"
+          },
+          "snapshot_seq": {
+            "title": "Snapshot Seq",
+            "type": "integer"
+          },
+          "split": {
+            "title": "Split",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "cancelled_dirty"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evaluation_id",
+          "radiance_field_id",
+          "snapshot_seq",
+          "provider",
+          "method",
+          "split",
+          "status",
+          "config",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RadianceEvaluationOut",
+        "type": "object"
+      },
+      "RadianceFieldOut": {
+        "properties": {
+          "_links": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Link"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "dataset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Id"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "radiance_field_id": {
+            "title": "Radiance Field Id",
+            "type": "string"
+          },
+          "recon_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recon Id"
+          },
+          "spec": {
+            "additionalProperties": true,
+            "title": "Spec",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "running",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "cancelled_dirty"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "radiance_field_id",
+          "project_id",
+          "name",
+          "provider",
+          "method",
+          "status",
+          "spec",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RadianceFieldOut",
+        "type": "object"
+      },
+      "RadianceMetrics": {
+        "additionalProperties": true,
+        "description": "Canonical aggregate radiance evaluation metrics.",
+        "properties": {
+          "duration_s": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration S"
+          },
+          "lpips": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lpips"
+          },
+          "num_images": {
+            "default": 0,
+            "minimum": 0.0,
+            "title": "Num Images",
+            "type": "integer"
+          },
+          "psnr_db": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Psnr Db"
+          },
+          "render_time_s_mean": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Render Time S Mean"
+          },
+          "render_time_s_total": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Render Time S Total"
+          },
+          "ssim": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ssim"
+          }
+        },
+        "title": "RadianceMetrics",
+        "type": "object"
+      },
+      "RadianceSnapshotListResponse": {
+        "properties": {
+          "_links": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links"
+          },
+          "seqs": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Seqs",
+            "type": "array"
+          }
+        },
+        "title": "RadianceSnapshotListResponse",
+        "type": "object"
+      },
+      "RadianceSnapshotOut": {
+        "properties": {
+          "_links": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Link"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Links"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "radiance_field_id": {
+            "title": "Radiance Field Id",
+            "type": "string"
+          },
+          "sealed_path": {
+            "title": "Sealed Path",
+            "type": "string"
+          },
+          "seq": {
+            "title": "Seq",
+            "type": "integer"
+          },
+          "snapshot_id": {
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "radiance_field_id",
+          "seq",
+          "sealed_path",
+          "created_at"
+        ],
+        "title": "RadianceSnapshotOut",
+        "type": "object"
+      },
+      "RadianceTrainRequest": {
+        "additionalProperties": false,
+        "description": "Request body for ``POST /v1/projects/{project_id}/radiance_fields:train``.\n\nThe alpha core implementation supports a deterministic ``stub`` provider\nfor parity tests. Real training providers belong in plugins and should\npreserve provider-specific knobs inside ``backend_options``.",
+        "properties": {
+          "backend_options": {
+            "additionalProperties": true,
+            "title": "Backend Options",
+            "type": "object"
+          },
+          "dataset_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Id"
+          },
+          "eval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RadianceEvalConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max_steps": {
+            "default": 1,
+            "maximum": 10000000.0,
+            "minimum": 1.0,
+            "title": "Max Steps",
+            "type": "integer"
+          },
+          "method": {
+            "default": "stub",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Method",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 255,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "provider": {
+            "default": "stub",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Provider",
+            "type": "string"
+          },
+          "recon_id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recon Id"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "maxLength": 36,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Client retry token. Reserved for idempotent radiance submissions.",
+            "title": "Request Id"
+          }
+        },
+        "title": "RadianceTrainRequest",
+        "type": "object"
+      },
       "ReadyzResponse": {
         "description": "Readiness check envelope. ``status`` is ``\"ok\"`` when every\nbacking store reports healthy; ``\"degraded\"`` when one or more\nare unreachable. ``checks`` carries a per-component status string.",
         "properties": {
@@ -6813,6 +8325,16 @@
       "RuntimeModes": {
         "additionalProperties": false,
         "properties": {
+          "container_service": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContainerServiceRuntime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "docker": {
             "anyOf": [
               {
@@ -7756,6 +9278,56 @@
           "tools"
         ],
         "title": "ToolDetectionOut",
+        "type": "object"
+      },
+      "TorchRuntime": {
+        "additionalProperties": false,
+        "properties": {
+          "cpu_index_url": {
+            "default": "https://download.pytorch.org/whl/cpu",
+            "title": "Cpu Index Url",
+            "type": "string"
+          },
+          "device": {
+            "default": "cuda",
+            "enum": [
+              "cpu",
+              "cuda"
+            ],
+            "title": "Device",
+            "type": "string"
+          },
+          "index_url": {
+            "default": "https://download.pytorch.org/whl/cu128",
+            "title": "Index Url",
+            "type": "string"
+          },
+          "install_env": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Install Env",
+            "type": "object"
+          },
+          "packages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Packages",
+            "type": "array"
+          },
+          "policy": {
+            "default": "recommended",
+            "enum": [
+              "optional",
+              "recommended",
+              "required"
+            ],
+            "title": "Policy",
+            "type": "string"
+          }
+        },
+        "title": "TorchRuntime",
         "type": "object"
       },
       "TriangulateSpec": {
@@ -8951,6 +10523,48 @@
           }
         },
         "summary": "Set Project Routing Profile",
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/v1/admin/routing/provider-priority": {
+      "post": {
+        "description": "Set fallback provider order for unpinned routed stages.",
+        "operationId": "set_provider_priority_v1_admin_routing_provider_priority_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderPriorityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoutingOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Provider Priority",
         "tags": [
           "admin"
         ]
@@ -12242,6 +13856,48 @@
         ]
       }
     },
+    "/v1/pipelines:validate": {
+      "post": {
+        "description": "Type-check a linear pipeline. Returns ``valid`` + per-step ``errors``;\na type break or unsignatured action makes it invalid. Bridging a type\nmismatch requires an explicit conversion action (nominal typing).",
+        "operationId": "validate_pipeline_v1_pipelines_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PipelineValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelineValidateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Validate Pipeline",
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
     "/v1/projects": {
       "get": {
         "description": "List the caller's projects, AIP-158 paginated.\n\nPass an empty ``page_token`` for the first page; iterate by\nthreading the previous response's ``next_page_token`` back. A\n``null`` ``next_page_token`` means the iteration is exhausted.",
@@ -13009,6 +14665,558 @@
         "summary": "Run Recipe",
         "tags": [
           "pipelines"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/radiance_fields": {
+      "get": {
+        "operationId": "list_project_radiance_fields_v1_projects__project_id__radiance_fields_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Page Token"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_RadianceFieldOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Project Radiance Fields",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/projects/{project_id}/radiance_fields:train": {
+      "post": {
+        "operationId": "train_radiance_field_v1_projects__project_id__radiance_fields_train_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RadianceTrainRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAcceptedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Train Radiance Field",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_evaluations/{evaluation_id}": {
+      "get": {
+        "operationId": "get_radiance_evaluation_v1_radiance_evaluations__evaluation_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "evaluation_id",
+            "required": true,
+            "schema": {
+              "title": "Evaluation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadianceEvaluationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Radiance Evaluation",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_evaluations/{evaluation_id}/artifacts/{name}": {
+      "get": {
+        "operationId": "read_radiance_evaluation_artifact_v1_radiance_evaluations__evaluation_id__artifacts__name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "evaluation_id",
+            "required": true,
+            "schema": {
+              "title": "Evaluation Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Radiance Evaluation Artifact",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_evaluations/{evaluation_id}/metrics": {
+      "get": {
+        "operationId": "get_radiance_evaluation_metrics_v1_radiance_evaluations__evaluation_id__metrics_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "evaluation_id",
+            "required": true,
+            "schema": {
+              "title": "Evaluation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadianceMetrics"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Radiance Evaluation Metrics",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_fields/{radiance_field_id}": {
+      "get": {
+        "operationId": "get_radiance_field_v1_radiance_fields__radiance_field_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "radiance_field_id",
+            "required": true,
+            "schema": {
+              "title": "Radiance Field Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadianceFieldOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Radiance Field",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_fields/{radiance_field_id}/evaluations": {
+      "get": {
+        "operationId": "list_radiance_evaluations_v1_radiance_fields__radiance_field_id__evaluations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "radiance_field_id",
+            "required": true,
+            "schema": {
+              "title": "Radiance Field Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_RadianceEvaluationOut_"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Radiance Evaluations",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_fields/{radiance_field_id}/snapshots": {
+      "get": {
+        "operationId": "list_radiance_snapshots_v1_radiance_fields__radiance_field_id__snapshots_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "radiance_field_id",
+            "required": true,
+            "schema": {
+              "title": "Radiance Field Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadianceSnapshotListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Radiance Snapshots",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_fields/{radiance_field_id}/snapshots/{seq}": {
+      "get": {
+        "operationId": "get_radiance_snapshot_v1_radiance_fields__radiance_field_id__snapshots__seq__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "radiance_field_id",
+            "required": true,
+            "schema": {
+              "title": "Radiance Field Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "seq",
+            "required": true,
+            "schema": {
+              "title": "Seq",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadianceSnapshotOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Radiance Snapshot",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_fields/{radiance_field_id}/snapshots/{seq}/{name}": {
+      "get": {
+        "operationId": "read_radiance_snapshot_file_v1_radiance_fields__radiance_field_id__snapshots__seq___name__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "radiance_field_id",
+            "required": true,
+            "schema": {
+              "title": "Radiance Field Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "seq",
+            "required": true,
+            "schema": {
+              "title": "Seq",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "name",
+            "required": true,
+            "schema": {
+              "title": "Name",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "download",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Download",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Read Radiance Snapshot File",
+        "tags": [
+          "radiance"
+        ]
+      }
+    },
+    "/v1/radiance_fields/{radiance_field_id}:evaluate": {
+      "post": {
+        "operationId": "evaluate_radiance_field_v1_radiance_fields__radiance_field_id__evaluate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "radiance_field_id",
+            "required": true,
+            "schema": {
+              "title": "Radiance Field Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RadianceEvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAcceptedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Evaluate Radiance Field",
+        "tags": [
+          "radiance"
         ]
       }
     },
