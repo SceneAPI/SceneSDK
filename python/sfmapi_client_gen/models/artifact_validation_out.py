@@ -22,7 +22,7 @@ class ArtifactValidationOut:
         artifact_id (str):
         valid (bool):
         artifact_format (None | str | Unset):
-        artifact_type (None | str | Unset):
+        datatype (None | str | Unset):
         checked_content (bool | Unset):  Default: False.
         issues (list[ArtifactValidationIssueOut] | Unset):
     """
@@ -30,7 +30,7 @@ class ArtifactValidationOut:
     artifact_id: str
     valid: bool
     artifact_format: None | str | Unset = UNSET
-    artifact_type: None | str | Unset = UNSET
+    datatype: None | str | Unset = UNSET
     checked_content: bool | Unset = False
     issues: list[ArtifactValidationIssueOut] | Unset = UNSET
 
@@ -45,11 +45,11 @@ class ArtifactValidationOut:
         else:
             artifact_format = self.artifact_format
 
-        artifact_type: None | str | Unset
-        if isinstance(self.artifact_type, Unset):
-            artifact_type = UNSET
+        datatype: None | str | Unset
+        if isinstance(self.datatype, Unset):
+            datatype = UNSET
         else:
-            artifact_type = self.artifact_type
+            datatype = self.datatype
 
         checked_content = self.checked_content
 
@@ -70,8 +70,8 @@ class ArtifactValidationOut:
         )
         if artifact_format is not UNSET:
             field_dict["artifact_format"] = artifact_format
-        if artifact_type is not UNSET:
-            field_dict["artifact_type"] = artifact_type
+        if datatype is not UNSET:
+            field_dict["datatype"] = datatype
         if checked_content is not UNSET:
             field_dict["checked_content"] = checked_content
         if issues is not UNSET:
@@ -97,14 +97,14 @@ class ArtifactValidationOut:
 
         artifact_format = _parse_artifact_format(d.pop("artifact_format", UNSET))
 
-        def _parse_artifact_type(data: object) -> None | str | Unset:
+        def _parse_datatype(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(None | str | Unset, data)
 
-        artifact_type = _parse_artifact_type(d.pop("artifact_type", UNSET))
+        datatype = _parse_datatype(d.pop("datatype", UNSET))
 
         checked_content = d.pop("checked_content", UNSET)
 
@@ -121,7 +121,7 @@ class ArtifactValidationOut:
             artifact_id=artifact_id,
             valid=valid,
             artifact_format=artifact_format,
-            artifact_type=artifact_type,
+            datatype=datatype,
             checked_content=checked_content,
             issues=issues,
         )

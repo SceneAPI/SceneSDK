@@ -38,7 +38,7 @@ class ArtifactImportRequest:
             uri (None | str | Unset):
             media_type (None | str | Unset):
             artifact_format (None | str | Unset):
-            artifact_type (None | str | Unset):
+            datatype (None | str | Unset):
             schema_version (int | None | Unset):
             files (list[ArtifactFileRef] | Unset):
             sha256 (None | str | Unset):
@@ -57,7 +57,7 @@ class ArtifactImportRequest:
     uri: None | str | Unset = UNSET
     media_type: None | str | Unset = UNSET
     artifact_format: None | str | Unset = UNSET
-    artifact_type: None | str | Unset = UNSET
+    datatype: None | str | Unset = UNSET
     schema_version: int | None | Unset = UNSET
     files: list[ArtifactFileRef] | Unset = UNSET
     sha256: None | str | Unset = UNSET
@@ -115,11 +115,11 @@ class ArtifactImportRequest:
         else:
             artifact_format = self.artifact_format
 
-        artifact_type: None | str | Unset
-        if isinstance(self.artifact_type, Unset):
-            artifact_type = UNSET
+        datatype: None | str | Unset
+        if isinstance(self.datatype, Unset):
+            datatype = UNSET
         else:
-            artifact_type = self.artifact_type
+            datatype = self.datatype
 
         schema_version: int | None | Unset
         if isinstance(self.schema_version, Unset):
@@ -192,8 +192,8 @@ class ArtifactImportRequest:
             field_dict["media_type"] = media_type
         if artifact_format is not UNSET:
             field_dict["artifact_format"] = artifact_format
-        if artifact_type is not UNSET:
-            field_dict["artifact_type"] = artifact_type
+        if datatype is not UNSET:
+            field_dict["datatype"] = datatype
         if schema_version is not UNSET:
             field_dict["schema_version"] = schema_version
         if files is not UNSET:
@@ -285,14 +285,14 @@ class ArtifactImportRequest:
 
         artifact_format = _parse_artifact_format(d.pop("artifact_format", UNSET))
 
-        def _parse_artifact_type(data: object) -> None | str | Unset:
+        def _parse_datatype(data: object) -> None | str | Unset:
             if data is None:
                 return data
             if isinstance(data, Unset):
                 return data
             return cast(None | str | Unset, data)
 
-        artifact_type = _parse_artifact_type(d.pop("artifact_type", UNSET))
+        datatype = _parse_datatype(d.pop("datatype", UNSET))
 
         def _parse_schema_version(data: object) -> int | None | Unset:
             if data is None:
@@ -393,7 +393,7 @@ class ArtifactImportRequest:
             uri=uri,
             media_type=media_type,
             artifact_format=artifact_format,
-            artifact_type=artifact_type,
+            datatype=datatype,
             schema_version=schema_version,
             files=files,
             sha256=sha256,

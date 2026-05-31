@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-from dateutil.parser import isoparse
 
 from ..models.job_out_status import JobOutStatus
 from ..types import UNSET, Unset
@@ -163,7 +162,7 @@ class JobOut:
 
         cancel_force = d.pop("cancel_force")
 
-        created_at = isoparse(d.pop("created_at"))
+        created_at = datetime.datetime.fromisoformat(d.pop("created_at"))
 
         def _parse_started_at(data: object) -> datetime.datetime | None | Unset:
             if data is None:
@@ -173,7 +172,7 @@ class JobOut:
             try:
                 if not isinstance(data, str):
                     raise TypeError()
-                started_at_type_0 = isoparse(data)
+                started_at_type_0 = datetime.datetime.fromisoformat(data)
 
                 return started_at_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
@@ -190,7 +189,7 @@ class JobOut:
             try:
                 if not isinstance(data, str):
                     raise TypeError()
-                finished_at_type_0 = isoparse(data)
+                finished_at_type_0 = datetime.datetime.fromisoformat(data)
 
                 return finished_at_type_0
             except (TypeError, ValueError, AttributeError, KeyError):

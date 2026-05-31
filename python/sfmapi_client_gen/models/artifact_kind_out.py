@@ -14,7 +14,7 @@ class ArtifactKindOut:
 
     Attributes:
         kind (str):
-        artifact_type (str):
+        datatype (str):
         title (str):
         description (str):
         durable (bool):
@@ -23,7 +23,7 @@ class ArtifactKindOut:
     """
 
     kind: str
-    artifact_type: str
+    datatype: str
     title: str
     description: str
     durable: bool
@@ -33,7 +33,7 @@ class ArtifactKindOut:
     def to_dict(self) -> dict[str, Any]:
         kind = self.kind
 
-        artifact_type = self.artifact_type
+        datatype = self.datatype
 
         title = self.title
 
@@ -50,7 +50,7 @@ class ArtifactKindOut:
         field_dict.update(
             {
                 "kind": kind,
-                "artifact_type": artifact_type,
+                "datatype": datatype,
                 "title": title,
                 "description": description,
                 "durable": durable,
@@ -66,7 +66,7 @@ class ArtifactKindOut:
         d = dict(src_dict)
         kind = d.pop("kind")
 
-        artifact_type = d.pop("artifact_type")
+        datatype = d.pop("datatype")
 
         title = d.pop("title")
 
@@ -80,7 +80,7 @@ class ArtifactKindOut:
 
         artifact_kind_out = cls(
             kind=kind,
-            artifact_type=artifact_type,
+            datatype=datatype,
             title=title,
             description=description,
             durable=durable,

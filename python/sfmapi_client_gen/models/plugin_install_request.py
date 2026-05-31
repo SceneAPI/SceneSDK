@@ -21,6 +21,8 @@ class PluginInstallRequest:
         package_name (None | str | Unset):
         dry_run (bool | Unset):  Default: True.
         allow_unsafe_execution (bool | Unset):  Default: False.
+        request_id (None | str | Unset):
+        provision_runtime (bool | Unset):  Default: True.
         force (bool | Unset):  Default: False.
     """
 
@@ -30,6 +32,8 @@ class PluginInstallRequest:
     package_name: None | str | Unset = UNSET
     dry_run: bool | Unset = True
     allow_unsafe_execution: bool | Unset = False
+    request_id: None | str | Unset = UNSET
+    provision_runtime: bool | Unset = True
     force: bool | Unset = False
 
     def to_dict(self) -> dict[str, Any]:
@@ -59,6 +63,14 @@ class PluginInstallRequest:
 
         allow_unsafe_execution = self.allow_unsafe_execution
 
+        request_id: None | str | Unset
+        if isinstance(self.request_id, Unset):
+            request_id = UNSET
+        else:
+            request_id = self.request_id
+
+        provision_runtime = self.provision_runtime
+
         force = self.force
 
         field_dict: dict[str, Any] = {}
@@ -76,6 +88,10 @@ class PluginInstallRequest:
             field_dict["dry_run"] = dry_run
         if allow_unsafe_execution is not UNSET:
             field_dict["allow_unsafe_execution"] = allow_unsafe_execution
+        if request_id is not UNSET:
+            field_dict["request_id"] = request_id
+        if provision_runtime is not UNSET:
+            field_dict["provision_runtime"] = provision_runtime
         if force is not UNSET:
             field_dict["force"] = force
 
@@ -122,6 +138,17 @@ class PluginInstallRequest:
 
         allow_unsafe_execution = d.pop("allow_unsafe_execution", UNSET)
 
+        def _parse_request_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        request_id = _parse_request_id(d.pop("request_id", UNSET))
+
+        provision_runtime = d.pop("provision_runtime", UNSET)
+
         force = d.pop("force", UNSET)
 
         plugin_install_request = cls(
@@ -131,6 +158,8 @@ class PluginInstallRequest:
             package_name=package_name,
             dry_run=dry_run,
             allow_unsafe_execution=allow_unsafe_execution,
+            request_id=request_id,
+            provision_runtime=provision_runtime,
             force=force,
         )
 

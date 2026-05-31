@@ -10,6 +10,7 @@ from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.compatibility_tool_versions import CompatibilityToolVersions
+    from ..models.torch_runtime import TorchRuntime
 
 
 T = TypeVar("T", bound="Compatibility")
@@ -23,6 +24,7 @@ class Compatibility:
         python (None | str | Unset):  Default: '>=3.12,<3.13'.
         os (list[str] | Unset):
         cuda (None | str | Unset):
+        torch (None | TorchRuntime | Unset):
         tool_versions (CompatibilityToolVersions | Unset):
     """
 
@@ -30,10 +32,13 @@ class Compatibility:
     python: None | str | Unset = ">=3.12,<3.13"
     os: list[str] | Unset = UNSET
     cuda: None | str | Unset = UNSET
+    torch: None | TorchRuntime | Unset = UNSET
     tool_versions: CompatibilityToolVersions | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.torch_runtime import TorchRuntime
+
         sfmapi = self.sfmapi
 
         python: None | str | Unset
@@ -52,6 +57,14 @@ class Compatibility:
         else:
             cuda = self.cuda
 
+        torch: dict[str, Any] | None | Unset
+        if isinstance(self.torch, Unset):
+            torch = UNSET
+        elif isinstance(self.torch, TorchRuntime):
+            torch = self.torch.to_dict()
+        else:
+            torch = self.torch
+
         tool_versions: dict[str, Any] | Unset = UNSET
         if not isinstance(self.tool_versions, Unset):
             tool_versions = self.tool_versions.to_dict()
@@ -67,6 +80,8 @@ class Compatibility:
             field_dict["os"] = os
         if cuda is not UNSET:
             field_dict["cuda"] = cuda
+        if torch is not UNSET:
+            field_dict["torch"] = torch
         if tool_versions is not UNSET:
             field_dict["tool_versions"] = tool_versions
 
@@ -75,6 +90,7 @@ class Compatibility:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.compatibility_tool_versions import CompatibilityToolVersions
+        from ..models.torch_runtime import TorchRuntime
 
         d = dict(src_dict)
         sfmapi = d.pop("sfmapi", UNSET)
@@ -99,6 +115,23 @@ class Compatibility:
 
         cuda = _parse_cuda(d.pop("cuda", UNSET))
 
+        def _parse_torch(data: object) -> None | TorchRuntime | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                torch_type_0 = TorchRuntime.from_dict(data)
+
+                return torch_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | TorchRuntime | Unset, data)
+
+        torch = _parse_torch(d.pop("torch", UNSET))
+
         _tool_versions = d.pop("tool_versions", UNSET)
         tool_versions: CompatibilityToolVersions | Unset
         if isinstance(_tool_versions, Unset):
@@ -111,6 +144,7 @@ class Compatibility:
             python=python,
             os=os,
             cuda=cuda,
+            torch=torch,
             tool_versions=tool_versions,
         )
 

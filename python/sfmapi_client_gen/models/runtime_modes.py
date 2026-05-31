@@ -8,6 +8,7 @@ from attrs import define as _attrs_define
 from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
+    from ..models.container_service_runtime import ContainerServiceRuntime
     from ..models.docker_runtime import DockerRuntime
     from ..models.external_tool_runtime import ExternalToolRuntime
     from ..models.uv_runtime import UvRuntime
@@ -22,14 +23,17 @@ class RuntimeModes:
     Attributes:
         uv (None | Unset | UvRuntime):
         docker (DockerRuntime | None | Unset):
+        container_service (ContainerServiceRuntime | None | Unset):
         external_tool (ExternalToolRuntime | None | Unset):
     """
 
     uv: None | Unset | UvRuntime = UNSET
     docker: DockerRuntime | None | Unset = UNSET
+    container_service: ContainerServiceRuntime | None | Unset = UNSET
     external_tool: ExternalToolRuntime | None | Unset = UNSET
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.container_service_runtime import ContainerServiceRuntime
         from ..models.docker_runtime import DockerRuntime
         from ..models.external_tool_runtime import ExternalToolRuntime
         from ..models.uv_runtime import UvRuntime
@@ -50,6 +54,14 @@ class RuntimeModes:
         else:
             docker = self.docker
 
+        container_service: dict[str, Any] | None | Unset
+        if isinstance(self.container_service, Unset):
+            container_service = UNSET
+        elif isinstance(self.container_service, ContainerServiceRuntime):
+            container_service = self.container_service.to_dict()
+        else:
+            container_service = self.container_service
+
         external_tool: dict[str, Any] | None | Unset
         if isinstance(self.external_tool, Unset):
             external_tool = UNSET
@@ -65,6 +77,8 @@ class RuntimeModes:
             field_dict["uv"] = uv
         if docker is not UNSET:
             field_dict["docker"] = docker
+        if container_service is not UNSET:
+            field_dict["container_service"] = container_service
         if external_tool is not UNSET:
             field_dict["external_tool"] = external_tool
 
@@ -72,6 +86,7 @@ class RuntimeModes:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.container_service_runtime import ContainerServiceRuntime
         from ..models.docker_runtime import DockerRuntime
         from ..models.external_tool_runtime import ExternalToolRuntime
         from ..models.uv_runtime import UvRuntime
@@ -112,6 +127,25 @@ class RuntimeModes:
 
         docker = _parse_docker(d.pop("docker", UNSET))
 
+        def _parse_container_service(
+            data: object,
+        ) -> ContainerServiceRuntime | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                container_service_type_0 = ContainerServiceRuntime.from_dict(data)
+
+                return container_service_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(ContainerServiceRuntime | None | Unset, data)
+
+        container_service = _parse_container_service(d.pop("container_service", UNSET))
+
         def _parse_external_tool(data: object) -> ExternalToolRuntime | None | Unset:
             if data is None:
                 return data
@@ -132,6 +166,7 @@ class RuntimeModes:
         runtime_modes = cls(
             uv=uv,
             docker=docker,
+            container_service=container_service,
             external_tool=external_tool,
         )
 

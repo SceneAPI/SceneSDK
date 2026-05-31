@@ -59,6 +59,8 @@ class JobAcceptedResponse:
             provider (None | str | Unset):
             artifact_id (None | str | Unset):
             target_format (None | str | Unset):
+            radiance_field_id (None | str | Unset):
+            radiance_evaluation_id (None | str | Unset):
     """
 
     job_id: str
@@ -76,6 +78,8 @@ class JobAcceptedResponse:
     provider: None | str | Unset = UNSET
     artifact_id: None | str | Unset = UNSET
     target_format: None | str | Unset = UNSET
+    radiance_field_id: None | str | Unset = UNSET
+    radiance_evaluation_id: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -170,6 +174,18 @@ class JobAcceptedResponse:
         else:
             target_format = self.target_format
 
+        radiance_field_id: None | str | Unset
+        if isinstance(self.radiance_field_id, Unset):
+            radiance_field_id = UNSET
+        else:
+            radiance_field_id = self.radiance_field_id
+
+        radiance_evaluation_id: None | str | Unset
+        if isinstance(self.radiance_evaluation_id, Unset):
+            radiance_evaluation_id = UNSET
+        else:
+            radiance_evaluation_id = self.radiance_evaluation_id
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -205,6 +221,10 @@ class JobAcceptedResponse:
             field_dict["artifact_id"] = artifact_id
         if target_format is not UNSET:
             field_dict["target_format"] = target_format
+        if radiance_field_id is not UNSET:
+            field_dict["radiance_field_id"] = radiance_field_id
+        if radiance_evaluation_id is not UNSET:
+            field_dict["radiance_evaluation_id"] = radiance_evaluation_id
 
         return field_dict
 
@@ -350,6 +370,26 @@ class JobAcceptedResponse:
 
         target_format = _parse_target_format(d.pop("target_format", UNSET))
 
+        def _parse_radiance_field_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        radiance_field_id = _parse_radiance_field_id(d.pop("radiance_field_id", UNSET))
+
+        def _parse_radiance_evaluation_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        radiance_evaluation_id = _parse_radiance_evaluation_id(
+            d.pop("radiance_evaluation_id", UNSET)
+        )
+
         job_accepted_response = cls(
             job_id=job_id,
             task_ids=task_ids,
@@ -366,6 +406,8 @@ class JobAcceptedResponse:
             provider=provider,
             artifact_id=artifact_id,
             target_format=target_format,
+            radiance_field_id=radiance_field_id,
+            radiance_evaluation_id=radiance_evaluation_id,
         )
 
         job_accepted_response.additional_properties = d

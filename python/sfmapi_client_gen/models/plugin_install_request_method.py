@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class PluginInstallRequestMethod(str, Enum):
+    CONTAINER_SERVICE = "container_service"
     DOCKER = "docker"
     EXTERNAL_TOOL = "external_tool"
     UV = "uv"

@@ -23,7 +23,7 @@ class ArtifactFormatOut:
 
     Attributes:
         format_id (str):
-        artifact_type (str):
+        datatype (str):
         title (str):
         description (str):
         schema_version (int):
@@ -34,7 +34,7 @@ class ArtifactFormatOut:
     """
 
     format_id: str
-    artifact_type: str
+    datatype: str
     title: str
     description: str
     schema_version: int
@@ -50,7 +50,7 @@ class ArtifactFormatOut:
 
         format_id = self.format_id
 
-        artifact_type = self.artifact_type
+        datatype = self.datatype
 
         title = self.title
 
@@ -82,7 +82,7 @@ class ArtifactFormatOut:
         field_dict.update(
             {
                 "format_id": format_id,
-                "artifact_type": artifact_type,
+                "datatype": datatype,
                 "title": title,
                 "description": description,
                 "schema_version": schema_version,
@@ -110,7 +110,7 @@ class ArtifactFormatOut:
         d = dict(src_dict)
         format_id = d.pop("format_id")
 
-        artifact_type = d.pop("artifact_type")
+        datatype = d.pop("datatype")
 
         title = d.pop("title")
 
@@ -154,7 +154,7 @@ class ArtifactFormatOut:
 
         artifact_format_out = cls(
             format_id=format_id,
-            artifact_type=artifact_type,
+            datatype=datatype,
             title=title,
             description=description,
             schema_version=schema_version,

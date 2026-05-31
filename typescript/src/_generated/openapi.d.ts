@@ -218,6 +218,33 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/projects/{project_id}/datasets:from_archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * From Archive
+         * @description Register a dataset from an already-uploaded image zip.
+         *
+         *     Collapses the N-per-image registration flow to one call: the worker
+         *     decodes the finalized zip (``blob_sha``) straight from the blob
+         *     store, enforces the uncompressed-size cap, extracts the images, and
+         *     the dispatcher registers the resulting derived dataset. Follow
+         *     ``Location`` to the job; the terminal job's task carries
+         *     ``num_images`` and the registered ``derived_dataset``.
+         */
+        post: operations["from_archive_v1_projects__project_id__datasets_from_archive_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/artifacts/kinds": {
         parameters: {
             query?: never;
@@ -1930,6 +1957,285 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/projects/{project_id}/pipelines:run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Run Pipeline
+         * @description Submit a custom typed-operation pipeline.
+         *
+         *     The operation sequence is type-checked against the operation contract
+         *     BEFORE any job is created -- a type break or unknown operation is rejected
+         *     with 422. This is where the typed model guards real submissions (unlike the
+         *     fixed recipes, an arbitrary pipeline can be invalid). Each step binds an
+         *     operation to an optional provider + params; the binding is resolved at
+         *     execution by the bridge worker (shallow-by-contract submit), so submission
+         *     is accepted once the pipeline type-checks.
+         */
+        post: operations["run_pipeline_v1_projects__project_id__pipelines_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/datatypes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Datatypes
+         * @description The DataType registry: the logical data objects a pipeline flows.
+         */
+        get: operations["list_datatypes_v1_datatypes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/operations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Operations
+         * @description The operation registry: typed transforms (consumes/produces) and the
+         *     capability family that implements each.
+         */
+        get: operations["list_operations_v1_operations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/pipelines:validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate Pipeline
+         * @description Type-check a pipeline of operations. Returns ``valid`` + per-step
+         *     ``errors``: an operation whose inputs are not produced upstream (or an
+         *     unknown operation) makes it invalid. Bridging a missing input requires an
+         *     explicit conversion operation (nominal typing).
+         */
+        post: operations["validate_pipeline_v1_pipelines_validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/projects/{project_id}/radiance_fields:train": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Train Radiance Field */
+        post: operations["train_radiance_field_v1_projects__project_id__radiance_fields_train_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_fields/{radiance_field_id}:evaluate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Evaluate Radiance Field */
+        post: operations["evaluate_radiance_field_v1_radiance_fields__radiance_field_id__evaluate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/projects/{project_id}/radiance_fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Project Radiance Fields */
+        get: operations["list_project_radiance_fields_v1_projects__project_id__radiance_fields_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_fields/{radiance_field_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Radiance Field */
+        get: operations["get_radiance_field_v1_radiance_fields__radiance_field_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_fields/{radiance_field_id}/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Radiance Evaluations */
+        get: operations["list_radiance_evaluations_v1_radiance_fields__radiance_field_id__evaluations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_evaluations/{evaluation_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Radiance Evaluation */
+        get: operations["get_radiance_evaluation_v1_radiance_evaluations__evaluation_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_evaluations/{evaluation_id}/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Radiance Evaluation Metrics */
+        get: operations["get_radiance_evaluation_metrics_v1_radiance_evaluations__evaluation_id__metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_evaluations/{evaluation_id}/artifacts/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Radiance Evaluation Artifact */
+        get: operations["read_radiance_evaluation_artifact_v1_radiance_evaluations__evaluation_id__artifacts__name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_fields/{radiance_field_id}/snapshots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Radiance Snapshots */
+        get: operations["list_radiance_snapshots_v1_radiance_fields__radiance_field_id__snapshots_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_fields/{radiance_field_id}/snapshots/{seq}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Radiance Snapshot */
+        get: operations["get_radiance_snapshot_v1_radiance_fields__radiance_field_id__snapshots__seq__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/radiance_fields/{radiance_field_id}/snapshots/{seq}/{name}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Radiance Snapshot File */
+        get: operations["read_radiance_snapshot_file_v1_radiance_fields__radiance_field_id__snapshots__seq___name__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/jobs/{job_id}:resume": {
         parameters: {
             query?: never;
@@ -2223,6 +2529,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/routing/provider-priority": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set Provider Priority
+         * @description Set fallback provider order for unpinned routed stages.
+         */
+        post: operations["set_provider_priority_v1_admin_routing_provider_priority_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/routing/projects/{project_id}": {
         parameters: {
             query?: never;
@@ -2505,6 +2831,47 @@ export interface components {
             revoked: boolean;
         };
         /**
+         * ArchiveImportRequest
+         * @description ``POST /v1/projects/{pid}/datasets:from_archive`` — register a
+         *     dataset from an already-uploaded image zip.
+         *
+         *     Upload the zip through the normal chunked-upload protocol first
+         *     (``POST /v1/uploads`` → ``PATCH`` → ``:finalize`` → ``blob_sha``);
+         *     this route only enqueues the unpack. The worker decodes the archive
+         *     straight from the blob store (in memory for the ephemeral backend),
+         *     extracts the image entries, and registers a derived dataset — one
+         *     call instead of N per-image registrations.
+         */
+        ArchiveImportRequest: {
+            /**
+             * Blob Sha
+             * @description Content address of the finalized zip upload.
+             */
+            blob_sha: string;
+            /** Name */
+            name?: string | null;
+            /**
+             * Camera Model
+             * @default SIMPLE_RADIAL
+             */
+            camera_model: string;
+            /**
+             * Intrinsics Mode
+             * @default single_camera
+             */
+            intrinsics_mode: string;
+            /**
+             * Is Spherical
+             * @default false
+             */
+            is_spherical: boolean;
+            /**
+             * Image Prefix
+             * @description Restrict the import to entries under this zip subpath (e.g. 'south-building/images/'). When unset the worker auto-detects the common image directory.
+             */
+            image_prefix?: string | null;
+        };
+        /**
          * ArtifactConversionOut
          * @description Advertised conversion between artifact formats.
          */
@@ -2647,8 +3014,8 @@ export interface components {
         ArtifactFormatOut: {
             /** Format Id */
             format_id: string;
-            /** Artifact Type */
-            artifact_type: string;
+            /** Datatype */
+            datatype: string;
             /** Title */
             title: string;
             /** Description */
@@ -2696,8 +3063,8 @@ export interface components {
             media_type?: string | null;
             /** Artifact Format */
             artifact_format?: string | null;
-            /** Artifact Type */
-            artifact_type?: string | null;
+            /** Datatype */
+            datatype?: string | null;
             /** Schema Version */
             schema_version?: number | null;
             /** Files */
@@ -2728,8 +3095,8 @@ export interface components {
         ArtifactKindOut: {
             /** Kind */
             kind: string;
-            /** Artifact Type */
-            artifact_type: string;
+            /** Datatype */
+            datatype: string;
             /** Title */
             title: string;
             /** Description */
@@ -2780,8 +3147,8 @@ export interface components {
             valid: boolean;
             /** Artifact Format */
             artifact_format?: string | null;
-            /** Artifact Type */
-            artifact_type?: string | null;
+            /** Datatype */
+            datatype?: string | null;
             /**
              * Checked Content
              * @default false
@@ -3205,6 +3572,13 @@ export interface components {
                 [key: string]: boolean;
             };
         };
+        /** ChainErrorOut */
+        ChainErrorOut: {
+            /** Where */
+            where: string;
+            /** Message */
+            message: string;
+        };
         /** Compatibility */
         Compatibility: {
             /**
@@ -3221,6 +3595,7 @@ export interface components {
             os?: string[];
             /** Cuda */
             cuda?: string | null;
+            torch?: components["schemas"]["TorchRuntime"] | null;
             /** Tool Versions */
             tool_versions?: {
                 [key: string]: string;
@@ -3242,6 +3617,192 @@ export interface components {
             report_url?: string | null;
             /** Checked At */
             checked_at?: string | null;
+        };
+        /** ContainerServiceBuild */
+        ContainerServiceBuild: {
+            /**
+             * Source
+             * @default git
+             * @enum {string}
+             */
+            source: "git" | "local" | "release";
+            /** Context */
+            context?: string | null;
+            /**
+             * Dockerfile
+             * @default Dockerfile
+             */
+            dockerfile: string;
+            /** Ref */
+            ref?: string | null;
+            /** Args */
+            args?: {
+                [key: string]: string;
+            };
+        };
+        /** ContainerServiceCache */
+        ContainerServiceCache: {
+            /**
+             * Policy
+             * @default none
+             * @enum {string}
+             */
+            policy: "none" | "read_only" | "read_write";
+            /**
+             * Scope
+             * @default request
+             * @enum {string}
+             */
+            scope: "request" | "plugin" | "global";
+            /** Path */
+            path?: string | null;
+        };
+        /** ContainerServiceEndpoint */
+        ContainerServiceEndpoint: {
+            /** Default Url */
+            default_url?: string | null;
+            /** Url Env */
+            url_env?: string | null;
+        };
+        /** ContainerServiceExecution */
+        ContainerServiceExecution: {
+            /**
+             * Path
+             * @default /execute
+             */
+            path: string;
+            /**
+             * Timeout Seconds
+             * @default 3600
+             */
+            timeout_seconds: number;
+            mounts?: components["schemas"]["ContainerServiceMounts"];
+            /**
+             * Gpu
+             * @default optional
+             * @enum {string}
+             */
+            gpu: "none" | "optional" | "required";
+            /** Env */
+            env?: string[];
+            /** Secrets */
+            secrets?: string[];
+            retry?: components["schemas"]["ContainerServiceRetry"];
+            /**
+             * Shutdown Timeout Seconds
+             * @default 10
+             */
+            shutdown_timeout_seconds: number;
+            /**
+             * Log Collection
+             * @default both
+             * @enum {string}
+             */
+            log_collection: "stdout" | "file" | "both";
+            /**
+             * Artifact Collection
+             * @default true
+             */
+            artifact_collection: boolean;
+        };
+        /** ContainerServiceHealthcheck */
+        ContainerServiceHealthcheck: {
+            /**
+             * Path
+             * @default /healthz
+             */
+            path: string;
+            /**
+             * Timeout Seconds
+             * @default 5
+             */
+            timeout_seconds: number;
+        };
+        /** ContainerServiceImage */
+        ContainerServiceImage: {
+            /** Image */
+            image?: string | null;
+            /** Digest */
+            digest?: string | null;
+            /** Registry */
+            registry?: string | null;
+            build?: components["schemas"]["ContainerServiceBuild"] | null;
+        };
+        /** ContainerServiceMounts */
+        ContainerServiceMounts: {
+            /**
+             * Input Path
+             * @default /sfmapi/input
+             */
+            input_path: string;
+            /**
+             * Output Path
+             * @default /sfmapi/output
+             */
+            output_path: string;
+            /**
+             * Work Path
+             * @default /sfmapi/work
+             */
+            work_path: string;
+            /**
+             * Log Path
+             * @default /sfmapi/logs
+             */
+            log_path: string;
+        };
+        /** ContainerServiceObjectStore */
+        ContainerServiceObjectStore: {
+            /** Url Env */
+            url_env?: string | null;
+            /** Input Prefix */
+            input_prefix?: string | null;
+            /** Output Prefix */
+            output_prefix?: string | null;
+        };
+        /** ContainerServiceProvenance */
+        ContainerServiceProvenance: {
+            /**
+             * Image Digest Required
+             * @default true
+             */
+            image_digest_required: boolean;
+            /** Sbom Url */
+            sbom_url?: string | null;
+            /** Attestation Url */
+            attestation_url?: string | null;
+            /** Source Revision */
+            source_revision?: string | null;
+        };
+        /** ContainerServiceRetry */
+        ContainerServiceRetry: {
+            /**
+             * Max Attempts
+             * @default 1
+             */
+            max_attempts: number;
+            /**
+             * Backoff Seconds
+             * @default 0
+             */
+            backoff_seconds: number;
+        };
+        /** ContainerServiceRuntime */
+        ContainerServiceRuntime: {
+            /**
+             * Protocol
+             * @constant
+             */
+            protocol: "sfmapi-plugin-http-v1";
+            /** Protocol Version */
+            protocol_version: string;
+            service: components["schemas"]["ContainerServiceEndpoint"];
+            image?: components["schemas"]["ContainerServiceImage"] | null;
+            object_store?: components["schemas"]["ContainerServiceObjectStore"] | null;
+            cache?: components["schemas"]["ContainerServiceCache"];
+            provenance?: components["schemas"]["ContainerServiceProvenance"];
+            healthcheck?: components["schemas"]["ContainerServiceHealthcheck"];
+            execution?: components["schemas"]["ContainerServiceExecution"];
         };
         /** CubemapProjectionRequest */
         CubemapProjectionRequest: {
@@ -3405,6 +3966,10 @@ export interface components {
             status: "pass" | "warn" | "fail";
             /** Detail */
             detail: string;
+            /** Metadata */
+            metadata?: {
+                [key: string]: string;
+            };
         };
         /** EquirectangularProjectionRequest */
         EquirectangularProjectionRequest: {
@@ -4022,6 +4587,10 @@ export interface components {
             artifact_id?: string | null;
             /** Target Format */
             target_format?: string | null;
+            /** Radiance Field Id */
+            radiance_field_id?: string | null;
+            /** Radiance Evaluation Id */
+            radiance_evaluation_id?: string | null;
         };
         /**
          * JobDetail
@@ -4563,6 +5132,24 @@ export interface components {
             /** Total */
             total?: number | null;
         };
+        /** Page[RadianceEvaluationOut] */
+        Page_RadianceEvaluationOut_: {
+            /** Items */
+            items: components["schemas"]["RadianceEvaluationOut"][];
+            /** Next Page Token */
+            next_page_token?: string | null;
+            /** Total */
+            total?: number | null;
+        };
+        /** Page[RadianceFieldOut] */
+        Page_RadianceFieldOut_: {
+            /** Items */
+            items: components["schemas"]["RadianceFieldOut"][];
+            /** Next Page Token */
+            next_page_token?: string | null;
+            /** Total */
+            total?: number | null;
+        };
         /** Page[StageArtifactOut] */
         Page_StageArtifactOut_: {
             /** Items */
@@ -4801,6 +5388,39 @@ export interface components {
                 [key: string]: components["schemas"]["ArtifactRef"];
             };
         };
+        /** PipelineRunRequest */
+        PipelineRunRequest: {
+            /** Dataset Id */
+            dataset_id: string;
+            /** Steps */
+            steps: components["schemas"]["PipelineStep"][];
+        };
+        /**
+         * PipelineStep
+         * @description One operation in a custom typed pipeline.
+         */
+        PipelineStep: {
+            /** Op */
+            op: string;
+            /** Provider */
+            provider?: string | null;
+            /** Params */
+            params?: {
+                [key: string]: unknown;
+            };
+        };
+        /** PipelineValidateRequest */
+        PipelineValidateRequest: {
+            /** Steps */
+            steps: string[];
+        };
+        /** PipelineValidateResponse */
+        PipelineValidateResponse: {
+            /** Valid */
+            valid: boolean;
+            /** Errors */
+            errors: components["schemas"]["ChainErrorOut"][];
+        };
         /** PluginDetailOut */
         PluginDetailOut: {
             manifest: components["schemas"]["PluginManifest"];
@@ -4852,7 +5472,7 @@ export interface components {
              * @default uv
              * @enum {string}
              */
-            method: "uv" | "docker" | "external_tool";
+            method: "uv" | "docker" | "container_service" | "external_tool";
             /** Github Url */
             github_url?: string | null;
             /** Ref */
@@ -4869,6 +5489,13 @@ export interface components {
              * @default false
              */
             allow_unsafe_execution: boolean;
+            /** Request Id */
+            request_id?: string | null;
+            /**
+             * Provision Runtime
+             * @default true
+             */
+            provision_runtime: boolean;
             /**
              * Force
              * @default false
@@ -4883,7 +5510,7 @@ export interface components {
              * Method
              * @enum {string}
              */
-            method: "uv" | "docker" | "external_tool";
+            method: "uv" | "docker" | "container_service" | "external_tool";
             /** Dry Run */
             dry_run: boolean;
             /** Installed */
@@ -4896,6 +5523,26 @@ export interface components {
             warnings?: string[];
             /** Resolved Commit */
             resolved_commit?: string | null;
+            /**
+             * Provision Runtime
+             * @default false
+             */
+            provision_runtime: boolean;
+            /**
+             * Provisioned
+             * @default false
+             */
+            provisioned: boolean;
+            /**
+             * Provisioning Status
+             * @default not_requested
+             */
+            provisioning_status: string;
+            /** Provisioning Error */
+            provisioning_error?: string | null;
+            /** Request Id */
+            request_id?: string | null;
+            provisioning?: components["schemas"]["PluginProvisioningOut"] | null;
         };
         /** PluginManifest */
         PluginManifest: {
@@ -4934,6 +5581,48 @@ export interface components {
              * @enum {string}
              */
             trust_tier: "official" | "verified" | "community" | "local";
+        };
+        /** PluginProvisionStepOut */
+        PluginProvisionStepOut: {
+            /** Name */
+            name?: string | null;
+            /** Action */
+            action?: string | null;
+            /** Status */
+            status?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** PluginProvisioningOut */
+        PluginProvisioningOut: {
+            /**
+             * Available
+             * @default false
+             */
+            available: boolean;
+            /**
+             * Provisioned
+             * @default false
+             */
+            provisioned: boolean;
+            /** Steps */
+            steps?: components["schemas"]["PluginProvisionStepOut"][];
+            /** Env Keys */
+            env_keys?: string[];
+            /** Redacted Env */
+            redacted_env?: {
+                [key: string]: string;
+            };
+            /** Outputs */
+            outputs?: {
+                [key: string]: string;
+            };
+            /** Warnings */
+            warnings?: string[];
+            /** Metadata */
+            metadata?: {
+                [key: string]: unknown;
+            };
         };
         /** PluginRegistryItemOut */
         PluginRegistryItemOut: {
@@ -5239,6 +5928,284 @@ export interface components {
                 [key: string]: components["schemas"]["Link"] | null;
             } | null;
         };
+        /** ProviderPriorityRequest */
+        ProviderPriorityRequest: {
+            /** Providers */
+            providers?: string[];
+        };
+        /**
+         * RadianceEvalConfig
+         * @description Portable evaluation settings for splat providers.
+         *
+         *     Provider-specific eval knobs stay in ``backend_options``; this shape
+         *     captures the stable cross-provider contract exposed through the SDK.
+         */
+        RadianceEvalConfig: {
+            /**
+             * Enabled
+             * @default false
+             */
+            enabled: boolean;
+            /**
+             * Split
+             * @default test
+             * @enum {string}
+             */
+            split: "train" | "val" | "test" | "all";
+            /** Every Steps */
+            every_steps?: number | null;
+            /**
+             * Final
+             * @default true
+             */
+            final: boolean;
+            /** Metrics */
+            metrics?: ("psnr" | "ssim" | "lpips")[];
+            /** Max Images */
+            max_images?: number | null;
+            /**
+             * Image Downscale
+             * @default 1
+             */
+            image_downscale: number;
+            /**
+             * Crop Border Px
+             * @default 0
+             */
+            crop_border_px: number;
+            /**
+             * Save Images
+             * @default false
+             */
+            save_images: boolean;
+            /**
+             * Lpips Net
+             * @default alex
+             * @enum {string}
+             */
+            lpips_net: "alex" | "vgg" | "squeeze";
+            /**
+             * Background
+             * @default dataset
+             * @enum {string}
+             */
+            background: "dataset" | "black" | "white" | "random";
+        };
+        /**
+         * RadianceEvaluateRequest
+         * @description Request body for ``POST /v1/radiance_fields/{id}:evaluate``.
+         */
+        RadianceEvaluateRequest: {
+            /** Snapshot Seq */
+            snapshot_seq?: number | null;
+            /** Dataset Id */
+            dataset_id?: string | null;
+            /** Provider */
+            provider?: string | null;
+            /** Method */
+            method?: string | null;
+            eval?: components["schemas"]["RadianceEvalConfig"];
+            /** Backend Options */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+            /** Request Id */
+            request_id?: string | null;
+        };
+        /** RadianceEvaluationOut */
+        RadianceEvaluationOut: {
+            /** Links */
+            _links?: {
+                [key: string]: components["schemas"]["Link"] | null;
+            } | null;
+            /** Evaluation Id */
+            evaluation_id: string;
+            /** Radiance Field Id */
+            radiance_field_id: string;
+            /** Snapshot Seq */
+            snapshot_seq: number;
+            /** Dataset Id */
+            dataset_id?: string | null;
+            /** Provider */
+            provider: string;
+            /** Method */
+            method: string;
+            /** Split */
+            split: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "succeeded" | "failed" | "cancelled" | "cancelled_dirty";
+            /** Config */
+            config: {
+                [key: string]: unknown;
+            };
+            metrics?: components["schemas"]["RadianceMetrics"] | null;
+            /** Artifacts */
+            artifacts?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Error */
+            error?: {
+                [key: string]: unknown;
+            } | null;
+            /** Job Id */
+            job_id?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** RadianceFieldOut */
+        RadianceFieldOut: {
+            /** Links */
+            _links?: {
+                [key: string]: components["schemas"]["Link"] | null;
+            } | null;
+            /** Radiance Field Id */
+            radiance_field_id: string;
+            /** Project Id */
+            project_id: string;
+            /** Dataset Id */
+            dataset_id?: string | null;
+            /** Recon Id */
+            recon_id?: string | null;
+            /** Name */
+            name: string;
+            /** Provider */
+            provider: string;
+            /** Method */
+            method: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "running" | "succeeded" | "failed" | "cancelled" | "cancelled_dirty";
+            /** Spec */
+            spec: {
+                [key: string]: unknown;
+            };
+            /** Summary */
+            summary?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /**
+         * RadianceMetrics
+         * @description Canonical aggregate radiance evaluation metrics.
+         */
+        RadianceMetrics: {
+            /** Psnr Db */
+            psnr_db?: number | null;
+            /** Ssim */
+            ssim?: number | null;
+            /** Lpips */
+            lpips?: number | null;
+            /**
+             * Num Images
+             * @default 0
+             */
+            num_images: number;
+            /** Duration S */
+            duration_s?: number | null;
+            /** Render Time S Total */
+            render_time_s_total?: number | null;
+            /** Render Time S Mean */
+            render_time_s_mean?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RadianceSnapshotListResponse */
+        RadianceSnapshotListResponse: {
+            /** Seqs */
+            seqs?: number[];
+            /** Links */
+            _links?: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** RadianceSnapshotOut */
+        RadianceSnapshotOut: {
+            /** Links */
+            _links?: {
+                [key: string]: components["schemas"]["Link"] | null;
+            } | null;
+            /** Snapshot Id */
+            snapshot_id: string;
+            /** Radiance Field Id */
+            radiance_field_id: string;
+            /** Seq */
+            seq: number;
+            /** Sealed Path */
+            sealed_path: string;
+            /** Summary */
+            summary?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /**
+         * RadianceTrainRequest
+         * @description Request body for ``POST /v1/projects/{project_id}/radiance_fields:train``.
+         *
+         *     The alpha core implementation supports a deterministic ``stub`` provider
+         *     for parity tests. Real training providers belong in plugins and should
+         *     preserve provider-specific knobs inside ``backend_options``.
+         */
+        RadianceTrainRequest: {
+            /** Name */
+            name?: string | null;
+            /** Dataset Id */
+            dataset_id?: string | null;
+            /** Recon Id */
+            recon_id?: string | null;
+            /**
+             * Provider
+             * @default stub
+             */
+            provider: string;
+            /**
+             * Method
+             * @default stub
+             */
+            method: string;
+            /**
+             * Max Steps
+             * @default 1
+             */
+            max_steps: number;
+            eval?: components["schemas"]["RadianceEvalConfig"] | null;
+            /** Backend Options */
+            backend_options?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Request Id
+             * @description Client retry token. Reserved for idempotent radiance submissions.
+             */
+            request_id?: string | null;
+        };
         /**
          * ReadyzResponse
          * @description Readiness check envelope. ``status`` is ``"ok"`` when every
@@ -5430,6 +6397,7 @@ export interface components {
         RuntimeModes: {
             uv?: components["schemas"]["UvRuntime"] | null;
             docker?: components["schemas"]["DockerRuntime"] | null;
+            container_service?: components["schemas"]["ContainerServiceRuntime"] | null;
             external_tool?: components["schemas"]["ExternalToolRuntime"] | null;
         };
         /**
@@ -5622,8 +6590,8 @@ export interface components {
             media_type?: string | null;
             /** Artifact Format */
             artifact_format?: string | null;
-            /** Artifact Type */
-            artifact_type?: string | null;
+            /** Datatype */
+            datatype?: string | null;
             /** Schema Version */
             schema_version?: number | null;
             /** Files */
@@ -5793,6 +6761,37 @@ export interface components {
             /** Tools */
             tools: {
                 [key: string]: components["schemas"]["ToolDetection"][];
+            };
+        };
+        /** TorchRuntime */
+        TorchRuntime: {
+            /**
+             * Policy
+             * @default recommended
+             * @enum {string}
+             */
+            policy: "optional" | "recommended" | "required";
+            /**
+             * Device
+             * @default cuda
+             * @enum {string}
+             */
+            device: "cpu" | "cuda";
+            /**
+             * Index Url
+             * @default https://download.pytorch.org/whl/cu128
+             */
+            index_url: string;
+            /**
+             * Cpu Index Url
+             * @default https://download.pytorch.org/whl/cpu
+             */
+            cpu_index_url: string;
+            /** Packages */
+            packages?: string[];
+            /** Install Env */
+            install_env?: {
+                [key: string]: string;
             };
         };
         /**
@@ -6384,6 +7383,41 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["KaptureImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    from_archive_v1_projects__project_id__datasets_from_archive_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ArchiveImportRequest"];
             };
         };
         responses: {
@@ -9063,6 +10097,476 @@ export interface operations {
             };
         };
     };
+    run_pipeline_v1_projects__project_id__pipelines_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PipelineRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_datatypes_v1_datatypes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    list_operations_v1_operations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    validate_pipeline_v1_pipelines_validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PipelineValidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelineValidateResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    train_radiance_field_v1_projects__project_id__radiance_fields_train_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RadianceTrainRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evaluate_radiance_field_v1_radiance_fields__radiance_field_id__evaluate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                radiance_field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RadianceEvaluateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobAcceptedResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_project_radiance_fields_v1_projects__project_id__radiance_fields_get: {
+        parameters: {
+            query?: {
+                page_token?: string | null;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_RadianceFieldOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_radiance_field_v1_radiance_fields__radiance_field_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                radiance_field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RadianceFieldOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_radiance_evaluations_v1_radiance_fields__radiance_field_id__evaluations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                radiance_field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Page_RadianceEvaluationOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_radiance_evaluation_v1_radiance_evaluations__evaluation_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evaluation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RadianceEvaluationOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_radiance_evaluation_metrics_v1_radiance_evaluations__evaluation_id__metrics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evaluation_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RadianceMetrics"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_radiance_evaluation_artifact_v1_radiance_evaluations__evaluation_id__artifacts__name__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evaluation_id: string;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_radiance_snapshots_v1_radiance_fields__radiance_field_id__snapshots_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                radiance_field_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RadianceSnapshotListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_radiance_snapshot_v1_radiance_fields__radiance_field_id__snapshots__seq__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                radiance_field_id: string;
+                seq: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RadianceSnapshotOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_radiance_snapshot_file_v1_radiance_fields__radiance_field_id__snapshots__seq___name__get: {
+        parameters: {
+            query?: {
+                download?: boolean;
+            };
+            header?: never;
+            path: {
+                radiance_field_id: string;
+                seq: number;
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     resume_v1_jobs__job_id__resume_post: {
         parameters: {
             query?: never;
@@ -9464,6 +10968,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RoutingProfileAssignmentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RoutingOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_provider_priority_v1_admin_routing_provider_priority_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderPriorityRequest"];
             };
         };
         responses: {
