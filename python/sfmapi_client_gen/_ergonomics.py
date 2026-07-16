@@ -17,6 +17,7 @@ runs); it does NOT come from the generator.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import json
 import struct
 from typing import Any, BinaryIO
@@ -26,20 +27,41 @@ import httpx
 from .errors import UnexpectedStatus
 from .models.capabilities_out import CapabilitiesOut
 
+try:
+    from sfmapi_client.errors import SfmApiError as _LegacySfmApiError
+except Exception:  # pragma: no cover - generated package can be installed alone
+    _LegacySfmApiError = Exception
+
 # ---------------------------------------------------------------------
 # Typed exception hierarchy. Mirrors the hand-rolled SDK so callers
 # can write `except SfmApiError:` regardless of which SDK they use.
 # ---------------------------------------------------------------------
 
 
-class SfmApiError(Exception):
+class SfmApiError(_LegacySfmApiError):
     """Base for every typed sfmapi error."""
 
-    def __init__(self, status_code: int, detail: str = "", body: dict[str, Any] | None = None):
-        super().__init__(detail or f"sfmapi error: {status_code}")
+    def __init__(
+        self,
+        status_code: int,
+        detail: str = "",
+        body: dict[str, Any] | None = None,
+        response: httpx.Response | None = None,
+    ):
+        if _LegacySfmApiError is Exception:
+            super().__init__(detail or f"sfmapi error: {status_code}")
+        else:
+            super().__init__(
+                detail or f"sfmapi error: {status_code}",
+                status_code=status_code,
+                problem=body or {},
+                response=response,
+            )
         self.status_code = status_code
         self.detail = detail
         self.body = body or {}
+        self.problem = self.body
+        self.response = response
 
 
 class NotFoundError(SfmApiError):
@@ -123,7 +145,7 @@ def raise_for_status(exc: UnexpectedStatus) -> None:
     if cls is CapabilityUnavailableError and isinstance(body, dict):
         if str(body.get("capability") or "").lower() == "pycolmap":
             cls = PycolmapUnavailableError
-    raise cls(exc.status_code, detail=detail, body=body) from exc
+    raise cls(exc.status_code, detail=detail, body=body, response=None) from exc
 
 
 # ---------------------------------------------------------------------
@@ -264,7 +286,10 @@ def buildhttp_error(resp: httpx.Response) -> SfmApiError:
     if body:
         detail = str(body.get("detail") or body.get("title") or "")
     cls = _BY_STATUS.get(resp.status_code, SfmApiError)
-    return cls(resp.status_code, detail=detail, body=body)
+    if cls is CapabilityUnavailableError:
+        if str(body.get("capability") or "").lower() == "pycolmap":
+            cls = PycolmapUnavailableError
+    return cls(resp.status_code, detail=detail, body=body, response=resp)
 
 
 def upload_bytes(
@@ -293,10 +318,15 @@ def upload_bytes(
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
     base = base_url.rstrip("/")
+    expected_sha = hashlib.sha256(data).hexdigest()
     with httpx.Client(timeout=timeout, headers=headers) as client:
         init = client.post(
             f"{base}/v1/uploads",
-            json={"expected_size": len(data), "content_type": content_type},
+            json={
+                "expected_size": len(data),
+                "content_type": content_type,
+                "expected_sha": expected_sha,
+            },
         )
         if init.status_code not in (200, 201):
             raise buildhttp_error(init)
@@ -317,10 +347,15 @@ def upload_bytes(
             if r.status_code not in (200, 204):
                 raise buildhttp_error(r)
             offset += len(chunk)
-        fin = client.post(f"{base}/v1/uploads/{upload_id}:finalize")
+        fin = client.post(
+            f"{base}/v1/uploads/{upload_id}:finalize",
+            headers={"X-Content-SHA256": expected_sha},
+        )
         if fin.status_code not in (200, 201):
             raise buildhttp_error(fin)
         sha: str = fin.json()["blob_sha"]
+        if sha != expected_sha:
+            raise ValueError(f"upload_bytes: blob sha mismatch: {sha} != {expected_sha}")
         return sha
 
 
@@ -801,6 +836,8 @@ __all__ = [
     "POINTS_RECORD_SIZE",
     "TERMINAL_JOB_STATES",
     "AuthError",
+    "BackendUnavailableError",
+    "CapabilityUnavailableError",
     "ConflictError",
     "DepthMap",
     "NormalMap",
@@ -821,11 +858,14 @@ __all__ = [
     "parse_points_binary",
     "parse_sse_buffer",
     "raise_for_status",
+    "iter_paginated",
     "stream_events",
     "submit_and_stream",
     "submit_and_wait",
+    "submit_and_wait_typed",
     "supports",
     "upload_bytes",
     "upload_file",
     "wait_for_job",
+    "wait_for_job_typed",
 ]
