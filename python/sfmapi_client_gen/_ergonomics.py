@@ -27,18 +27,17 @@ import httpx
 from .errors import UnexpectedStatus
 from .models.capabilities_out import CapabilitiesOut
 
-try:
-    from sfmapi_client.errors import SfmApiError as _LegacySfmApiError
-except Exception:  # pragma: no cover - generated package can be installed alone
-    _LegacySfmApiError = Exception
-
 # ---------------------------------------------------------------------
-# Typed exception hierarchy. Mirrors the hand-rolled SDK so callers
-# can write `except SfmApiError:` regardless of which SDK they use.
+# Typed exception hierarchy. Mirrors the hand-rolled SDK's class names
+# and attribute surface (`status_code` / `problem` / `response`, plus
+# `detail` / `body`) so migrating callers only swap the import — but it
+# is rooted in this package: the supported generated SDK must not
+# derive its exceptions from the deprecated `sfmapi_client` package
+# (lean audit 2026-07, item 5.1).
 # ---------------------------------------------------------------------
 
 
-class SfmApiError(_LegacySfmApiError):
+class SfmApiError(Exception):
     """Base for every typed sfmapi error."""
 
     def __init__(
@@ -48,15 +47,7 @@ class SfmApiError(_LegacySfmApiError):
         body: dict[str, Any] | None = None,
         response: httpx.Response | None = None,
     ):
-        if _LegacySfmApiError is Exception:
-            super().__init__(detail or f"sfmapi error: {status_code}")
-        else:
-            super().__init__(
-                detail or f"sfmapi error: {status_code}",
-                status_code=status_code,
-                problem=body or {},
-                response=response,
-            )
+        super().__init__(detail or f"sfmapi error: {status_code}")
         self.status_code = status_code
         self.detail = detail
         self.body = body or {}

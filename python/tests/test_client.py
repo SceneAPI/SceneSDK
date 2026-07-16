@@ -397,12 +397,24 @@ def test_legacy_error_exports_include_backend_unavailable() -> None:
     assert Exported is BackendUnavailableError
 
 
-def test_generated_error_root_is_legacy_error_root() -> None:
+def test_generated_error_root_is_self_rooted() -> None:
+    """The supported generated SDK owns its exception root: it must NOT
+    derive from the deprecated ``sfmapi_client`` package (lean audit
+    2026-07 item 5.1 — the old guarded import made the supported
+    package's hierarchy depend on the deprecated one whenever both were
+    installed). The attribute surface stays a superset of the legacy
+    root so migrating callers only swap the import.
+    """
     err = GeneratedNotFoundError(404, "missing", {"status": 404})
 
-    assert issubclass(GeneratedSfmApiError, SfmApiError)
-    assert isinstance(err, SfmApiError)
+    assert not issubclass(GeneratedSfmApiError, SfmApiError)
+    assert GeneratedSfmApiError.__bases__ == (Exception,)
+    assert isinstance(err, GeneratedSfmApiError)
     assert err.status_code == 404
+    assert err.detail == "missing"
+    assert err.problem == {"status": 404}
+    assert err.body == {"status": 404}
+    assert err.response is None
 
 
 def test_handwritten_bundle_adjustment_spec_allows_rig_mode() -> None:
