@@ -9,10 +9,15 @@ import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import type { components } from "../src/_generated/openapi.js";
+import type { JobSubmitResponse } from "../src/models.js";
 
-const FIXTURE_DIR = resolve(__dirname, "../../../tests/contract/fixtures");
-const haveFixtures = existsSync(FIXTURE_DIR) &&
-  readdirSync(FIXTURE_DIR).some((f) => f.endsWith(".json"));
+const FIXTURE_DIR = resolve(__dirname, "../../cpp/test/contract/fixtures");
+if (
+  !existsSync(FIXTURE_DIR) ||
+  !readdirSync(FIXTURE_DIR).some((f) => f.endsWith(".json"))
+) {
+  throw new Error(`Missing SDK contract fixtures: ${FIXTURE_DIR}`);
+}
 
 function load<T>(name: string): T {
   return JSON.parse(readFileSync(join(FIXTURE_DIR, `${name}.json`), "utf-8")) as T;
@@ -27,8 +32,10 @@ type DatasetOut = components["schemas"]["DatasetOut"];
 type UploadOut = components["schemas"]["UploadOut"];
 type JobAcceptedResponse = components["schemas"]["JobAcceptedResponse"];
 type SnapshotListResponse = components["schemas"]["SnapshotListResponse"];
+type ArtifactConversionPlanRequest = components["schemas"]["ArtifactConversionPlanRequest"];
+type ArtifactConvertRequest = components["schemas"]["ArtifactConvertRequest"];
 
-describe.skipIf(!haveFixtures)("contract: generated TS types decode fixtures", () => {
+describe("contract: generated TS types decode fixtures", () => {
   it("CapabilitiesOut carries schema_version + backend + features", () => {
     const c = load<CapabilitiesOut>("capabilities");
     expect(c.schema_version).toBe(1);
@@ -84,13 +91,97 @@ describe.skipIf(!haveFixtures)("contract: generated TS types decode fixtures", (
   it("hand-rolled and generated JobAcceptedResponse types align", () => {
     // Real recorded fixture from the features stage submission.
     const j = load<JobAcceptedResponse>("job_accepted_features");
+    const handRolled: JobSubmitResponse = {
+      job_id: j.job_id,
+      task_ids: j.task_ids ?? [],
+      recon_id: j.recon_id ?? null,
+      dataset_id: j.dataset_id ?? null,
+      project_id: j.project_id ?? null,
+      method: j.method ?? null,
+      applied_sim3: j.applied_sim3 ?? null,
+      target_recon_id: j.target_recon_id ?? null,
+      source_recon_ids: j.source_recon_ids ?? null,
+      strategy: j.strategy ?? null,
+      action_id: j.action_id ?? null,
+      backend: j.backend ?? null,
+      provider: j.provider ?? null,
+      artifact_id: j.artifact_id ?? null,
+      target_format: j.target_format ?? null,
+      radiance_field_id: j.radiance_field_id ?? null,
+      radiance_evaluation_id: j.radiance_evaluation_id ?? null,
+    };
     expect(j.job_id).toMatch(/^[0-9A-Z]{26}$/);
     expect(Array.isArray(j.task_ids)).toBe(true);
     expect((j.task_ids ?? []).length).toBeGreaterThanOrEqual(1);
+    expect(Object.keys(j).sort()).toEqual([
+      "action_id",
+      "applied_sim3",
+      "artifact_id",
+      "backend",
+      "dataset_id",
+      "job_id",
+      "method",
+      "project_id",
+      "provider",
+      "radiance_evaluation_id",
+      "radiance_field_id",
+      "recon_id",
+      "source_recon_ids",
+      "strategy",
+      "target_format",
+      "target_recon_id",
+      "task_ids",
+    ]);
+    expect(handRolled.provider).toBeNull();
+    expect(handRolled.artifact_id).toBeNull();
+    expect(handRolled.radiance_field_id).toBeNull();
   });
 
   it("SnapshotListResponse decodes empty list", () => {
     const s = load<SnapshotListResponse>("snapshot_list_empty");
     expect(s.seqs).toEqual([]);
+  });
+
+  it("conversion request types allow defaulted lossless flag omission", () => {
+    const plan: ArtifactConversionPlanRequest = {
+      to_format: "sfmapi.features.local.v1",
+    };
+    const planByAcceptedFormats: ArtifactConversionPlanRequest = {
+      accepted_formats: ["sfmapi.features.local.v1"],
+      require_lossless: true,
+    };
+    const convert: ArtifactConvertRequest = {
+      to_format: "sfmapi.features.local.v1",
+      options: { preserve_metadata: true },
+    };
+    const convertByAcceptedFormats: ArtifactConvertRequest = {
+      accepted_formats: ["sfmapi.features.local.v1"],
+      name: "converted",
+    };
+    expect(plan.to_format).toBe(convert.to_format);
+    expect(planByAcceptedFormats.accepted_formats[0]).toBe(
+      convertByAcceptedFormats.accepted_formats[0],
+    );
+
+    // @ts-expect-error either to_format or non-empty accepted_formats is required
+    const missingPlanTarget: ArtifactConversionPlanRequest = {};
+    // @ts-expect-error accepted_formats must be statically non-empty when used as target
+    const emptyPlanTargets: ArtifactConversionPlanRequest = { accepted_formats: [] };
+    // @ts-expect-error accepted_formats must be statically non-empty when present
+    const emptyPlanTargetsWithFormat: ArtifactConversionPlanRequest = { to_format: "sfmapi.features.local.v1", accepted_formats: [] };
+    // @ts-expect-error either to_format or non-empty accepted_formats is required
+    const missingConvertTarget: ArtifactConvertRequest = { options: {} };
+    // @ts-expect-error accepted_formats must be statically non-empty when used as target
+    const emptyConvertTargets: ArtifactConvertRequest = { accepted_formats: [] };
+    // @ts-expect-error accepted_formats must be statically non-empty when present
+    const emptyConvertTargetsWithFormat: ArtifactConvertRequest = { to_format: "sfmapi.features.local.v1", accepted_formats: [] };
+    expect([
+      missingPlanTarget,
+      emptyPlanTargets,
+      emptyPlanTargetsWithFormat,
+      missingConvertTarget,
+      emptyConvertTargets,
+      emptyConvertTargetsWithFormat,
+    ]).toHaveLength(6);
   });
 });

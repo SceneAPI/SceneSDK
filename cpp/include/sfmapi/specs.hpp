@@ -65,6 +65,7 @@ constexpr const char* kFeatureTypeAliked = "aliked";
 constexpr const char* kFeatureTypeDisk = "disk";
 constexpr const char* kFeatureTypeR2D2 = "r2d2";
 constexpr const char* kFeatureTypeD2Net = "d2net";
+constexpr const char* kFeatureTypeSosNet = "sosnet";
 
 struct FeaturesSpec {
   int version = 1;
@@ -74,7 +75,6 @@ struct FeaturesSpec {
   bool use_gpu = true;
   int seed = 0;
   Json::Object backend_options;
-  Json::Object extractor_options;
   ArtifactInputMap input_artifacts;
 
   Json ToJson() const {
@@ -90,9 +90,6 @@ struct FeaturesSpec {
     }
     if (!backend_options.empty()) {
       o["backend_options"] = Json(backend_options);
-    }
-    if (!extractor_options.empty()) {
-      o["extractor_options"] = Json(extractor_options);
     }
     AddInputArtifacts(o, input_artifacts);
     return Json(std::move(o));
@@ -111,6 +108,20 @@ constexpr const char* kPairSpatial = "spatial";
 constexpr const char* kPairVocabTree = "vocabtree";
 constexpr const char* kPairRetrieval = "retrieval";
 constexpr const char* kPairFromPoses = "from_poses";
+constexpr const char* kPairExplicit = "explicit";
+constexpr const char* kPairsBlobFormatImageNamePairsTxt = "image_name_pairs_txt";
+
+struct ImagePairRef {
+  std::string image_name1;
+  std::string image_name2;
+
+  Json ToJson() const {
+    return Json(Json::Object{
+        {"image_name1", image_name1},
+        {"image_name2", image_name2},
+    });
+  }
+};
 
 struct PairsSpec {
   int version = 1;
@@ -122,6 +133,9 @@ struct PairsSpec {
   int retrieval_k = 20;
   std::optional<double> overlap_distance_m;
   std::optional<double> max_angle_deg;
+  std::vector<ImagePairRef> image_pairs;
+  std::optional<std::string> pairs_blob_sha;
+  std::string pairs_blob_format = kPairsBlobFormatImageNamePairsTxt;
   Json::Object backend_options;
   ArtifactInputMap input_artifacts;
 
@@ -132,11 +146,20 @@ struct PairsSpec {
         {"overlap", static_cast<double>(overlap)},
         {"retrieval_strategy", retrieval_strategy},
         {"retrieval_k", static_cast<double>(retrieval_k)},
+        {"pairs_blob_format", pairs_blob_format},
     };
     if (provider) o["provider"] = *provider;
     if (vocab_tree_path) o["vocab_tree_path"] = *vocab_tree_path;
     if (overlap_distance_m) o["overlap_distance_m"] = *overlap_distance_m;
     if (max_angle_deg) o["max_angle_deg"] = *max_angle_deg;
+    if (!image_pairs.empty()) {
+      Json::Array pairs;
+      for (const auto& pair : image_pairs) {
+        pairs.push_back(pair.ToJson());
+      }
+      o["image_pairs"] = Json(std::move(pairs));
+    }
+    if (pairs_blob_sha) o["pairs_blob_sha"] = *pairs_blob_sha;
     if (!backend_options.empty()) o["backend_options"] = Json(backend_options);
     AddInputArtifacts(o, input_artifacts);
     return Json(std::move(o));
@@ -164,7 +187,6 @@ struct MatcherSpec {
   double max_ratio = 0.8;
   double max_distance = 0.7;
   Json::Object backend_options;
-  Json::Object matcher_options;
   ArtifactInputMap input_artifacts;
 
   Json ToJson() const {
@@ -181,9 +203,6 @@ struct MatcherSpec {
     }
     if (!backend_options.empty()) {
       o["backend_options"] = Json(backend_options);
-    }
-    if (!matcher_options.empty()) {
-      o["matcher_options"] = Json(matcher_options);
     }
     AddInputArtifacts(o, input_artifacts);
     return Json(std::move(o));
@@ -282,6 +301,7 @@ struct IncrementalSpec {
   bool multiple_models = true;
   int max_num_models = 50;
   int min_num_matches = 15;
+  bool ba_global_use_pba = true;
   bool extract_colors = true;
   ArtifactInputMap input_artifacts;
 
@@ -293,6 +313,7 @@ struct IncrementalSpec {
         {"multiple_models", multiple_models},
         {"max_num_models", static_cast<double>(max_num_models)},
         {"min_num_matches", static_cast<double>(min_num_matches)},
+        {"ba_global_use_pba", ba_global_use_pba},
         {"extract_colors", extract_colors},
     };
     if (provider) {
@@ -322,6 +343,8 @@ struct GlobalSpec {
   int version = 1;
   std::optional<std::string> provider;
   int seed = 0;
+  std::optional<int> max_runtime_seconds;
+  std::optional<int> snapshot_frames_freq = 50;
   std::string backend = "AUTO";
   std::string formulation = "AUTO";
   bool use_incremental_quality_fallback = true;
@@ -343,6 +366,12 @@ struct GlobalSpec {
     if (!backend_options.empty()) {
       o["backend_options"] = Json(backend_options);
     }
+    if (max_runtime_seconds) {
+      o["max_runtime_seconds"] = static_cast<double>(*max_runtime_seconds);
+    }
+    if (snapshot_frames_freq) {
+      o["snapshot_frames_freq"] = static_cast<double>(*snapshot_frames_freq);
+    }
     AddInputArtifacts(o, input_artifacts);
     return Json(std::move(o));
   }
@@ -354,6 +383,8 @@ struct HierarchicalSpec {
   int version = 1;
   std::optional<std::string> provider;
   int seed = 0;
+  std::optional<int> max_runtime_seconds;
+  std::optional<int> snapshot_frames_freq = 50;
   int cluster_max_size = 100;
   int cluster_overlap = 25;
   Json::Object backend_options;
@@ -373,6 +404,12 @@ struct HierarchicalSpec {
     if (!backend_options.empty()) {
       o["backend_options"] = Json(backend_options);
     }
+    if (max_runtime_seconds) {
+      o["max_runtime_seconds"] = static_cast<double>(*max_runtime_seconds);
+    }
+    if (snapshot_frames_freq) {
+      o["snapshot_frames_freq"] = static_cast<double>(*snapshot_frames_freq);
+    }
     AddInputArtifacts(o, input_artifacts);
     return Json(std::move(o));
   }
@@ -384,6 +421,8 @@ struct SphericalSpec {
   int version = 1;
   std::optional<std::string> provider;
   int seed = 0;
+  std::optional<int> max_runtime_seconds;
+  std::optional<int> snapshot_frames_freq = 50;
   bool panorama = true;
   Json::Object backend_options;
   ArtifactInputMap input_artifacts;
@@ -401,8 +440,86 @@ struct SphericalSpec {
     if (!backend_options.empty()) {
       o["backend_options"] = Json(backend_options);
     }
+    if (max_runtime_seconds) {
+      o["max_runtime_seconds"] = static_cast<double>(*max_runtime_seconds);
+    }
+    if (snapshot_frames_freq) {
+      o["snapshot_frames_freq"] = static_cast<double>(*snapshot_frames_freq);
+    }
     AddInputArtifacts(o, input_artifacts);
     return Json(std::move(o));
+  }
+  std::string ToJsonString() const { return ToJson().Dump(); }
+};
+
+// ====================================================================
+//  Typed dataflow pipeline request bodies
+// ====================================================================
+
+struct PipelineStep {
+  std::string op;
+  std::optional<std::string> provider;
+  Json::Object params;
+
+  Json ToJson() const {
+    Json::Object o{{"op", op}};
+    if (provider) o["provider"] = *provider;
+    if (!params.empty()) o["params"] = Json(params);
+    return Json(std::move(o));
+  }
+};
+
+struct ProcessorPipelineStep {
+  std::string processor;
+  std::optional<std::string> ref;
+  std::optional<std::string> provider;
+  Json::Object attributes;
+  Json::Object params;
+  Json::Object wires;
+
+  Json ToJson() const {
+    Json::Object o{{"processor", processor}};
+    if (ref) o["ref"] = *ref;
+    if (provider) o["provider"] = *provider;
+    if (!attributes.empty()) o["attributes"] = Json(attributes);
+    if (!params.empty()) o["params"] = Json(params);
+    if (!wires.empty()) o["wires"] = Json(wires);
+    return Json(std::move(o));
+  }
+};
+
+struct PipelineValidateRequest {
+  std::vector<std::string> initial_inputs;
+  std::vector<Json> steps;
+
+  void AddStep(const std::string& step_id) { steps.push_back(Json(step_id)); }
+  void AddStep(const PipelineStep& step) { steps.push_back(step.ToJson()); }
+  void AddStep(const ProcessorPipelineStep& step) {
+    steps.push_back(step.ToJson());
+  }
+
+  Json ToJson() const {
+    Json::Object o;
+    if (!initial_inputs.empty()) {
+      Json::Array inputs;
+      for (const auto& item : initial_inputs) inputs.push_back(Json(item));
+      o["initial_inputs"] = Json(std::move(inputs));
+    }
+    Json::Array body_steps;
+    for (const auto& step : steps) body_steps.push_back(step);
+    o["steps"] = Json(std::move(body_steps));
+    return Json(std::move(o));
+  }
+  std::string ToJsonString() const { return ToJson().Dump(); }
+};
+
+struct PipelineRunRequest : PipelineValidateRequest {
+  std::string dataset_id;
+
+  Json ToJson() const {
+    Json value = PipelineValidateRequest::ToJson();
+    value["dataset_id"] = dataset_id;
+    return value;
   }
   std::string ToJsonString() const { return ToJson().Dump(); }
 };

@@ -1,0 +1,21 @@
+{
+  "action_id": null,
+  "applied_sim3": null,
+  "artifact_id": null,
+  "backend": null,
+  "dataset_id": null,
+  "job_id": "01H00000000000000000006001",
+  "method": null,
+  "project_id": null,
+  "provider": null,
+  "radiance_evaluation_id": null,
+  "radiance_field_id": null,
+  "recon_id": null,
+  "source_recon_ids": null,
+  "strategy": null,
+  "target_format": null,
+  "target_recon_id": null,
+  "task_ids": [
+    "01H00000000000000000014001"
+  ]
+}

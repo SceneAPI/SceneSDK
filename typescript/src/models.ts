@@ -1,10 +1,15 @@
 // Type-only mirror of the server schemas. Kept here so the SDK ships
 // without depending on any runtime validator.
 
+import type { components } from "./_generated/openapi.js";
+import type { Sim3 } from "./scene.js";
+
+type Schema<K extends keyof components["schemas"]> = components["schemas"][K];
+
 export interface Page<T> {
   items: T[];
-  next_page_token: string | null;
-  total: number | null;
+  next_page_token?: string | null;
+  total?: number | null;
 }
 
 export interface ProjectCreate {
@@ -14,7 +19,7 @@ export interface ProjectCreate {
 
 export interface ProjectPatch {
   /** Partial update — unset fields are left untouched. */
-  name?: string;
+  name?: string | null;
   description?: string | null;
 }
 
@@ -22,7 +27,7 @@ export interface Project {
   project_id: string;
   tenant_id: string;
   name: string;
-  description: string | null;
+  description?: string | null;
   created_at: string;
   updated_at?: string | null;
   _links?: Record<string, { href?: string | null } | null> | null;
@@ -108,10 +113,11 @@ export interface TilesIndex {
 export interface ApiKey {
   api_key_id: string;
   tenant_id: string;
+  name?: string | null;
+  /** Deprecated alias for name. */
   label?: string | null;
-  last_used_at?: string | null;
-  revoked_at?: string | null;
-  created_at: string;
+  created_at?: string | null;
+  revoked?: boolean;
 }
 
 export interface ApiKeyCreated extends ApiKey {
@@ -133,8 +139,8 @@ export interface Dataset {
    * Server emits the column name (`rig_config_json`) directly. We mirror
    * the wire shape so JSON round-trips don't require renaming.
    */
-  rig_config_json: Record<string, unknown> | null;
-  active_maskset_id: string | null;
+  rig_config_json?: Record<string, unknown> | null;
+  active_maskset_id?: string | null;
   manifest_hash: string;
   created_at: string;
   updated_at?: string | null;
@@ -147,38 +153,43 @@ export interface Image {
   name: string;
   content_sha: string;
   source_kind: string;
-  rel_path: string | null;
-  byte_size: number | null;
-  width: number | null;
-  height: number | null;
+  rel_path?: string | null;
+  byte_size?: number | null;
+  width?: number | null;
+  height?: number | null;
   created_at: string;
   _links?: Record<string, { href?: string | null } | null> | null;
 }
 
 export interface Upload {
   upload_id: string;
-  state: "open" | "received" | "finalized";
+  state: "open" | "received" | "finalized" | "expired";
   expected_size: number;
   received_bytes: number;
-  blob_sha: string | null;
+  blob_sha?: string | null;
   expires_at: string;
 }
+
+export type JobStatus =
+  | "pending"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled"
+  | "cancelled_dirty";
+
+export type TaskStatus = JobStatus | "skipped";
 
 export interface Task {
   task_id: string;
   job_id: string;
   kind: string;
-  status:
-    | "pending"
-    | "running"
-    | "succeeded"
-    | "failed"
-    | "cancelled"
-    | "cancelled_dirty";
+  status: TaskStatus;
   cache_key: string;
   inputs_hash: string;
   params_hash: string;
-  outputs_ref: Record<string, unknown> | null;
+  provider?: string | null;
+  outputs_ref?: Record<string, unknown> | null;
 }
 
 export interface Job {
@@ -186,7 +197,7 @@ export interface Job {
   tenant_id: string;
   project_id: string;
   recipe: string;
-  status: Task["status"];
+  status: JobStatus;
   cancel_requested: boolean;
   cancel_force: boolean;
   created_at: string;
@@ -206,9 +217,13 @@ export interface Reconstruction {
   project_id: string;
   dataset_id: string;
   dataset_snapshot_hash: string;
-  spec: Record<string, unknown>;
+  spec:
+    | Schema<"IncrementalSpec">
+    | Schema<"GlobalSpec">
+    | Schema<"HierarchicalSpec">
+    | Schema<"SphericalSpec">;
   rv_id: string;
-  status: string;
+  status: "running" | "succeeded" | "failed" | "cancelled" | "cancelled_dirty";
   created_at: string;
   _links?: Record<string, { href?: string | null } | null> | null;
 }
@@ -217,11 +232,11 @@ export interface SubModel {
   submodel_id: string;
   recon_id: string;
   idx: number;
-  parent_submodel_id: string | null;
-  summary: Record<string, unknown> | null;
-  rigidity: Record<string, unknown> | null;
-  snapshot_seq: number | null;
-  sealed_path: string | null;
+  parent_submodel_id?: string | null;
+  summary?: Record<string, unknown> | null;
+  rigidity?: Record<string, unknown> | null;
+  snapshot_seq?: number | null;
+  sealed_path?: string | null;
   created_at: string;
   _links?: Record<string, { href?: string | null } | null> | null;
 }
@@ -230,6 +245,20 @@ export interface JobSubmitResponse {
   job_id: string;
   task_ids: string[];
   recon_id?: string | null;
+  dataset_id?: string | null;
+  project_id?: string | null;
+  method?: string | null;
+  applied_sim3?: Sim3 | null;
+  target_recon_id?: string | null;
+  source_recon_ids?: string[] | null;
+  strategy?: string | null;
+  action_id?: string | null;
+  backend?: string | null;
+  provider?: string | null;
+  artifact_id?: string | null;
+  target_format?: string | null;
+  radiance_field_id?: string | null;
+  radiance_evaluation_id?: string | null;
 }
 
 export interface HealthResponse {
@@ -250,6 +279,139 @@ export interface VersionResponse {
 
 // ----- Pipeline + stage specs ------------------------------------------------
 
+export interface ArtifactInputRef {
+  artifact_id: string;
+  kind?: string | null;
+}
+
+export type ArtifactInputMap = Record<string, ArtifactInputRef>;
+
+export interface ArtifactKindOut {
+  kind: string;
+  datatype: string;
+  title: string;
+  description: string;
+  durable: boolean;
+  artifact_format: string;
+  schema_version: number;
+}
+
+export interface ArtifactFormatOut {
+  format_id: string;
+  datatype: string;
+  title: string;
+  description: string;
+  schema_version: number;
+  media_types: string[];
+  json_schema?: Record<string, unknown> | null;
+  examples?: Array<Record<string, unknown>>;
+  portable: boolean;
+}
+
+export interface ArtifactConversionStepOut {
+  contract_id?: string | null;
+  backend?: string | null;
+  provider?: string | null;
+  from_format: string;
+  to_format: string;
+  lossless: boolean;
+  description?: string | null;
+}
+
+export interface ArtifactConversionPlanOut {
+  artifact_id: string;
+  source_format?: string | null;
+  target_format: string;
+  conversion_required: boolean;
+  executable: boolean;
+  reason?: string | null;
+  steps?: ArtifactConversionStepOut[];
+}
+
+interface ArtifactConversionPlanRequestBase {
+  provider?: string | null;
+  to_format?: string | null;
+  accepted_formats?: [string, ...string[]];
+  require_lossless?: boolean;
+}
+
+export type ArtifactConversionPlanRequest = ArtifactConversionPlanRequestBase &
+  ({ to_format: string } | { accepted_formats: [string, ...string[]] });
+
+export type ArtifactConvertRequest = ArtifactConversionPlanRequestBase &
+  ({ to_format: string } | { accepted_formats: [string, ...string[]] }) & {
+  name?: string | null;
+  to_kind?: string | null;
+  options?: Record<string, unknown>;
+};
+
+export interface ArtifactFileRef {
+  name: string;
+  uri: string;
+  media_type?: string | null;
+  sha256?: string | null;
+  byte_size?: number | null;
+}
+
+export interface ArtifactImportRequest {
+  project_id: string;
+  recon_id?: string | null;
+  dataset_id?: string | null;
+  kind: string;
+  name?: string | null;
+  uri?: string | null;
+  media_type?: string | null;
+  artifact_format?: string | null;
+  datatype?: string | null;
+  schema_version?: number | null;
+  files?: ArtifactFileRef[];
+  sha256?: string | null;
+  byte_size?: number | null;
+  coordinate_frame?: string | null;
+  producer?: Record<string, unknown> | null;
+  summary?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ArtifactValidationIssueOut {
+  level: string;
+  field?: string | null;
+  message: string;
+}
+
+export interface ArtifactValidationOut {
+  artifact_id: string;
+  valid: boolean;
+  artifact_format?: string | null;
+  datatype?: string | null;
+  checked_content: boolean;
+  issues?: ArtifactValidationIssueOut[];
+}
+
+export interface StageArtifact {
+  artifact_id: string;
+  job_id: string;
+  task_id: string;
+  recon_id?: string | null;
+  dataset_id?: string | null;
+  kind: string;
+  name?: string | null;
+  uri?: string | null;
+  media_type?: string | null;
+  artifact_format?: string | null;
+  datatype?: string | null;
+  schema_version?: number | null;
+  files?: ArtifactFileRef[];
+  sha256?: string | null;
+  byte_size?: number | null;
+  coordinate_frame?: string | null;
+  producer?: Record<string, unknown> | null;
+  summary?: Record<string, unknown> | null;
+  metadata?: Record<string, unknown> | null;
+  created_at: string;
+  _links?: Record<string, { href?: string | null } | null> | null;
+}
+
 /** Canonical local-feature extractors. Capability flag is
  * `features.extract.{type}`. Backends advertise the subset they
  * implement. */
@@ -259,7 +421,8 @@ export type FeatureType =
   | "aliked"
   | "disk"
   | "r2d2"
-  | "d2net";
+  | "d2net"
+  | "sosnet";
 
 export interface FeaturesSpec {
   version?: 1;
@@ -270,6 +433,7 @@ export interface FeaturesSpec {
   seed?: number;
   /** Backend-specific options discovered from `/v1/backend/config-schemas`. */
   backend_options?: Record<string, unknown>;
+  input_artifacts?: ArtifactInputMap;
 }
 
 /** Pair-selection strategy. Capability flag is `pairs.{strategy}`. */
@@ -302,6 +466,7 @@ export interface PairsSpec {
   pairs_blob_format?: "image_name_pairs_txt";
   /** Backend-specific options discovered from `/v1/backend/config-schemas`. */
   backend_options?: Record<string, unknown>;
+  input_artifacts?: ArtifactInputMap;
 }
 
 /** Per-pair matcher. Capability flag is `matchers.{type}`. */
@@ -323,6 +488,7 @@ export interface MatcherSpec {
   max_distance?: number;
   /** Backend-specific options discovered from `/v1/backend/config-schemas`. */
   backend_options?: Record<string, unknown>;
+  input_artifacts?: ArtifactInputMap;
 }
 
 export interface VerifySpec {
@@ -332,12 +498,13 @@ export interface VerifySpec {
   min_inlier_ratio?: number;
   /** Backend-specific options discovered from `/v1/backend/config-schemas`. */
   backend_options?: Record<string, unknown>;
+  input_artifacts?: ArtifactInputMap;
 }
 
 export interface BundleAdjustmentSpec {
   version?: 1;
   /** `featuremetric` requires capability `ba.featuremetric`. */
-  mode?: "standard" | "two_stage" | "featuremetric";
+  mode?: "standard" | "two_stage" | "featuremetric" | "rig";
   provider?: string | null;
   refine_focal_length?: boolean;
   refine_principal_point?: boolean;
@@ -357,6 +524,7 @@ interface _PipelineSpecBase {
   snapshot_frames_freq?: number | null;
   /** Backend-specific options discovered from `/v1/backend/config-schemas`. */
   backend_options?: Record<string, unknown>;
+  input_artifacts?: ArtifactInputMap;
 }
 
 export interface IncrementalSpec extends _PipelineSpecBase {
@@ -365,6 +533,7 @@ export interface IncrementalSpec extends _PipelineSpecBase {
   multiple_models?: boolean;
   max_num_models?: number;
   min_num_matches?: number;
+  ba_global_use_pba?: boolean;
   extract_colors?: boolean;
 }
 
@@ -391,6 +560,149 @@ export type PipelineSpec =
   | GlobalSpec
   | HierarchicalSpec
   | SphericalSpec;
+
+export interface ChainError {
+  where: string;
+  message: string;
+  reason?: string | null;
+  path?: string | null;
+}
+
+export interface AttributeOut {
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+  default?: unknown | null;
+  enum?: string[] | null;
+  min?: number | null;
+  max?: number | null;
+}
+
+export interface DataTypeOut {
+  type_id: string;
+  title: string;
+  kind: string;
+  aliases: string[];
+  description: string;
+}
+
+export interface PortSpecOut {
+  datatype: string;
+  required: boolean;
+  multiple: boolean;
+  description: string;
+}
+
+export interface ProcessorOut {
+  processor_id: string;
+  title: string;
+  consumer: Record<string, PortSpecOut>;
+  supplier: Record<string, PortSpecOut>;
+  attributes: AttributeOut[];
+  special_inputs: Record<string, PortSpecOut>;
+  special_attributes: AttributeOut[];
+  capabilities: string[];
+  config_stage: string | null;
+  aliases: string[];
+  description: string;
+}
+
+export interface OperationOut {
+  op_id: string;
+  title: string;
+  consumes: string[];
+  produces: string[];
+  capabilities: string[];
+  config_stage: string | null;
+  description: string;
+}
+
+export interface PipelineStep {
+  op: string;
+  provider?: string | null;
+  params?: Record<string, unknown>;
+}
+
+export interface ProcessorPipelineStep {
+  processor: string;
+  ref?: string | null;
+  provider?: string | null;
+  attributes?: Record<string, unknown>;
+  params?: Record<string, unknown>;
+  wires?: Record<string, string | string[]>;
+}
+
+export interface PipelineDefinitionStepOut {
+  ref: string;
+  processor: string;
+  attributes: Record<string, unknown>;
+  wires: Record<string, string | string[]>;
+}
+
+export interface PipelineDefinitionOut {
+  pipeline_id: string;
+  title: string;
+  aliases: string[];
+  initial_inputs: string[];
+  steps: PipelineDefinitionStepOut[];
+  description: string;
+}
+
+export interface AttributesContractOut {
+  contract: string;
+  contract_schema_version: number;
+  attribute_types: string[];
+  rules: Record<string, string>;
+}
+
+export interface DataTypesContractOut {
+  contract: string;
+  contract_schema_version: number;
+  kinds: string[];
+  types: DataTypeOut[];
+}
+
+export interface OperationsContractOut {
+  contract: string;
+  contract_schema_version: number;
+  operations: OperationOut[];
+  compatibility: Record<string, string>;
+}
+
+export interface ProcessorsContractOut {
+  contract: string;
+  contract_schema_version: number;
+  processors: ProcessorOut[];
+  rules: Record<string, string>;
+}
+
+export interface PipelinesContractOut {
+  contract: string;
+  contract_schema_version: number;
+  composition_rule: string;
+  initial_inputs: string[];
+  canonical_pipelines: Record<string, string[]>;
+  plugin_pipelines: PipelineDefinitionOut[];
+  step_schema: Record<string, unknown>;
+  validation_reasons: string[];
+}
+
+export type PipelineStepLike = string | ProcessorPipelineStep | PipelineStep;
+
+export interface PipelineValidateRequest {
+  initial_inputs?: string[];
+  steps: PipelineStepLike[];
+}
+
+export interface PipelineRunRequest extends PipelineValidateRequest {
+  dataset_id: string;
+}
+
+export interface PipelineValidateResponse {
+  valid: boolean;
+  errors: ChainError[];
+}
 
 // ----- ProgressEvent (loose union) ------------------------------------------
 

@@ -23,6 +23,8 @@ if(SFMAPI_CPP_TESTS)
   add_executable(test_contract test/test_contract.cpp)
   target_link_libraries(test_contract PRIVATE sfmapi_cpp)
   add_test(NAME test_contract COMMAND test_contract)
+  set_tests_properties(test_contract PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
   add_executable(test_extras test/test_extras.cpp)
   target_link_libraries(test_extras PRIVATE sfmapi_cpp)

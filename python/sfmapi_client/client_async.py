@@ -10,16 +10,25 @@ from typing import Any, BinaryIO
 import httpx
 
 from sfmapi_client._transport import auth_headers, stream_sha256
-from sfmapi_client.errors import raise_for_response
+from sfmapi_client.errors import SfmApiError, raise_for_response
 from sfmapi_client.models import (
     ApiKey,
     ApiKeyCreated,
+    ArtifactConversionPlanOut,
+    ArtifactConversionPlanRequest,
+    ArtifactConvertRequest,
+    ArtifactFormatOut,
+    ArtifactImportRequest,
+    ArtifactKindOut,
+    ArtifactValidationOut,
+    AttributesContractOut,
     BatchCreateImagesRequest,
     BatchCreateImagesResponse,
     Capabilities,
     CorrespondenceGraphFile,
     Dataset,
     DatasetPatch,
+    DataTypesContractOut,
     DenseManifestFile,
     FeaturesSpec,
     Image,
@@ -29,16 +38,23 @@ from sfmapi_client.models import (
     JobSubmitResponse,
     LocalizationResult,
     MatcherSpec,
+    OperationsContractOut,
     MeshFile,
     Page,
     PairsSpec,
+    PipelinesContractOut,
+    PipelineRunRequest,
     PipelineSpec,
+    PipelineValidateRequest,
+    PipelineValidateResponse,
     PointObservation,
     PosePrior,
+    ProcessorsContractOut,
     Project,
     ProjectPatch,
     Reconstruction,
     Sim3,
+    StageArtifact,
     SubModel,
     TilesIndex,
     TwoViewGeometriesFile,
@@ -50,7 +66,16 @@ from sfmapi_client.models import (
 
 def _spec_dict(spec: Any) -> Any:
     """Serialize a Pydantic model or pass through a dict."""
+    if isinstance(spec, ArtifactConversionPlanRequest):
+        return spec.model_dump(mode="json", exclude_unset=True)
     return spec.model_dump(mode="json") if hasattr(spec, "model_dump") else spec
+
+
+def _unsupported_dense_mesh() -> None:
+    raise NotImplementedError(
+        "Dense MVS and mesh/texture generation are out of scope for sfmapi SDK "
+        "route helpers; invoke backend actions or a downstream mvsapi or meshapi service."
+    )
 
 
 class AsyncSfmApiClient:
@@ -137,9 +162,17 @@ class AsyncSfmApiClient:
         r = await self._req("POST", "/v1/uploads", json=body, headers=headers)
         return Upload.model_validate(r.json())
 
-    async def patch_chunk(self, upload_id: str, *, offset: int, data: bytes) -> Upload:
+    async def patch_chunk(
+        self,
+        upload_id: str,
+        *,
+        offset: int,
+        data: bytes,
+        total: int | None = None,
+    ) -> Upload:
         end = offset + len(data) - 1
-        headers = {"Content-Range": f"bytes {offset}-{end}/{offset + len(data)}"}
+        range_total = total if total is not None else offset + len(data)
+        headers = {"Content-Range": f"bytes {offset}-{end}/{range_total}"}
         r = await self._req("PATCH", f"/v1/uploads/{upload_id}", content=data, headers=headers)
         return Upload.model_validate(r.json())
 
@@ -166,9 +199,11 @@ class AsyncSfmApiClient:
         offset = 0
         while offset < len(data):
             chunk = data[offset : offset + chunk_size]
-            await self.patch_chunk(upload.upload_id, offset=offset, data=chunk)
+            await self.patch_chunk(upload.upload_id, offset=offset, data=chunk, total=len(data))
             offset += len(chunk)
-        await self.finalize_upload(upload.upload_id, client_sha=sha)
+        result = await self.finalize_upload(upload.upload_id, client_sha=sha)
+        if result.blob_sha != sha:
+            raise SfmApiError(f"server sha {result.blob_sha} != local {sha}")
         return sha
 
     async def upload_file(self, file: BinaryIO, *, content_type: str | None = None) -> str:
@@ -204,9 +239,32 @@ class AsyncSfmApiClient:
         r = await self._req("GET", f"/v1/projects/{project_id}/datasets/{dataset_id}")
         return Dataset.model_validate(r.json())
 
-    async def list_datasets(self, project_id: str) -> list[Dataset]:
-        r = await self._req("GET", f"/v1/projects/{project_id}/datasets")
-        return [Dataset.model_validate(x) for x in r.json()]
+    async def list_datasets_page(
+        self,
+        project_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> Page[Dataset]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        r = await self._req("GET", f"/v1/projects/{project_id}/datasets", params=params)
+        return Page[Dataset].model_validate(r.json())
+
+    async def list_datasets(
+        self,
+        project_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> list[Dataset]:
+        page = await self.list_datasets_page(
+            project_id,
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return page.items
 
     async def add_image(
         self,
@@ -313,6 +371,180 @@ class AsyncSfmApiClient:
         r = await self._req("POST", f"/v1/projects/{project_id}/pipelines/{kind}", json=body)
         return JobSubmitResponse.model_validate(r.json())
 
+    async def validate_pipeline(
+        self,
+        body: PipelineValidateRequest | dict[str, Any],
+    ) -> PipelineValidateResponse:
+        r = await self._req("POST", "/v1/pipelines:validate", json=_spec_dict(body))
+        return PipelineValidateResponse.model_validate(r.json())
+
+    async def run_typed_pipeline(
+        self,
+        project_id: str,
+        body: PipelineRunRequest | dict[str, Any],
+    ) -> JobSubmitResponse:
+        r = await self._req(
+            "POST",
+            f"/v1/projects/{project_id}/pipelines:run",
+            json=_spec_dict(body),
+        )
+        return JobSubmitResponse.model_validate(r.json())
+
+    async def list_attributes(self) -> AttributesContractOut:
+        r = await self._req("GET", "/v1/attributes")
+        return AttributesContractOut.model_validate(r.json())
+
+    async def list_datatypes(self) -> DataTypesContractOut:
+        r = await self._req("GET", "/v1/datatypes")
+        return DataTypesContractOut.model_validate(r.json())
+
+    async def list_operations(self) -> OperationsContractOut:
+        r = await self._req("GET", "/v1/operations")
+        return OperationsContractOut.model_validate(r.json())
+
+    async def list_processors(self) -> ProcessorsContractOut:
+        r = await self._req("GET", "/v1/processors")
+        return ProcessorsContractOut.model_validate(r.json())
+
+    async def list_pipelines(self) -> PipelinesContractOut:
+        r = await self._req("GET", "/v1/pipelines")
+        return PipelinesContractOut.model_validate(r.json())
+
+    # artifacts --------------------------------------------------------
+
+    async def list_artifact_kinds(self) -> Page[ArtifactKindOut]:
+        r = await self._req("GET", "/v1/artifacts/kinds")
+        return Page[ArtifactKindOut].model_validate(r.json())
+
+    async def list_artifact_formats(self) -> Page[ArtifactFormatOut]:
+        r = await self._req("GET", "/v1/artifacts/formats")
+        return Page[ArtifactFormatOut].model_validate(r.json())
+
+    async def import_artifact(self, body: ArtifactImportRequest | dict[str, Any]) -> StageArtifact:
+        r = await self._req("POST", "/v1/artifacts:import", json=_spec_dict(body))
+        return StageArtifact.model_validate(r.json())
+
+    async def get_artifact(self, artifact_id: str) -> StageArtifact:
+        r = await self._req("GET", f"/v1/artifacts/{artifact_id}")
+        return StageArtifact.model_validate(r.json())
+
+    async def plan_artifact_conversion(
+        self,
+        artifact_id: str,
+        body: ArtifactConversionPlanRequest | dict[str, Any],
+    ) -> ArtifactConversionPlanOut:
+        r = await self._req(
+            "POST",
+            f"/v1/artifacts/{artifact_id}:conversionPlan",
+            json=_spec_dict(body),
+        )
+        return ArtifactConversionPlanOut.model_validate(r.json())
+
+    async def convert_artifact(
+        self,
+        artifact_id: str,
+        body: ArtifactConvertRequest | dict[str, Any],
+    ) -> JobSubmitResponse:
+        r = await self._req(
+            "POST",
+            f"/v1/artifacts/{artifact_id}:convert",
+            json=_spec_dict(body),
+        )
+        return JobSubmitResponse.model_validate(r.json())
+
+    async def validate_artifact(self, artifact_id: str) -> ArtifactValidationOut:
+        r = await self._req("POST", f"/v1/artifacts/{artifact_id}:validate")
+        return ArtifactValidationOut.model_validate(r.json())
+
+    async def list_job_artifacts_page(
+        self,
+        job_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> Page[StageArtifact]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        if kind is not None:
+            params["kind"] = kind
+        if task_id is not None:
+            params["task_id"] = task_id
+        if name is not None:
+            params["name"] = name
+        r = await self._req("GET", f"/v1/jobs/{job_id}/artifacts", params=params)
+        return Page[StageArtifact].model_validate(r.json())
+
+    async def list_job_artifacts(
+        self,
+        job_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> list[StageArtifact]:
+        page = await self.list_job_artifacts_page(
+            job_id,
+            page_size=page_size,
+            page_token=page_token,
+            kind=kind,
+            task_id=task_id,
+            name=name,
+        )
+        return page.items
+
+    async def list_reconstruction_artifacts_page(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> Page[StageArtifact]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        if kind is not None:
+            params["kind"] = kind
+        if task_id is not None:
+            params["task_id"] = task_id
+        if name is not None:
+            params["name"] = name
+        r = await self._req("GET", f"/v1/reconstructions/{recon_id}/artifacts", params=params)
+        return Page[StageArtifact].model_validate(r.json())
+
+    async def list_reconstruction_artifacts(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> list[StageArtifact]:
+        page = await self.list_reconstruction_artifacts_page(
+            recon_id,
+            page_size=page_size,
+            page_token=page_token,
+            kind=kind,
+            task_id=task_id,
+            name=name,
+        )
+        return page.items
+
+    async def read_artifact_content(self, artifact_id: str, *, download: bool = False) -> bytes:
+        params = {"download": str(download).lower()} if download else {}
+        r = await self._req("GET", f"/v1/artifacts/{artifact_id}/content", params=params)
+        return r.content
+
     # jobs -------------------------------------------------------------
 
     async def get_job(self, job_id: str) -> JobDetail:
@@ -352,9 +584,32 @@ class AsyncSfmApiClient:
         r = await self._req("GET", f"/v1/reconstructions/{recon_id}")
         return Reconstruction.model_validate(r.json())
 
-    async def list_submodels(self, recon_id: str) -> list[SubModel]:
-        r = await self._req("GET", f"/v1/reconstructions/{recon_id}/submodels")
-        return [SubModel.model_validate(x) for x in r.json()]
+    async def list_submodels_page(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> Page[SubModel]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        r = await self._req("GET", f"/v1/reconstructions/{recon_id}/submodels", params=params)
+        return Page[SubModel].model_validate(r.json())
+
+    async def list_submodels(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> list[SubModel]:
+        page = await self.list_submodels_page(
+            recon_id,
+            page_size=page_size,
+            page_token=page_token,
+        )
+        return page.items
 
     async def list_snapshots(self, recon_id: str) -> list[int]:
         r = await self._req("GET", f"/v1/reconstructions/{recon_id}/snapshots")
@@ -437,7 +692,7 @@ class AsyncSfmApiClient:
         r = await self._req("PUT", f"/v1/datasets/{dataset_id}/pose_priors", json=body)
         return int(r.json().get("written", 0))
 
-    # localize / georegister / cubemap / dense / mesh ------------------
+    # localize / georegister / cubemap --------------------------------
 
     async def submit_localize(
         self, recon_id: str, *, blob_sha: str, sift: dict | None = None
@@ -468,8 +723,7 @@ class AsyncSfmApiClient:
         return JobSubmitResponse.model_validate(r.json())
 
     async def submit_dense(self, recon_id: str) -> JobSubmitResponse:
-        r = await self._req("POST", f"/v1/reconstructions/{recon_id}/dense")
-        return JobSubmitResponse.model_validate(r.json())
+        _unsupported_dense_mesh()
 
     async def submit_mesh(
         self,
@@ -478,9 +732,7 @@ class AsyncSfmApiClient:
         method: str = "poisson",
         options: dict | None = None,
     ) -> JobSubmitResponse:
-        body = {"method": method, "options": options or {}}
-        r = await self._req("POST", f"/v1/reconstructions/{recon_id}/mesh", json=body)
-        return JobSubmitResponse.model_validate(r.json())
+        _unsupported_dense_mesh()
 
     async def submit_merge_recons(
         self,
@@ -528,42 +780,23 @@ class AsyncSfmApiClient:
         r = await self._req("GET", f"/v1/reconstructions/{recon_id}/correspondence_graph.json")
         return CorrespondenceGraphFile.model_validate(r.json())
 
-    # snapshot-level dense / mesh reads --------------------------------
-
     async def read_dense_index(self, recon_id: str, seq: int) -> DenseManifestFile:
-        r = await self._req(
-            "GET",
-            f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/index.json",
-        )
-        return DenseManifestFile.model_validate(r.json())
+        _unsupported_dense_mesh()
 
     async def read_dense_fused(self, recon_id: str, seq: int) -> bytes:
-        r = await self._req(
-            "GET", f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/fused.bin"
-        )
-        return r.content
+        _unsupported_dense_mesh()
 
     async def read_depth_map(self, recon_id: str, seq: int, image_name: str) -> bytes:
-        r = await self._req(
-            "GET",
-            f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/depth_maps/{image_name}.bin",
-        )
-        return r.content
+        _unsupported_dense_mesh()
 
     async def read_normal_map(self, recon_id: str, seq: int, image_name: str) -> bytes:
-        r = await self._req(
-            "GET",
-            f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/normal_maps/{image_name}.bin",
-        )
-        return r.content
+        _unsupported_dense_mesh()
 
     async def read_mesh_manifest(self, recon_id: str, seq: int) -> MeshFile:
-        r = await self._req("GET", f"/v1/reconstructions/{recon_id}/snapshots/{seq}/mesh.json")
-        return MeshFile.model_validate(r.json())
+        _unsupported_dense_mesh()
 
     async def read_mesh_ply(self, recon_id: str, seq: int) -> bytes:
-        r = await self._req("GET", f"/v1/reconstructions/{recon_id}/snapshots/{seq}/mesh.ply")
-        return r.content
+        _unsupported_dense_mesh()
 
     async def get_localization_result(self, job_id: str) -> LocalizationResult:
         """Poll a localize job and decode the task output as a
@@ -721,8 +954,29 @@ class AsyncSfmApiClient:
         r = await self._req("GET", "/v1/admin/api-keys")
         return [ApiKey.model_validate(k) for k in r.json()]
 
-    async def create_api_key(self, *, label: str | None = None) -> ApiKeyCreated:
-        body = {"label": label} if label is not None else {}
+    async def create_api_key(
+        self,
+        name: str | None = None,
+        *,
+        tenant_id: str = "default",
+        label: str | None = None,
+    ) -> ApiKeyCreated:
+        if name is None and label is not None:
+            name = label
+        return await self.create_api_key_for_tenant(tenant_id=tenant_id, name=name)
+
+    async def create_api_key_for_tenant(
+        self,
+        *,
+        tenant_id: str,
+        name: str | None = None,
+        label: str | None = None,
+    ) -> ApiKeyCreated:
+        if name is None and label is not None:
+            name = label
+        body: dict[str, Any] = {"tenant_id": tenant_id}
+        if name is not None:
+            body["name"] = name
         r = await self._req("POST", "/v1/admin/api-keys", json=body)
         return ApiKeyCreated.model_validate(r.json())
 

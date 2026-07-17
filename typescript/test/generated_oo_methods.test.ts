@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createSfmApiClient } from "../src/_generated/client.js";
+import { sha256Hex } from "../src/hash.js";
 
 function recordingFetch(
   responder: (url: string, init?: RequestInit) => { status: number; body: unknown },
@@ -43,34 +44,69 @@ describe("OO methods on generated TS client", () => {
     const c = createSfmApiClient({
       baseUrl: "http://oo.test",
       apiKey: "k1",
+      headers: { "X-Tenant": "acme" },
       fetch: fn,
     });
-    const out = await c.waitForJob("j_oo", { pollInterval: 0.001 });
+    const out = await c.waitForJob("j_oo", {
+      pollInterval: 0.001,
+      headers: { "X-Trace": "trace-1" },
+    });
     expect(out.status).toBe("succeeded");
     // Every call should have hit the bound baseUrl + Authorization header.
     expect(calls[0]!.url.startsWith("http://oo.test/v1/jobs/j_oo")).toBe(true);
     for (const call of calls) {
       expect(call.headers["authorization"]).toBe("Bearer k1");
+      expect(call.headers["x-tenant"]).toBe("acme");
+      expect(call.headers["x-trace"]).toBe("trace-1");
     }
   });
 
   it("client.uploadBytes binds baseUrl + apiKey + fetch", async () => {
-    const { fn, calls } = recordingFetch((url) => {
+    const payload = new Uint8Array([1, 2, 3, 4]);
+    const expectedSha = await sha256Hex(payload);
+    const { fn, calls } = recordingFetch((url, init) => {
       if (url.endsWith("/v1/uploads")) return { status: 201, body: { upload_id: "u1" } };
-      if (url.includes(":finalize"))
-        return { status: 200, body: { blob_sha: "abc" } };
+      if (url.includes(":finalize")) {
+        const headers = new Headers(init?.headers);
+        return { status: 200, body: { blob_sha: headers.get("x-content-sha256") } };
+      }
       return { status: 200, body: { received: true } };
     });
     const c = createSfmApiClient({
       baseUrl: "http://oo.test",
       apiKey: "k1",
+      headers: { "X-Tenant": "acme" },
       fetch: fn,
     });
-    const sha = await c.uploadBytes(new Uint8Array([1, 2, 3, 4]));
-    expect(sha).toBe("abc");
+    const sha = await c.uploadBytes(payload);
+    expect(sha).toBe(expectedSha);
     for (const call of calls) {
       expect(call.headers["authorization"]).toBe("Bearer k1");
+      expect(call.headers["x-tenant"]).toBe("acme");
     }
+  });
+
+  it("raw artifact content reads bytes with explicit arrayBuffer parsing", async () => {
+    const payload = new Uint8Array([0, 255, 65, 10]);
+    const fn = async (): Promise<Response> =>
+      new Response(payload, {
+        status: 200,
+        headers: { "Content-Type": "application/octet-stream" },
+      });
+    const c = createSfmApiClient({ baseUrl: "http://oo.test", fetch: fn });
+
+    const { data, error } = await c.raw.GET(
+      "/v1/artifacts/{artifact_id}/content",
+      {
+        params: { path: { artifact_id: "art-1" } },
+        parseAs: "arrayBuffer",
+      },
+    );
+
+    expect(error).toBeUndefined();
+    expect(Array.from(new Uint8Array(data as ArrayBuffer))).toEqual(
+      Array.from(payload),
+    );
   });
 
   it("client.submitAndWait chains submit then wait", async () => {

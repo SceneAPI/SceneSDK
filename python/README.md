@@ -1,7 +1,9 @@
 # sfmapi-client
 
-Typed Python SDK for [sfmapi](https://github.com/SFMAPI/sfmapi),
-plus the `sfmapi-client` CLI.
+Legacy compatibility Python SDK for [sfmapi](https://github.com/SFMAPI/sfmapi),
+plus the `sfmapi-client` CLI. New application code should use the generated
+`sfmapi_client_gen` package documented in `sfmapi_client_gen/README.md`; this
+package remains for the CLI and older handwritten helper surface.
 
 ```bash
 pip install "sfmapi-client[cli]"     # SDK + the `sfmapi-client` command
@@ -86,12 +88,13 @@ All HTTP errors raise typed exceptions:
 
 | HTTP | Exception |
 |---|---|
-| 403 | `AuthError` |
+| 400 / 422 | `ValidationError` |
+| 401 / 403 | `AuthError` |
 | 404 | `NotFoundError` |
 | 409 | `ConflictError` |
 | 413 / 429 | `QuotaExceededError` |
-| 422 | `ValidationError` |
-| 503 | `PycolmapUnavailableError` |
+| 501 | `CapabilityUnavailableError` (`PycolmapUnavailableError` when `capability="pycolmap"`) |
+| 503 | `BackendUnavailableError` |
 | 507 | `StorageError` |
 | other 4xx/5xx | `SfmApiError` |
 

@@ -136,11 +136,26 @@ void TestExtendedEndpoints() {
   c.GetSubmodel("s1");
   assert(mock->last_req.url == "http://x/v1/submodels/s1");
 
-  c.ListArtifactKinds("", 25);
-  assert(mock->last_req.url == "http://x/v1/artifacts/kinds?page_size=25");
+  c.ListArtifactKinds();
+  assert(mock->last_req.url == "http://x/v1/artifacts/kinds");
+
+  c.ListArtifactFormats();
+  assert(mock->last_req.url == "http://x/v1/artifacts/formats");
+
+  c.ImportArtifact(R"({"project_id":"p","kind":"features.local.v1"})");
+  assert(mock->last_req.url == "http://x/v1/artifacts:import");
 
   c.GetArtifact("a1");
   assert(mock->last_req.url == "http://x/v1/artifacts/a1");
+
+  c.PlanArtifactConversion("a1", R"({"to_format":"sfmapi.features.local.v1"})");
+  assert(mock->last_req.url == "http://x/v1/artifacts/a1:conversionPlan");
+
+  c.ConvertArtifact("a1", R"({"to_format":"sfmapi.features.local.v1"})");
+  assert(mock->last_req.url == "http://x/v1/artifacts/a1:convert");
+
+  c.ValidateArtifact("a1");
+  assert(mock->last_req.url == "http://x/v1/artifacts/a1:validate");
 
   c.ReadArtifactContent("a1", true);
   assert(mock->last_req.url == "http://x/v1/artifacts/a1/content?download=true");
@@ -148,6 +163,10 @@ void TestExtendedEndpoints() {
   c.ListJobArtifacts("j1", "features.database", "", "", "tok", 50);
   assert(mock->last_req.url ==
          "http://x/v1/jobs/j1/artifacts?kind=features.database&page_token=tok&page_size=50");
+
+  c.ListJobArtifacts("j1", "", "", "a & b", "a+b/c==");
+  assert(mock->last_req.url ==
+         "http://x/v1/jobs/j1/artifacts?name=a%20%26%20b&page_token=a%2Bb%2Fc%3D%3D");
 
   c.ListReconstructionArtifacts("r1", "matches.raw", "t1", "matches");
   assert(mock->last_req.url ==
@@ -172,9 +191,81 @@ void TestExtendedEndpoints() {
   c.ListApiKeys();
   assert(mock->last_req.url == "http://x/v1/admin/api-keys");
 
+  c.CreateApiKey();
+  assert(mock->last_req.method == "POST");
+  assert(mock->last_req.url == "http://x/v1/admin/api-keys");
+  std::string default_api_key_body(mock->last_req.body.begin(), mock->last_req.body.end());
+  assert(default_api_key_body.find("\"tenant_id\":\"default\"") != std::string::npos);
+
+  c.CreateApiKeyForTenant("tenant-1", std::string("ci-bot"));
+  assert(mock->last_req.method == "POST");
+  assert(mock->last_req.url == "http://x/v1/admin/api-keys");
+  std::string api_key_body(mock->last_req.body.begin(), mock->last_req.body.end());
+  assert(api_key_body.find("\"tenant_id\":\"tenant-1\"") != std::string::npos);
+  assert(api_key_body.find("\"name\":\"ci-bot\"") != std::string::npos);
+
+  c.CreateApiKey("{\"tenant_id\":\"default\",\"name\":\"raw\"}");
+  assert(mock->last_req.method == "POST");
+  std::string raw_api_key_body(mock->last_req.body.begin(), mock->last_req.body.end());
+  assert(raw_api_key_body == "{\"tenant_id\":\"default\",\"name\":\"raw\"}");
+
   c.DeleteApiKey("k1");
   assert(mock->last_req.method == "DELETE");
   assert(mock->last_req.url == "http://x/v1/admin/api-keys/k1");
+
+  c.ValidatePipeline("{\"steps\":[]}");
+  assert(mock->last_req.method == "POST");
+  assert(mock->last_req.url == "http://x/v1/pipelines:validate");
+  std::string validate_body(mock->last_req.body.begin(), mock->last_req.body.end());
+  assert(validate_body == "{\"steps\":[]}");
+
+  sfmapi::ProcessorPipelineStep proc_step;
+  proc_step.processor = "features";
+  proc_step.ref = "feat";
+  proc_step.attributes["type"] = "superpoint";
+  sfmapi::PipelineValidateRequest typed_validate;
+  typed_validate.initial_inputs.push_back("images");
+  typed_validate.AddStep(proc_step);
+  c.ValidatePipeline(typed_validate);
+  assert(mock->last_req.method == "POST");
+  assert(mock->last_req.url == "http://x/v1/pipelines:validate");
+  std::string typed_validate_body(
+      mock->last_req.body.begin(), mock->last_req.body.end());
+  assert(typed_validate_body.find("\"processor\":\"features\"") != std::string::npos);
+  assert(typed_validate_body.find("\"initial_inputs\"") != std::string::npos);
+
+  c.RunPipeline("p1", "{\"dataset_id\":\"d1\",\"steps\":[]}");
+  assert(mock->last_req.method == "POST");
+  assert(mock->last_req.url == "http://x/v1/projects/p1/pipelines:run");
+  std::string typed_run_body(mock->last_req.body.begin(), mock->last_req.body.end());
+  assert(typed_run_body == "{\"dataset_id\":\"d1\",\"steps\":[]}");
+
+  sfmapi::PipelineRunRequest typed_run;
+  typed_run.dataset_id = "d1";
+  typed_run.AddStep(proc_step);
+  c.RunPipeline("p1", typed_run);
+  assert(mock->last_req.method == "POST");
+  assert(mock->last_req.url == "http://x/v1/projects/p1/pipelines:run");
+  std::string typed_processor_run_body(
+      mock->last_req.body.begin(), mock->last_req.body.end());
+  assert(typed_processor_run_body.find("\"dataset_id\":\"d1\"") != std::string::npos);
+  assert(typed_processor_run_body.find("\"processor\":\"features\"") != std::string::npos);
+
+  c.ListAttributes();
+  assert(mock->last_req.method == "GET");
+  assert(mock->last_req.url == "http://x/v1/attributes");
+
+  c.ListDataTypes();
+  assert(mock->last_req.url == "http://x/v1/datatypes");
+
+  c.ListOperations();
+  assert(mock->last_req.url == "http://x/v1/operations");
+
+  c.ListProcessors();
+  assert(mock->last_req.url == "http://x/v1/processors");
+
+  c.ListPipelines();
+  assert(mock->last_req.url == "http://x/v1/pipelines");
 
   std::cout << "  extended endpoints OK\n";
 }
@@ -236,7 +327,7 @@ void TestWaitForJobAndParseJobDetail() {
       "tasks":[
         {"task_id":"01HZTASK0000000000000000A","job_id":"01HZJOB000000000000000000",
          "kind":"extract","status":"failed","cache_key":"abc","inputs_hash":"i","params_hash":"p",
-         "outputs_ref":null}
+         "provider":"hloc","outputs_ref":null}
       ]
     })";
     resp.body.assign(body.begin(), body.end());
@@ -249,6 +340,7 @@ void TestWaitForJobAndParseJobDetail() {
     assert(detail.tasks.size() == 1);
     assert(detail.tasks[0].kind == "extract");
     assert(detail.tasks[0].status == "failed");
+    assert(detail.tasks[0].provider == "hloc");
   }
 
   // 2. IsTerminalJobStatus covers all four terminal states.
@@ -540,6 +632,33 @@ void TestResourcePodStructsCompile() {
   std::cout << "  resource POD structs OK\n";
 }
 
+void TestApiKeyResponseParsers() {
+  sfmapi::HttpResponse created;
+  std::string created_body =
+      R"({"api_key_id":"key-1","tenant_id":"tenant-1","name":"ci-bot","revoked":false,"raw_key":"secret"})";
+  created.body.assign(created_body.begin(), created_body.end());
+  auto key = sfmapi::Client::ParseApiKeyCreated(created);
+  assert(key.api_key_id == "key-1");
+  assert(key.tenant_id == "tenant-1");
+  assert(key.name == "ci-bot");
+  assert(key.label == "ci-bot");
+  assert(key.created_at.empty());
+  assert(!key.revoked);
+  assert(key.raw_key == "secret");
+
+  sfmapi::HttpResponse list;
+  std::string list_body =
+      R"([{"api_key_id":"key-1","tenant_id":"tenant-1","name":null,"label":"legacy","created_at":"2026-05-02T00:00:00Z","revoked":true}])";
+  list.body.assign(list_body.begin(), list_body.end());
+  auto keys = sfmapi::Client::ParseApiKeyList(list);
+  assert(keys.size() == 1);
+  assert(keys[0].name.empty());
+  assert(keys[0].label == "legacy");
+  assert(keys[0].created_at == "2026-05-02T00:00:00Z");
+  assert(keys[0].revoked);
+  std::cout << "  API key parsers OK\n";
+}
+
 }  // namespace
 
 int main() {
@@ -557,6 +676,7 @@ int main() {
   TestSubmitAndStream();
   TestStreamEventsInstanceMethod();
   TestResourcePodStructsCompile();
+  TestApiKeyResponseParsers();
   std::cout << "all OK\n";
   return 0;
 }

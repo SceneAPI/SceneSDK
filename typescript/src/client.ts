@@ -4,10 +4,19 @@ import { asUint8, sha256Hex } from "./hash.js";
 import type {
   ApiKey,
   ApiKeyCreated,
+  ArtifactConversionPlanOut,
+  ArtifactConversionPlanRequest,
+  ArtifactConvertRequest,
+  ArtifactFormatOut,
+  ArtifactImportRequest,
+  ArtifactKindOut,
+  ArtifactValidationOut,
+  AttributesContractOut,
   BatchCreateImagesRequest,
   BatchCreateImagesResponse,
   Dataset,
   DatasetPatch,
+  DataTypesContractOut,
   FeaturesSpec,
   HealthResponse,
   Image,
@@ -16,14 +25,21 @@ import type {
   JobDetail,
   JobSubmitResponse,
   MatcherSpec,
+  OperationsContractOut,
   PairsSpec,
   Page,
+  PipelinesContractOut,
+  PipelineRunRequest,
   PipelineSpec,
+  PipelineValidateRequest,
+  PipelineValidateResponse,
   PointObservationRow,
   ProgressEvent,
+  ProcessorsContractOut,
   Project,
   ProjectPatch,
   Reconstruction,
+  StageArtifact,
   SubModel,
   TilesIndex,
   Upload,
@@ -53,7 +69,29 @@ export interface RequestOptions {
   headers?: HeadersInit;
 }
 
+export interface PageParams {
+  page_size?: number;
+  page_token?: string;
+}
+
+export interface ArtifactListParams extends PageParams {
+  kind?: string;
+  task_id?: string;
+  name?: string;
+}
+
+export interface ArtifactContentOptions extends RequestOptions {
+  download?: boolean;
+}
+
 const DEFAULT_CHUNK = 1 * 1024 * 1024;
+const DENSE_MESH_UNSUPPORTED =
+  "Dense MVS and mesh/texture generation are out of scope for sfmapi SDK " +
+  "route helpers; invoke backend actions or a downstream mvsapi or meshapi service.";
+
+function unsupportedDenseMesh<T>(): Promise<T> {
+  return Promise.reject(new Error(DENSE_MESH_UNSUPPORTED));
+}
 
 export class SfmApiClient {
   private readonly baseUrl: string;
@@ -89,10 +127,11 @@ export class SfmApiClient {
     opts?: RequestOptions,
   ): Promise<Response> {
     const { json, ...rest } = reqInit;
-    const headers = this.buildHeaders({
-      ...(opts?.headers as Record<string, string>),
-      ...(rest.headers as Record<string, string>),
-    });
+    const headers = this.buildHeaders(opts?.headers);
+    if (rest.headers) {
+      const requestHeaders = new Headers(rest.headers);
+      requestHeaders.forEach((value, key) => headers.set(key, value));
+    }
     let body: BodyInit | null = (rest.body as BodyInit | null | undefined) ?? null;
     if (json !== undefined) {
       headers.set("Content-Type", "application/json");
@@ -110,6 +149,40 @@ export class SfmApiClient {
     }
     await raiseForResponse(resp);
     return resp;
+  }
+
+  private pagedPath(path: string, params: PageParams = {}): string {
+    const qs = new URLSearchParams();
+    if (params.page_size !== undefined)
+      qs.set("page_size", String(params.page_size));
+    if (params.page_token) qs.set("page_token", params.page_token);
+    const query = qs.toString();
+    return query ? `${path}?${query}` : path;
+  }
+
+  private artifactListPath(path: string, params: ArtifactListParams = {}): string {
+    const qs = new URLSearchParams();
+    if (params.page_size !== undefined)
+      qs.set("page_size", String(params.page_size));
+    if (params.page_token) qs.set("page_token", params.page_token);
+    if (params.kind !== undefined) qs.set("kind", params.kind);
+    if (params.task_id !== undefined) qs.set("task_id", params.task_id);
+    if (params.name !== undefined) qs.set("name", params.name);
+    const query = qs.toString();
+    return query ? `${path}?${query}` : path;
+  }
+
+  private splitPageArgs(
+    paramsOrOpts: PageParams | RequestOptions = {},
+    opts?: RequestOptions,
+  ): [PageParams, RequestOptions | undefined] {
+    if (opts !== undefined) {
+      return [paramsOrOpts as PageParams, opts];
+    }
+    if ("page_size" in paramsOrOpts || "page_token" in paramsOrOpts) {
+      return [paramsOrOpts as PageParams, opts];
+    }
+    return [{}, paramsOrOpts as RequestOptions];
   }
 
   // --- meta --------------------------------------------------------
@@ -140,15 +213,10 @@ export class SfmApiClient {
   }
 
   async listProjects(
-    params: { page_size?: number; page_token?: string } = {},
+    params: PageParams = {},
     opts?: RequestOptions,
   ): Promise<Page<Project>> {
-    const qs = new URLSearchParams();
-    if (params.page_size !== undefined)
-      qs.set("page_size", String(params.page_size));
-    if (params.page_token) qs.set("page_token", params.page_token);
-    const path = qs.toString() ? `/v1/projects?${qs}` : "/v1/projects";
-    const r = await this.req("GET", path, {}, opts);
+    const r = await this.req("GET", this.pagedPath("/v1/projects", params), {}, opts);
     return r.json();
   }
 
@@ -178,7 +246,7 @@ export class SfmApiClient {
 
   patchChunk(
     uploadId: string,
-    args: { offset: number; data: ArrayBuffer | Uint8Array },
+    args: { offset: number; data: ArrayBuffer | Uint8Array; total?: number },
     opts?: RequestOptions,
   ): Promise<Upload> {
     const bytes = args.data instanceof Uint8Array
@@ -189,13 +257,14 @@ export class SfmApiClient {
     const buf = new Uint8Array(bytes.byteLength);
     buf.set(bytes);
     const end = args.offset + buf.byteLength - 1;
+    const total = args.total ?? args.offset + buf.byteLength;
     return this.req(
       "PATCH",
       `/v1/uploads/${uploadId}`,
       {
         body: buf.buffer,
         headers: {
-          "Content-Range": `bytes ${args.offset}-${end}/${args.offset + buf.byteLength}`,
+          "Content-Range": `bytes ${args.offset}-${end}/${total}`,
           "Content-Type": "application/octet-stream",
         },
       },
@@ -246,7 +315,11 @@ export class SfmApiClient {
       const end = Math.min(offset + chunkSize, bytes.byteLength);
       const slice = bytes.subarray(offset, end);
       // eslint-disable-next-line no-await-in-loop
-      await this.patchChunk(upload.upload_id, { offset, data: slice }, options);
+      await this.patchChunk(
+        upload.upload_id,
+        { offset, data: slice, total: bytes.byteLength },
+        options,
+      );
       offset = end;
     }
     const result = await this.finalizeUpload(upload.upload_id, { clientSha: sha }, options);
@@ -292,10 +365,47 @@ export class SfmApiClient {
     ).then((r) => r.json());
   }
 
-  listDatasets(projectId: string, opts?: RequestOptions): Promise<Dataset[]> {
-    return this.req("GET", `/v1/projects/${projectId}/datasets`, {}, opts).then(
-      (r) => r.json(),
+  listDatasets(projectId: string, opts?: RequestOptions): Promise<Dataset[]>;
+  listDatasets(
+    projectId: string,
+    params?: PageParams,
+    opts?: RequestOptions,
+  ): Promise<Dataset[]>;
+  async listDatasets(
+    projectId: string,
+    paramsOrOpts: PageParams | RequestOptions = {},
+    opts?: RequestOptions,
+  ): Promise<Dataset[]> {
+    const [params, requestOpts] = this.splitPageArgs(paramsOrOpts, opts);
+    const r = await this.req(
+      "GET",
+      this.pagedPath(`/v1/projects/${projectId}/datasets`, params),
+      {},
+      requestOpts,
     );
+    const page = (await r.json()) as Page<Dataset>;
+    return page.items ?? [];
+  }
+
+  listDatasetsPage(projectId: string, opts?: RequestOptions): Promise<Page<Dataset>>;
+  listDatasetsPage(
+    projectId: string,
+    params?: PageParams,
+    opts?: RequestOptions,
+  ): Promise<Page<Dataset>>;
+  async listDatasetsPage(
+    projectId: string,
+    paramsOrOpts: PageParams | RequestOptions = {},
+    opts?: RequestOptions,
+  ): Promise<Page<Dataset>> {
+    const [params, requestOpts] = this.splitPageArgs(paramsOrOpts, opts);
+    const r = await this.req(
+      "GET",
+      this.pagedPath(`/v1/projects/${projectId}/datasets`, params),
+      {},
+      requestOpts,
+    );
+    return r.json();
   }
 
   addImage(
@@ -320,17 +430,15 @@ export class SfmApiClient {
 
   async listImages(
     datasetId: string,
-    params: { page_size?: number; page_token?: string } = {},
+    params: PageParams = {},
     opts?: RequestOptions,
   ): Promise<Page<Image>> {
-    const qs = new URLSearchParams();
-    if (params.page_size !== undefined)
-      qs.set("page_size", String(params.page_size));
-    if (params.page_token) qs.set("page_token", params.page_token);
-    const path = qs.toString()
-      ? `/v1/datasets/${datasetId}/images?${qs}`
-      : `/v1/datasets/${datasetId}/images`;
-    const r = await this.req("GET", path, {}, opts);
+    const r = await this.req(
+      "GET",
+      this.pagedPath(`/v1/datasets/${datasetId}/images`, params),
+      {},
+      opts,
+    );
     return r.json();
   }
 
@@ -396,6 +504,51 @@ export class SfmApiClient {
     ).then((r) => r.json());
   }
 
+  validatePipeline(
+    body: PipelineValidateRequest,
+    opts?: RequestOptions,
+  ): Promise<PipelineValidateResponse> {
+    return this.req(
+      "POST",
+      "/v1/pipelines:validate",
+      { json: body },
+      opts,
+    ).then((r) => r.json());
+  }
+
+  runTypedPipeline(
+    projectId: string,
+    body: PipelineRunRequest,
+    opts?: RequestOptions,
+  ): Promise<JobSubmitResponse> {
+    return this.req(
+      "POST",
+      `/v1/projects/${projectId}/pipelines:run`,
+      { json: body },
+      opts,
+    ).then((r) => r.json());
+  }
+
+  listAttributes(opts?: RequestOptions): Promise<AttributesContractOut> {
+    return this.req("GET", "/v1/attributes", {}, opts).then((r) => r.json());
+  }
+
+  listDatatypes(opts?: RequestOptions): Promise<DataTypesContractOut> {
+    return this.req("GET", "/v1/datatypes", {}, opts).then((r) => r.json());
+  }
+
+  listOperations(opts?: RequestOptions): Promise<OperationsContractOut> {
+    return this.req("GET", "/v1/operations", {}, opts).then((r) => r.json());
+  }
+
+  listProcessors(opts?: RequestOptions): Promise<ProcessorsContractOut> {
+    return this.req("GET", "/v1/processors", {}, opts).then((r) => r.json());
+  }
+
+  listPipelines(opts?: RequestOptions): Promise<PipelinesContractOut> {
+    return this.req("GET", "/v1/pipelines", {}, opts).then((r) => r.json());
+  }
+
   // --- jobs --------------------------------------------------------
 
   getJob(jobId: string, opts?: RequestOptions): Promise<JobDetail> {
@@ -445,6 +598,114 @@ export class SfmApiClient {
     }
   }
 
+  listArtifactKinds(opts?: RequestOptions): Promise<Page<ArtifactKindOut>> {
+    return this.req("GET", "/v1/artifacts/kinds", {}, opts).then((r) =>
+      r.json(),
+    );
+  }
+
+  listArtifactFormats(opts?: RequestOptions): Promise<Page<ArtifactFormatOut>> {
+    return this.req("GET", "/v1/artifacts/formats", {}, opts).then((r) =>
+      r.json(),
+    );
+  }
+
+  importArtifact(
+    body: ArtifactImportRequest,
+    opts?: RequestOptions,
+  ): Promise<StageArtifact> {
+    return this.req("POST", "/v1/artifacts:import", { json: body }, opts).then(
+      (r) => r.json(),
+    );
+  }
+
+  getArtifact(artifactId: string, opts?: RequestOptions): Promise<StageArtifact> {
+    return this.req("GET", `/v1/artifacts/${artifactId}`, {}, opts).then((r) =>
+      r.json(),
+    );
+  }
+
+  planArtifactConversion(
+    artifactId: string,
+    body: ArtifactConversionPlanRequest,
+    opts?: RequestOptions,
+  ): Promise<ArtifactConversionPlanOut> {
+    return this.req(
+      "POST",
+      `/v1/artifacts/${artifactId}:conversionPlan`,
+      { json: body },
+      opts,
+    ).then((r) => r.json());
+  }
+
+  convertArtifact(
+    artifactId: string,
+    body: ArtifactConvertRequest,
+    opts?: RequestOptions,
+  ): Promise<JobSubmitResponse> {
+    return this.req(
+      "POST",
+      `/v1/artifacts/${artifactId}:convert`,
+      { json: body },
+      opts,
+    ).then((r) => r.json());
+  }
+
+  validateArtifact(
+    artifactId: string,
+    opts?: RequestOptions,
+  ): Promise<ArtifactValidationOut> {
+    return this.req(
+      "POST",
+      `/v1/artifacts/${artifactId}:validate`,
+      {},
+      opts,
+    ).then((r) => r.json());
+  }
+
+  async listJobArtifacts(
+    jobId: string,
+    params: ArtifactListParams = {},
+    opts?: RequestOptions,
+  ): Promise<Page<StageArtifact>> {
+    const r = await this.req(
+      "GET",
+      this.artifactListPath(`/v1/jobs/${jobId}/artifacts`, params),
+      {},
+      opts,
+    );
+    return r.json();
+  }
+
+  async listReconstructionArtifacts(
+    reconId: string,
+    params: ArtifactListParams = {},
+    opts?: RequestOptions,
+  ): Promise<Page<StageArtifact>> {
+    const r = await this.req(
+      "GET",
+      this.artifactListPath(`/v1/reconstructions/${reconId}/artifacts`, params),
+      {},
+      opts,
+    );
+    return r.json();
+  }
+
+  async readArtifactContent(
+    artifactId: string,
+    opts?: ArtifactContentOptions,
+  ): Promise<ArrayBuffer> {
+    const { download, ...requestOpts } = opts ?? {};
+    const qs = download ? "?download=true" : "";
+    const r = await this.req(
+      "GET",
+      `/v1/artifacts/${artifactId}/content${qs}`,
+      {},
+      requestOpts,
+    );
+    return r.arrayBuffer();
+  }
+
   // --- reconstructions / submodels / snapshots ---------------------
 
   getReconstruction(
@@ -456,13 +717,47 @@ export class SfmApiClient {
     );
   }
 
-  listSubmodels(reconId: string, opts?: RequestOptions): Promise<SubModel[]> {
-    return this.req(
+  listSubmodels(reconId: string, opts?: RequestOptions): Promise<SubModel[]>;
+  listSubmodels(
+    reconId: string,
+    params?: PageParams,
+    opts?: RequestOptions,
+  ): Promise<SubModel[]>;
+  async listSubmodels(
+    reconId: string,
+    paramsOrOpts: PageParams | RequestOptions = {},
+    opts?: RequestOptions,
+  ): Promise<SubModel[]> {
+    const [params, requestOpts] = this.splitPageArgs(paramsOrOpts, opts);
+    const r = await this.req(
       "GET",
-      `/v1/reconstructions/${reconId}/submodels`,
+      this.pagedPath(`/v1/reconstructions/${reconId}/submodels`, params),
       {},
-      opts,
-    ).then((r) => r.json());
+      requestOpts,
+    );
+    const page = (await r.json()) as Page<SubModel>;
+    return page.items ?? [];
+  }
+
+  listSubmodelsPage(reconId: string, opts?: RequestOptions): Promise<Page<SubModel>>;
+  listSubmodelsPage(
+    reconId: string,
+    params?: PageParams,
+    opts?: RequestOptions,
+  ): Promise<Page<SubModel>>;
+  async listSubmodelsPage(
+    reconId: string,
+    paramsOrOpts: PageParams | RequestOptions = {},
+    opts?: RequestOptions,
+  ): Promise<Page<SubModel>> {
+    const [params, requestOpts] = this.splitPageArgs(paramsOrOpts, opts);
+    const r = await this.req(
+      "GET",
+      this.pagedPath(`/v1/reconstructions/${reconId}/submodels`, params),
+      {},
+      requestOpts,
+    );
+    return r.json();
   }
 
   async listSnapshots(reconId: string, opts?: RequestOptions): Promise<number[]> {
@@ -621,7 +916,7 @@ export class SfmApiClient {
     return body.written ?? 0;
   }
 
-  // --- localize / georegister / cubemap / dense / mesh / merge ----
+  // --- localize / georegister / cubemap / merge ----
 
   submitLocalize(
     reconId: string,
@@ -675,12 +970,9 @@ export class SfmApiClient {
   }
 
   submitDense(reconId: string, opts?: RequestOptions): Promise<JobSubmitResponse> {
-    return this.req(
-      "POST",
-      `/v1/reconstructions/${reconId}/dense`,
-      {},
-      opts,
-    ).then((r) => r.json());
+    void reconId;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   submitMesh(
@@ -688,12 +980,10 @@ export class SfmApiClient {
     body: { method?: "poisson" | "delaunay"; options?: Record<string, unknown> } = {},
     opts?: RequestOptions,
   ): Promise<JobSubmitResponse> {
-    return this.req(
-      "POST",
-      `/v1/reconstructions/${reconId}/mesh`,
-      { json: { method: body.method ?? "poisson", options: body.options ?? {} } },
-      opts,
-    ).then((r) => r.json());
+    void reconId;
+    void body;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   submitMergeRecons(
@@ -768,12 +1058,10 @@ export class SfmApiClient {
     seq: number,
     opts?: RequestOptions,
   ): Promise<DenseManifestFile> {
-    return this.req(
-      "GET",
-      `/v1/reconstructions/${reconId}/snapshots/${seq}/dense/index.json`,
-      {},
-      opts,
-    ).then((r) => r.json());
+    void reconId;
+    void seq;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   readDenseFused(
@@ -781,12 +1069,10 @@ export class SfmApiClient {
     seq: number,
     opts?: RequestOptions,
   ): Promise<ArrayBuffer> {
-    return this.req(
-      "GET",
-      `/v1/reconstructions/${reconId}/snapshots/${seq}/dense/fused.bin`,
-      {},
-      opts,
-    ).then((r) => r.arrayBuffer());
+    void reconId;
+    void seq;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   readDepthMap(
@@ -795,12 +1081,11 @@ export class SfmApiClient {
     imageName: string,
     opts?: RequestOptions,
   ): Promise<ArrayBuffer> {
-    return this.req(
-      "GET",
-      `/v1/reconstructions/${reconId}/snapshots/${seq}/dense/depth_maps/${imageName}.bin`,
-      {},
-      opts,
-    ).then((r) => r.arrayBuffer());
+    void reconId;
+    void seq;
+    void imageName;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   readNormalMap(
@@ -809,12 +1094,11 @@ export class SfmApiClient {
     imageName: string,
     opts?: RequestOptions,
   ): Promise<ArrayBuffer> {
-    return this.req(
-      "GET",
-      `/v1/reconstructions/${reconId}/snapshots/${seq}/dense/normal_maps/${imageName}.bin`,
-      {},
-      opts,
-    ).then((r) => r.arrayBuffer());
+    void reconId;
+    void seq;
+    void imageName;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   readMeshManifest(
@@ -822,12 +1106,10 @@ export class SfmApiClient {
     seq: number,
     opts?: RequestOptions,
   ): Promise<MeshFile> {
-    return this.req(
-      "GET",
-      `/v1/reconstructions/${reconId}/snapshots/${seq}/mesh.json`,
-      {},
-      opts,
-    ).then((r) => r.json());
+    void reconId;
+    void seq;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   readMeshPly(
@@ -835,12 +1117,10 @@ export class SfmApiClient {
     seq: number,
     opts?: RequestOptions,
   ): Promise<ArrayBuffer> {
-    return this.req(
-      "GET",
-      `/v1/reconstructions/${reconId}/snapshots/${seq}/mesh.ply`,
-      {},
-      opts,
-    ).then((r) => r.arrayBuffer());
+    void reconId;
+    void seq;
+    void opts;
+    return unsupportedDenseMesh();
   }
 
   async getLocalizationResult(
@@ -1058,22 +1338,63 @@ export class SfmApiClient {
   // --- admin: api keys -------------------------------------------
 
   listApiKeys(opts?: RequestOptions): Promise<ApiKey[]> {
-    return this.req("GET", "/v1/admin/api-keys", {}, opts).then((r) => r.json());
+    return this.req("GET", "/v1/admin/api-keys", {}, opts)
+      .then((r) => r.json())
+      .then((items: ApiKey[]) => items.map((item) => this.normalizeApiKey(item)));
   }
 
   createApiKey(
-    body: { label?: string | null } = {},
+    body: { tenant_id?: string; name?: string | null; label?: string | null },
+    opts?: RequestOptions,
+  ): Promise<ApiKeyCreated>;
+  createApiKey(name?: string | null, opts?: RequestOptions): Promise<ApiKeyCreated>;
+  createApiKey(
+    bodyOrName?: { tenant_id?: string; name?: string | null; label?: string | null } | string | null,
     opts?: RequestOptions,
   ): Promise<ApiKeyCreated> {
+    const body = this.normalizeApiKeyCreateBody(bodyOrName);
     return this.req(
       "POST",
       "/v1/admin/api-keys",
       { json: body },
       opts,
-    ).then((r) => r.json());
+    ).then((r) => r.json()).then((item: ApiKeyCreated) => this.normalizeApiKey(item));
+  }
+
+  createApiKeyForTenant(
+    tenantId: string,
+    name?: string | null,
+    opts?: RequestOptions,
+  ): Promise<ApiKeyCreated> {
+    const body: { tenant_id: string; name?: string | null } = { tenant_id: tenantId };
+    if (name !== undefined) body.name = name;
+    return this.createApiKey(body, opts);
   }
 
   async deleteApiKey(apiKeyId: string, opts?: RequestOptions): Promise<void> {
     await this.req("DELETE", `/v1/admin/api-keys/${apiKeyId}`, {}, opts);
+  }
+
+  private normalizeApiKeyCreateBody(
+    bodyOrName?: { tenant_id?: string; name?: string | null; label?: string | null } | string | null,
+  ): { tenant_id: string; name?: string | null } {
+    if (typeof bodyOrName === "object" && bodyOrName !== null) {
+      const name = bodyOrName.name ?? bodyOrName.label;
+      return {
+        tenant_id: bodyOrName.tenant_id ?? "default",
+        ...(name == null ? {} : { name }),
+      };
+    }
+    return {
+      tenant_id: "default",
+      ...(bodyOrName == null ? {} : { name: bodyOrName }),
+    };
+  }
+
+  private normalizeApiKey<T extends ApiKey>(item: T): T {
+    if (item.label === undefined && item.name !== undefined) {
+      return { ...item, label: item.name };
+    }
+    return item;
   }
 }

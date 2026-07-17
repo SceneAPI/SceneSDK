@@ -16,6 +16,7 @@ typescript/.vite/
 
 # CMake / C++
 cpp/build/
+cpp/build-*/
 *.obj
 *.exe
 

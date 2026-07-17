@@ -24,16 +24,25 @@ from typing import Any, BinaryIO
 import httpx
 
 from sfmapi_client._transport import auth_headers, stream_sha256
-from sfmapi_client.errors import raise_for_response
+from sfmapi_client.errors import SfmApiError, raise_for_response
 from sfmapi_client.models import (
     ApiKey,
     ApiKeyCreated,
+    ArtifactConversionPlanOut,
+    ArtifactConversionPlanRequest,
+    ArtifactConvertRequest,
+    ArtifactFormatOut,
+    ArtifactImportRequest,
+    ArtifactKindOut,
+    ArtifactValidationOut,
+    AttributesContractOut,
     BatchCreateImagesRequest,
     BatchCreateImagesResponse,
     Capabilities,
     CorrespondenceGraphFile,
     Dataset,
     DatasetPatch,
+    DataTypesContractOut,
     DenseManifestFile,
     FeaturesSpec,
     Image,
@@ -43,16 +52,23 @@ from sfmapi_client.models import (
     JobSubmitResponse,
     LocalizationResult,
     MatcherSpec,
+    OperationsContractOut,
     MeshFile,
     Page,
     PairsSpec,
+    PipelinesContractOut,
+    PipelineRunRequest,
     PipelineSpec,
+    PipelineValidateRequest,
+    PipelineValidateResponse,
     PointObservation,
     PosePrior,
+    ProcessorsContractOut,
     Project,
     ProjectPatch,
     Reconstruction,
     Sim3,
+    StageArtifact,
     SubModel,
     TilesIndex,
     TwoViewGeometriesFile,
@@ -64,7 +80,16 @@ from sfmapi_client.models import (
 
 def _spec_dict(spec: Any) -> Any:
     """Serialize a Pydantic model or pass through a dict."""
+    if isinstance(spec, ArtifactConversionPlanRequest):
+        return spec.model_dump(mode="json", exclude_unset=True)
     return spec.model_dump(mode="json") if hasattr(spec, "model_dump") else spec
+
+
+def _unsupported_dense_mesh() -> None:
+    raise NotImplementedError(
+        "Dense MVS and mesh/texture generation are out of scope for sfmapi SDK "
+        "route helpers; invoke backend actions or a downstream mvsapi or meshapi service."
+    )
 
 
 class SfmApiClient:
@@ -148,9 +173,17 @@ class SfmApiClient:
             self._req("POST", "/v1/uploads", json=body, headers=headers).json()
         )
 
-    def patch_chunk(self, upload_id: str, *, offset: int, data: bytes) -> Upload:
+    def patch_chunk(
+        self,
+        upload_id: str,
+        *,
+        offset: int,
+        data: bytes,
+        total: int | None = None,
+    ) -> Upload:
         end = offset + len(data) - 1
-        headers = {"Content-Range": f"bytes {offset}-{end}/{offset + len(data)}"}
+        range_total = total if total is not None else offset + len(data)
+        headers = {"Content-Range": f"bytes {offset}-{end}/{range_total}"}
         return Upload.model_validate(
             self._req(
                 "PATCH",
@@ -190,10 +223,11 @@ class SfmApiClient:
         offset = 0
         while offset < len(data):
             chunk = data[offset : offset + chunk_size]
-            self.patch_chunk(upload.upload_id, offset=offset, data=chunk)
+            self.patch_chunk(upload.upload_id, offset=offset, data=chunk, total=len(data))
             offset += len(chunk)
         result = self.finalize_upload(upload.upload_id, client_sha=sha)
-        assert result.blob_sha == sha
+        if result.blob_sha != sha:
+            raise SfmApiError(f"server sha {result.blob_sha} != local {sha}")
         return sha
 
     def upload_file(self, file: BinaryIO, *, content_type: str | None = None) -> str:
@@ -231,9 +265,32 @@ class SfmApiClient:
             self._req("GET", f"/v1/projects/{project_id}/datasets/{dataset_id}").json()
         )
 
-    def list_datasets(self, project_id: str) -> list[Dataset]:
-        rows = self._req("GET", f"/v1/projects/{project_id}/datasets").json()
-        return [Dataset.model_validate(r) for r in rows]
+    def list_datasets_page(
+        self,
+        project_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> Page[Dataset]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        return Page[Dataset].model_validate(
+            self._req("GET", f"/v1/projects/{project_id}/datasets", params=params).json()
+        )
+
+    def list_datasets(
+        self,
+        project_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> list[Dataset]:
+        return self.list_datasets_page(
+            project_id,
+            page_size=page_size,
+            page_token=page_token,
+        ).items
 
     def add_image(
         self,
@@ -343,6 +400,193 @@ class SfmApiClient:
             self._req("POST", f"/v1/projects/{project_id}/pipelines/{kind}", json=body).json()
         )
 
+    def validate_pipeline(
+        self,
+        body: PipelineValidateRequest | dict[str, Any],
+    ) -> PipelineValidateResponse:
+        return PipelineValidateResponse.model_validate(
+            self._req("POST", "/v1/pipelines:validate", json=_spec_dict(body)).json()
+        )
+
+    def run_typed_pipeline(
+        self,
+        project_id: str,
+        body: PipelineRunRequest | dict[str, Any],
+    ) -> JobSubmitResponse:
+        return JobSubmitResponse.model_validate(
+            self._req(
+                "POST",
+                f"/v1/projects/{project_id}/pipelines:run",
+                json=_spec_dict(body),
+            ).json()
+        )
+
+    def list_attributes(self) -> AttributesContractOut:
+        return AttributesContractOut.model_validate(
+            self._req("GET", "/v1/attributes").json()
+        )
+
+    def list_datatypes(self) -> DataTypesContractOut:
+        return DataTypesContractOut.model_validate(
+            self._req("GET", "/v1/datatypes").json()
+        )
+
+    def list_operations(self) -> OperationsContractOut:
+        return OperationsContractOut.model_validate(
+            self._req("GET", "/v1/operations").json()
+        )
+
+    def list_processors(self) -> ProcessorsContractOut:
+        return ProcessorsContractOut.model_validate(
+            self._req("GET", "/v1/processors").json()
+        )
+
+    def list_pipelines(self) -> PipelinesContractOut:
+        return PipelinesContractOut.model_validate(
+            self._req("GET", "/v1/pipelines").json()
+        )
+
+    # ---- artifacts ----
+
+    def list_artifact_kinds(self) -> Page[ArtifactKindOut]:
+        return Page[ArtifactKindOut].model_validate(
+            self._req("GET", "/v1/artifacts/kinds").json()
+        )
+
+    def list_artifact_formats(self) -> Page[ArtifactFormatOut]:
+        return Page[ArtifactFormatOut].model_validate(
+            self._req("GET", "/v1/artifacts/formats").json()
+        )
+
+    def import_artifact(self, body: ArtifactImportRequest | dict[str, Any]) -> StageArtifact:
+        return StageArtifact.model_validate(
+            self._req("POST", "/v1/artifacts:import", json=_spec_dict(body)).json()
+        )
+
+    def get_artifact(self, artifact_id: str) -> StageArtifact:
+        return StageArtifact.model_validate(
+            self._req("GET", f"/v1/artifacts/{artifact_id}").json()
+        )
+
+    def plan_artifact_conversion(
+        self,
+        artifact_id: str,
+        body: ArtifactConversionPlanRequest | dict[str, Any],
+    ) -> ArtifactConversionPlanOut:
+        return ArtifactConversionPlanOut.model_validate(
+            self._req(
+                "POST",
+                f"/v1/artifacts/{artifact_id}:conversionPlan",
+                json=_spec_dict(body),
+            ).json()
+        )
+
+    def convert_artifact(
+        self,
+        artifact_id: str,
+        body: ArtifactConvertRequest | dict[str, Any],
+    ) -> JobSubmitResponse:
+        return JobSubmitResponse.model_validate(
+            self._req(
+                "POST",
+                f"/v1/artifacts/{artifact_id}:convert",
+                json=_spec_dict(body),
+            ).json()
+        )
+
+    def validate_artifact(self, artifact_id: str) -> ArtifactValidationOut:
+        return ArtifactValidationOut.model_validate(
+            self._req("POST", f"/v1/artifacts/{artifact_id}:validate").json()
+        )
+
+    def list_job_artifacts_page(
+        self,
+        job_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> Page[StageArtifact]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        if kind is not None:
+            params["kind"] = kind
+        if task_id is not None:
+            params["task_id"] = task_id
+        if name is not None:
+            params["name"] = name
+        return Page[StageArtifact].model_validate(
+            self._req("GET", f"/v1/jobs/{job_id}/artifacts", params=params).json()
+        )
+
+    def list_job_artifacts(
+        self,
+        job_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> list[StageArtifact]:
+        return self.list_job_artifacts_page(
+            job_id,
+            page_size=page_size,
+            page_token=page_token,
+            kind=kind,
+            task_id=task_id,
+            name=name,
+        ).items
+
+    def list_reconstruction_artifacts_page(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> Page[StageArtifact]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        if kind is not None:
+            params["kind"] = kind
+        if task_id is not None:
+            params["task_id"] = task_id
+        if name is not None:
+            params["name"] = name
+        return Page[StageArtifact].model_validate(
+            self._req("GET", f"/v1/reconstructions/{recon_id}/artifacts", params=params).json()
+        )
+
+    def list_reconstruction_artifacts(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+        kind: str | None = None,
+        task_id: str | None = None,
+        name: str | None = None,
+    ) -> list[StageArtifact]:
+        return self.list_reconstruction_artifacts_page(
+            recon_id,
+            page_size=page_size,
+            page_token=page_token,
+            kind=kind,
+            task_id=task_id,
+            name=name,
+        ).items
+
+    def read_artifact_content(self, artifact_id: str, *, download: bool = False) -> bytes:
+        params = {"download": str(download).lower()} if download else {}
+        return self._req("GET", f"/v1/artifacts/{artifact_id}/content", params=params).content
+
     # ---- jobs ----
 
     def get_job(self, job_id: str) -> JobDetail:
@@ -383,9 +627,32 @@ class SfmApiClient:
             self._req("GET", f"/v1/reconstructions/{recon_id}").json()
         )
 
-    def list_submodels(self, recon_id: str) -> list[SubModel]:
-        rows = self._req("GET", f"/v1/reconstructions/{recon_id}/submodels").json()
-        return [SubModel.model_validate(r) for r in rows]
+    def list_submodels_page(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> Page[SubModel]:
+        params: dict[str, Any] = {"page_size": page_size}
+        if page_token:
+            params["page_token"] = page_token
+        return Page[SubModel].model_validate(
+            self._req("GET", f"/v1/reconstructions/{recon_id}/submodels", params=params).json()
+        )
+
+    def list_submodels(
+        self,
+        recon_id: str,
+        *,
+        page_size: int = 100,
+        page_token: str | None = None,
+    ) -> list[SubModel]:
+        return self.list_submodels_page(
+            recon_id,
+            page_size=page_size,
+            page_token=page_token,
+        ).items
 
     def list_snapshots(self, recon_id: str) -> list[int]:
         body = self._req("GET", f"/v1/reconstructions/{recon_id}/snapshots").json()
@@ -470,7 +737,7 @@ class SfmApiClient:
             .get("written", 0)
         )
 
-    # ---- localize / georegister / cubemap / dense / mesh ----
+    # ---- localize / georegister / cubemap ----
 
     def submit_localize(
         self, recon_id: str, *, blob_sha: str, sift: dict | None = None
@@ -505,9 +772,7 @@ class SfmApiClient:
         )
 
     def submit_dense(self, recon_id: str) -> JobSubmitResponse:
-        return JobSubmitResponse.model_validate(
-            self._req("POST", f"/v1/reconstructions/{recon_id}/dense").json()
-        )
+        _unsupported_dense_mesh()
 
     def submit_mesh(
         self,
@@ -516,10 +781,7 @@ class SfmApiClient:
         method: str = "poisson",
         options: dict | None = None,
     ) -> JobSubmitResponse:
-        body = {"method": method, "options": options or {}}
-        return JobSubmitResponse.model_validate(
-            self._req("POST", f"/v1/reconstructions/{recon_id}/mesh", json=body).json()
-        )
+        _unsupported_dense_mesh()
 
     def submit_merge_recons(
         self,
@@ -575,37 +837,22 @@ class SfmApiClient:
         )
 
     def read_dense_index(self, recon_id: str, seq: int) -> DenseManifestFile:
-        return DenseManifestFile.model_validate(
-            self._req(
-                "GET",
-                f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/index.json",
-            ).json()
-        )
+        _unsupported_dense_mesh()
 
     def read_dense_fused(self, recon_id: str, seq: int) -> bytes:
-        return self._req(
-            "GET", f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/fused.bin"
-        ).content
+        _unsupported_dense_mesh()
 
     def read_depth_map(self, recon_id: str, seq: int, image_name: str) -> bytes:
-        return self._req(
-            "GET",
-            f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/depth_maps/{image_name}.bin",
-        ).content
+        _unsupported_dense_mesh()
 
     def read_normal_map(self, recon_id: str, seq: int, image_name: str) -> bytes:
-        return self._req(
-            "GET",
-            f"/v1/reconstructions/{recon_id}/snapshots/{seq}/dense/normal_maps/{image_name}.bin",
-        ).content
+        _unsupported_dense_mesh()
 
     def read_mesh_manifest(self, recon_id: str, seq: int) -> MeshFile:
-        return MeshFile.model_validate(
-            self._req("GET", f"/v1/reconstructions/{recon_id}/snapshots/{seq}/mesh.json").json()
-        )
+        _unsupported_dense_mesh()
 
     def read_mesh_ply(self, recon_id: str, seq: int) -> bytes:
-        return self._req("GET", f"/v1/reconstructions/{recon_id}/snapshots/{seq}/mesh.ply").content
+        _unsupported_dense_mesh()
 
     def get_localization_result(self, job_id: str) -> LocalizationResult:
         job = self.get_job(job_id)
@@ -747,8 +994,29 @@ class SfmApiClient:
     def list_api_keys(self) -> list[ApiKey]:
         return [ApiKey.model_validate(k) for k in self._req("GET", "/v1/admin/api-keys").json()]
 
-    def create_api_key(self, *, label: str | None = None) -> ApiKeyCreated:
-        body = {"label": label} if label is not None else {}
+    def create_api_key(
+        self,
+        name: str | None = None,
+        *,
+        tenant_id: str = "default",
+        label: str | None = None,
+    ) -> ApiKeyCreated:
+        if name is None and label is not None:
+            name = label
+        return self.create_api_key_for_tenant(tenant_id=tenant_id, name=name)
+
+    def create_api_key_for_tenant(
+        self,
+        *,
+        tenant_id: str,
+        name: str | None = None,
+        label: str | None = None,
+    ) -> ApiKeyCreated:
+        if name is None and label is not None:
+            name = label
+        body: dict[str, Any] = {"tenant_id": tenant_id}
+        if name is not None:
+            body["name"] = name
         return ApiKeyCreated.model_validate(
             self._req("POST", "/v1/admin/api-keys", json=body).json()
         )

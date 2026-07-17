@@ -9,15 +9,17 @@
 // Build: cl /std:c++17 /EHsc /I..\include test_contract.cpp
 // Run:   .\test_contract.exe
 //
-// Skips gracefully when the fixture directory is missing (CI runs
-// the C++ tests independently of Python).
+// Fails when the fixture directory is missing. CI must exercise at least
+// the SDK-owned fixture set under cpp/test/contract/fixtures.
 
 #include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "sfmapi/client.hpp"
 #include "sfmapi/json.hpp"
@@ -34,11 +36,21 @@
 namespace fs = std::filesystem;
 
 static fs::path FixtureDir() {
-  // Walk up from the test exe location until we find tests/contract.
+  if (const char* env = std::getenv("SFMAPI_CPP_CONTRACT_FIXTURES")) {
+    fs::path configured = env;
+    if (fs::exists(configured)) return configured;
+  }
+  // Walk up from the test exe location until we find either the SDK-owned
+  // fixture set or the older server-side contract fixture path.
   fs::path here = fs::current_path();
   for (int i = 0; i < 8; ++i) {
-    fs::path candidate = here / "tests" / "contract" / "fixtures";
-    if (fs::exists(candidate)) return candidate;
+    for (const fs::path& rel : {
+             fs::path("test") / "contract" / "fixtures",
+             fs::path("tests") / "contract" / "fixtures",
+         }) {
+      fs::path candidate = here / rel;
+      if (fs::exists(candidate)) return candidate;
+    }
     if (here.has_parent_path()) here = here.parent_path();
     else break;
   }
@@ -69,10 +81,19 @@ int main() {
   std::cout << "sfmapi C++ contract tests:\n";
   fs::path dir = FixtureDir();
   if (dir.empty()) {
-    std::cout << "  (no fixture dir found; skipping)\n";
-    return 0;
+    std::fprintf(stderr, "FAIL: no contract fixture dir found\n");
+    return 1;
   }
   std::cout << "  fixtures: " << dir.string() << "\n";
+  for (const std::string& name : {
+           "capabilities",
+           "healthz",
+           "project_get",
+           "dataset_create",
+           "error_404_project_missing",
+       }) {
+    CHECK(HasFixture(dir, name), ("required fixture missing: " + name).c_str());
+  }
 
   // ----- capabilities ------------------------------------------------
   if (HasFixture(dir, "capabilities")) {

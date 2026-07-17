@@ -1,5 +1,11 @@
 export { SfmApiClient } from "./client.js";
-export type { SfmApiClientOptions, RequestOptions } from "./client.js";
+export type {
+  SfmApiClientOptions,
+  RequestOptions,
+  PageParams,
+  ArtifactListParams,
+  ArtifactContentOptions,
+} from "./client.js";
 export {
   SfmApiError,
   AuthError,
@@ -8,7 +14,9 @@ export {
   ValidationError,
   QuotaExceededError,
   StorageError,
+  CapabilityUnavailableError,
   PycolmapUnavailableError,
+  BackendUnavailableError,
   TransportError,
 } from "./errors.js";
 export type {
@@ -33,14 +41,29 @@ export type {
   ApiKeyCreated,
   Upload,
   Job,
+  JobStatus,
   JobDetail,
   Task,
+  TaskStatus,
   Reconstruction,
   SubModel,
   Page,
   HealthResponse,
   VersionResponse,
   JobSubmitResponse,
+  ArtifactConversionPlanOut,
+  ArtifactConversionPlanRequest,
+  ArtifactConversionStepOut,
+  ArtifactConvertRequest,
+  ArtifactFileRef,
+  ArtifactFormatOut,
+  ArtifactInputRef,
+  ArtifactInputMap,
+  ArtifactImportRequest,
+  ArtifactKindOut,
+  ArtifactValidationIssueOut,
+  ArtifactValidationOut,
+  StageArtifact,
   FeatureType,
   FeaturesSpec,
   PairStrategy,
@@ -55,6 +78,25 @@ export type {
   HierarchicalSpec,
   SphericalSpec,
   PipelineSpec,
+  ChainError,
+  AttributeOut,
+  AttributesContractOut,
+  DataTypeOut,
+  DataTypesContractOut,
+  OperationOut,
+  OperationsContractOut,
+  PortSpecOut,
+  ProcessorOut,
+  ProcessorsContractOut,
+  PipelineStep,
+  ProcessorPipelineStep,
+  PipelineDefinitionStepOut,
+  PipelineDefinitionOut,
+  PipelinesContractOut,
+  PipelineStepLike,
+  PipelineValidateRequest,
+  PipelineRunRequest,
+  PipelineValidateResponse,
   ProgressEvent,
 } from "./models.js";
 export type {
@@ -116,9 +158,8 @@ export { sha256Hex } from "./hash.js";
 
 export const VERSION = "0.0.1";
 
-// `openapi-types.ts` is regenerated on every CI run from the live
-// FastAPI app. We don't import or re-export it from the public surface
-// because it's bulky (~2.3k lines) and duplicates types we hand-roll.
-// It exists so the drift checker (`drift/check.ts`) can verify the
-// hand-rolled types stay structurally compatible with the server's
-// OpenAPI schema. To inspect it, run `npm run gen:openapi-types`.
+// `_generated/openapi.d.ts` is regenerated from the pinned OpenAPI
+// schema. We don't re-export it from the public surface because it's
+// bulky and duplicates types we hand-roll. It exists so the drift
+// checker (`drift/check.ts`) can verify the hand-rolled types stay
+// structurally compatible with the server schema.

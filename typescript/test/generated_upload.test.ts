@@ -11,6 +11,7 @@ import {
   NotFoundError,
   SfmApiError,
 } from "../src/_generated/client.js";
+import { sha256Hex } from "../src/hash.js";
 
 interface RecordedCall {
   url: string;
@@ -57,7 +58,7 @@ function recordingFetch(
 describe("generated TS uploadBytes helper", () => {
   it("drives init -> patch chunks -> finalize and returns blob_sha", async () => {
     const payload = new Uint8Array(32).map((_, i) => i);
-    const expectedSha = "deadbeef".repeat(8); // server returns whatever; we just check the call shape
+    const expectedSha = await sha256Hex(payload);
 
     const { fn, calls } = recordingFetch((call) => {
       if (call.method === "POST" && call.url.endsWith("/v1/uploads")) {
@@ -83,12 +84,15 @@ describe("generated TS uploadBytes helper", () => {
     expect(calls.length).toBe(6);
     const init = calls[0]!;
     const fin = calls[5]!;
+    const initBody = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(init.method).toBe("POST");
     expect(init.url).toBe("http://test.invalid/v1/uploads");
+    expect(initBody.expected_sha).toBe(expectedSha);
     expect(fin.method).toBe("POST");
     expect(fin.url).toBe(
       "http://test.invalid/v1/uploads/01HZTESTUPLOAD0000000000000:finalize",
     );
+    expect(fin.headers["x-content-sha256"]).toBe(expectedSha);
     // Each PATCH carries a Content-Range covering the right window.
     for (let i = 1; i <= 4; i++) {
       const patch = calls[i]!;
@@ -105,7 +109,7 @@ describe("generated TS uploadBytes helper", () => {
         return { status: 201, body: { upload_id: "u1" } };
       }
       if (call.method === "PATCH") return { status: 200, body: {} };
-      return { status: 200, body: { blob_sha: "abc" } };
+      return { status: 200, body: { blob_sha: call.headers["x-content-sha256"] } };
     });
     await uploadBytes(new Uint8Array([1, 2, 3]), {
       baseUrl: "http://test.invalid///",
@@ -120,7 +124,7 @@ describe("generated TS uploadBytes helper", () => {
         return { status: 201, body: { upload_id: "u1" } };
       }
       if (call.method === "PATCH") return { status: 200, body: {} };
-      return { status: 200, body: { blob_sha: "abc" } };
+      return { status: 200, body: { blob_sha: call.headers["x-content-sha256"] } };
     });
     await uploadBytes(new Uint8Array([1]), {
       baseUrl: "http://x",
@@ -154,6 +158,7 @@ describe("generated TS uploadBytes helper", () => {
       expect(e).toBeInstanceOf(SfmApiError);
       if (e instanceof SfmApiError) {
         expect(e.statusCode).toBe(500);
+        expect(e.response?.status).toBe(500);
       }
     }
   });

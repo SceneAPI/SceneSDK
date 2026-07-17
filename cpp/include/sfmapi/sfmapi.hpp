@@ -242,7 +242,7 @@ struct PoseGraphFile { PoseGraph pose_graph; };
 //
 // Dense MVS and mesh / texture generation are out of scope for sfmapi
 // (separate ``mvsapi`` / ``meshapi`` specs — see SFMAPI-SPEC.md
-// Appendix D). No dense/mesh manifest structs ship here. The
+// Appendix D). No dense or mesh manifest structs ship here. The
 // ``x-sfm-depth-v1`` / ``x-sfm-normal-v1`` binary structs (DepthMap /
 // NormalMap, below) stay — they decode wire formats a backend may
 // emit as artifacts, independent of any dense route.
@@ -360,9 +360,67 @@ struct Upload {
 
 struct ArtifactKind {
   std::string kind;
+  std::string datatype;
   std::string title;
   std::string description;
   bool durable = false;
+  std::string artifact_format;
+  std::optional<std::int32_t> schema_version;
+};
+
+struct ArtifactFormat {
+  std::string format_id;
+  std::string datatype;
+  std::string title;
+  std::string description;
+  std::int32_t schema_version = 0;
+  std::vector<std::string> media_types;
+  std::string json_schema_json;
+  std::string examples_json;
+  bool portable = true;
+};
+
+struct ArtifactFileRef {
+  std::string name;
+  std::string uri;
+  std::string media_type;
+  std::string sha256;
+  std::optional<std::int64_t> byte_size;
+};
+
+struct ArtifactConversionStep {
+  std::string contract_id;
+  std::string backend;
+  std::string provider;
+  std::string from_format;
+  std::string to_format;
+  bool lossless = false;
+  std::string description;
+};
+
+struct ArtifactConversionPlan {
+  std::string artifact_id;
+  std::string source_format;
+  std::string target_format;
+  bool conversion_required = false;
+  bool executable = false;
+  std::string reason;
+  std::vector<ArtifactConversionStep> steps;
+};
+
+struct ArtifactValidationIssue {
+  std::string level;
+  std::string field;
+  std::string message;
+};
+
+struct ArtifactValidation {
+  std::string artifact_id;
+  bool valid = false;
+  std::string artifact_format;
+  std::string datatype;
+  bool checked_content = false;
+  std::vector<ArtifactValidationIssue> issues;
 };
 
 struct StageArtifact {
@@ -375,9 +433,17 @@ struct StageArtifact {
   std::string name;
   std::string uri;
   std::string media_type;
-  /// `summary_json`, `metadata_json`, and `links_json` are raw JSON
-  /// objects. Keep them as strings so consumers can decode with their
-  /// preferred JSON library.
+  std::string artifact_format;
+  std::string datatype;
+  std::optional<std::int32_t> schema_version;
+  std::string files_json;
+  std::string sha256;
+  std::optional<std::int64_t> byte_size;
+  std::string coordinate_frame;
+  /// `producer_json`, `summary_json`, `metadata_json`, `files_json`, and
+  /// `links_json` are raw JSON values. Keep them as strings so consumers can
+  /// decode with their preferred JSON library.
+  std::string producer_json;
   std::string summary_json;
   std::string metadata_json;
   std::string links_json;
@@ -389,6 +455,7 @@ struct TaskRow {
   std::string job_id;
   std::string kind;
   std::string status;          // pending|running|succeeded|failed|cancelled|cancelled_dirty
+  std::string provider;
   std::string cache_key;
   std::string inputs_hash;
   std::string params_hash;
@@ -440,14 +507,131 @@ struct SubModelRow {
   std::string created_at;
 };
 
+struct AttributeOut {
+  std::string name;
+  std::string type;
+  bool required = false;
+  std::string description;
+  std::string default_json;
+  std::vector<std::string> enum_values;
+  std::optional<double> min;
+  std::optional<double> max;
+};
+
+struct DataTypeOut {
+  std::string type_id;
+  std::string title;
+  std::string kind;
+  std::vector<std::string> aliases;
+  std::string description;
+};
+
+struct PortSpecOut {
+  std::string datatype;
+  bool required = false;
+  bool multiple = false;
+  std::string description;
+};
+
+struct ProcessorOut {
+  std::string processor_id;
+  std::string title;
+  std::map<std::string, PortSpecOut> consumer;
+  std::map<std::string, PortSpecOut> supplier;
+  std::vector<AttributeOut> attributes;
+  std::map<std::string, PortSpecOut> special_inputs;
+  std::vector<AttributeOut> special_attributes;
+  std::vector<std::string> capabilities;
+  std::string config_stage;
+  std::vector<std::string> aliases;
+  std::string description;
+};
+
+struct OperationOut {
+  std::string op_id;
+  std::string title;
+  std::vector<std::string> consumes;
+  std::vector<std::string> produces;
+  std::vector<std::string> capabilities;
+  std::string config_stage;
+  std::string description;
+};
+
+struct PipelineDefinitionStepOut {
+  std::string ref;
+  std::string processor;
+  std::string attributes_json;
+  std::string wires_json;
+};
+
+struct PipelineDefinitionOut {
+  std::string pipeline_id;
+  std::string title;
+  std::vector<std::string> aliases;
+  std::vector<std::string> initial_inputs;
+  std::vector<PipelineDefinitionStepOut> steps;
+  std::string description;
+};
+
+struct AttributesContractOut {
+  std::string contract;
+  std::int32_t contract_schema_version = 0;
+  std::vector<std::string> attribute_types;
+  std::map<std::string, std::string> rules;
+};
+
+struct DataTypesContractOut {
+  std::string contract;
+  std::int32_t contract_schema_version = 0;
+  std::vector<std::string> kinds;
+  std::vector<DataTypeOut> types;
+};
+
+struct OperationsContractOut {
+  std::string contract;
+  std::int32_t contract_schema_version = 0;
+  std::vector<OperationOut> operations;
+  std::map<std::string, std::string> compatibility;
+};
+
+struct ProcessorsContractOut {
+  std::string contract;
+  std::int32_t contract_schema_version = 0;
+  std::vector<ProcessorOut> processors;
+  std::map<std::string, std::string> rules;
+};
+
+struct PipelinesContractOut {
+  std::string contract;
+  std::int32_t contract_schema_version = 0;
+  std::string composition_rule;
+  std::vector<std::string> initial_inputs;
+  std::map<std::string, std::vector<std::string>> canonical_pipelines;
+  std::vector<PipelineDefinitionOut> plugin_pipelines;
+  std::string step_schema_json;
+  std::vector<std::string> validation_reasons;
+};
+
 struct JobSubmitResponse {
   std::string job_id;
   std::vector<std::string> task_ids;
   std::string recon_id;        // empty when not applicable
   std::string dataset_id;      // empty when not applicable
+  std::string project_id;      // empty when not applicable
+  std::string method;          // empty when not applicable
+  std::string applied_sim3_json;
+  std::string target_recon_id;
+  std::vector<std::string> source_recon_ids;
+  std::string strategy;
+  std::string action_id;
+  std::string backend;
   /// sfm_hub provider id resolved for execution; echoed back from the
   /// request so clients can confirm routing. Empty when unset.
   std::string provider;
+  std::string artifact_id;
+  std::string target_format;
+  std::string radiance_field_id;
+  std::string radiance_evaluation_id;
 };
 
 struct HealthResponse {
@@ -472,10 +656,10 @@ struct VersionResponse {
 struct ApiKey {
   std::string api_key_id;
   std::string tenant_id;
-  std::string label;
-  std::string last_used_at;
-  std::string revoked_at;
-  std::string created_at;
+  std::string name;
+  std::string label;       // Deprecated alias for name.
+  std::string created_at;  // Optional; empty when the server omits it.
+  bool revoked = false;
 };
 
 struct ApiKeyCreated : ApiKey {

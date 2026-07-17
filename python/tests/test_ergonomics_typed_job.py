@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any
 from unittest import mock
 
+import sfmapi_client_gen._ergonomics as ergonomics
 from sfmapi_client_gen._ergonomics import (
     JobDetail,
     submit_and_wait_typed,
@@ -72,3 +73,11 @@ def test_submit_and_wait_typed_returns_jobdetail() -> None:
     assert isinstance(result, JobDetail)
     assert result.status.value == "failed"
     submit_and_wait.assert_called_once()
+
+
+def test_typed_and_pagination_helpers_are_public_exports() -> None:
+    assert {
+        "wait_for_job_typed",
+        "submit_and_wait_typed",
+        "iter_paginated",
+    } <= set(ergonomics.__all__)

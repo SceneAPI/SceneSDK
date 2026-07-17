@@ -13,22 +13,57 @@ import {
   type Capabilities,
   type Project,
   type Dataset,
+  type JobDetail,
   type Page,
   type HealthResponse,
   type VersionResponse,
 } from "../src/index.js";
 
-const FIXTURE_DIR = resolve(__dirname, "../../../tests/contract/fixtures");
+const FIXTURE_DIR = resolve(__dirname, "../../cpp/test/contract/fixtures");
+if (
+  !existsSync(FIXTURE_DIR) ||
+  !readdirSync(FIXTURE_DIR).some((f) => f.endsWith(".json"))
+) {
+  throw new Error(`Missing SDK contract fixtures: ${FIXTURE_DIR}`);
+}
 
 function load<T>(name: string): T {
   const p = join(FIXTURE_DIR, `${name}.json`);
   return JSON.parse(readFileSync(p, "utf-8")) as T;
 }
 
-const haveFixtures = existsSync(FIXTURE_DIR) &&
-  readdirSync(FIXTURE_DIR).some((f) => f.endsWith(".json"));
+describe("contract: handwritten model invariants", () => {
+  it("allows skipped task rows in job detail without widening job status", () => {
+    const detail: JobDetail = {
+      job_id: "j1",
+      tenant_id: "default",
+      project_id: "p1",
+      recipe: "features",
+      status: "succeeded",
+      cancel_requested: false,
+      cancel_force: false,
+      created_at: "2026-06-05T00:00:00Z",
+      tasks: [
+        {
+          task_id: "t1",
+          job_id: "j1",
+          kind: "features",
+          status: "skipped",
+          cache_key: "c",
+          inputs_hash: "i",
+          params_hash: "p",
+          provider: null,
+          outputs_ref: null,
+        },
+      ],
+    };
 
-describe.skipIf(!haveFixtures)("contract: TS SDK decodes Python fixtures", () => {
+    expect(detail.tasks[0]?.status).toBe("skipped");
+    expect(detail.status).toBe("succeeded");
+  });
+});
+
+describe("contract: TS SDK decodes Python fixtures", () => {
   it("capabilities carries schema_version + features", () => {
     const caps = load<Capabilities>("capabilities");
     expect(caps.schema_version).toBe(1);

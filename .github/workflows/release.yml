@@ -14,7 +14,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -33,13 +33,15 @@ jobs:
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
 
   python:
-    needs: resolve
+    needs: [resolve, cpp]
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: python
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref }}
       - uses: astral-sh/setup-uv@v7
       - name: Check package version
         env:
@@ -60,31 +62,33 @@ jobs:
                   f"generated package version {generated!r} does not match tag {expected!r}"
               )
           PY
-      - name: Build packages
+      - name: Codegen provenance
+        run: python ../scripts/check_codegen_provenance.py
+      - name: Install test dependencies
         run: |
           uv venv --seed
+          uv pip install -e ".[dev]"
+          uv pip install -e sfmapi_client_gen
           uv pip install build
+      - name: Test Python SDK
+        run: uv run pytest -q
+      - name: Import generated Python SDK
+        run: uv run python -c "import sfmapi_client_gen, sfmapi_client_gen.models; print(sfmapi_client_gen.__name__)"
+      - name: Build packages
+        run: |
           .venv/bin/python -m build --sdist --wheel
           .venv/bin/python -m build sfmapi_client_gen --sdist --wheel
-      - name: Publish Python SDK
-        if: github.event_name == 'push'
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: python/dist
-      - name: Publish generated Python SDK
-        if: github.event_name == 'push'
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: python/sfmapi_client_gen/dist
 
   typescript:
-    needs: resolve
+    needs: [resolve, cpp]
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: typescript
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -100,15 +104,117 @@ jobs:
         run: |
           npm ci
           npm run lint
+          npm run check:openapi-drift
+          npm run check:codegen-provenance
           npm test
           npm run build
-      - name: Publish npm package
-        if: github.event_name == 'push'
+
+  cpp:
+    needs: resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref }}
+      - name: Configure
+        run: cmake -S cpp -B cpp/build
+      - name: Build
+        run: cmake --build cpp/build --config Release
+      - name: Test
+        run: ctest --test-dir cpp/build -C Release --output-on-failure
+
+  publish:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [resolve, python, typescript, cpp]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref }}
+      - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - name: Verify publish preconditions
         env:
+          VERSION: ${{ needs.resolve.outputs.version }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "NPM_TOKEN is not configured; skipping npm publish."
-            exit 0
+            echo "NPM_TOKEN is required before any package is published."
+            exit 1
           fi
-          npm publish --access public --provenance
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          import tomllib
+          import urllib.error
+          import urllib.request
+          from pathlib import Path
+
+          version = os.environ["VERSION"]
+          packages = [
+              ("sfmapi-client", Path("python/pyproject.toml")),
+              ("sfmapi-client-gen", Path("python/sfmapi_client_gen/pyproject.toml")),
+          ]
+          for name, path in packages:
+              actual = tomllib.loads(path.read_text())["project"]["version"]
+              if actual != version:
+                  raise SystemExit(f"{name} version {actual!r} does not match tag {version!r}")
+              url = f"https://pypi.org/pypi/{name}/{version}/json"
+              try:
+                  urllib.request.urlopen(url, timeout=15).close()
+              except urllib.error.HTTPError as exc:
+                  if exc.code == 404:
+                      continue
+                  raise
+              raise SystemExit(f"{name} {version} already exists on PyPI")
+
+          npm_pkg = json.loads(Path("typescript/package.json").read_text())
+          if npm_pkg["version"] != version:
+              raise SystemExit(
+                  f"{npm_pkg['name']} version {npm_pkg['version']!r} does not match tag {version!r}"
+              )
+          proc = subprocess.run(
+              ["npm", "view", f"{npm_pkg['name']}@{version}", "version", "--json"],
+              text=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+          )
+          if proc.returncode == 0 and proc.stdout.strip() not in {"", "null"}:
+              raise SystemExit(f"{npm_pkg['name']} {version} already exists on npm")
+          if proc.returncode != 0 and "E404" not in proc.stderr:
+              sys.stderr.write(proc.stderr)
+              raise SystemExit(proc.returncode)
+          PY
+      - name: Build Python packages
+        working-directory: python
+        run: |
+          uv venv --seed
+          uv pip install build
+          .venv/bin/python -m build --sdist --wheel
+          .venv/bin/python -m build sfmapi_client_gen --sdist --wheel
+      - name: Install npm dependencies
+        working-directory: typescript
+        run: npm ci
+      - name: Build npm package
+        working-directory: typescript
+        run: npm run build
+      - name: Publish Python SDK
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/dist
+      - name: Publish generated Python SDK
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: python/sfmapi_client_gen/dist
+      - name: Publish npm package
+        working-directory: typescript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public --provenance

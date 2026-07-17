@@ -14,17 +14,24 @@ import {
   AuthError,
   QuotaExceededError,
   StorageError,
+  CapabilityUnavailableError,
   PycolmapUnavailableError,
+  BackendUnavailableError,
   TransportError,
   buildSfmApiError,
   raiseForStatus,
   supports,
   type components,
 } from "../src/_generated/client.js";
+import { SfmApiError as RootSfmApiError } from "../src/index.js";
 
-const FIXTURE_DIR = resolve(__dirname, "../../../tests/contract/fixtures");
-const haveFixtures = existsSync(FIXTURE_DIR) &&
-  readdirSync(FIXTURE_DIR).some((f) => f.endsWith(".json"));
+const FIXTURE_DIR = resolve(__dirname, "../../cpp/test/contract/fixtures");
+if (
+  !existsSync(FIXTURE_DIR) ||
+  !readdirSync(FIXTURE_DIR).some((f) => f.endsWith(".json"))
+) {
+  throw new Error(`Missing SDK contract fixtures: ${FIXTURE_DIR}`);
+}
 
 function load<T>(name: string): T {
   return JSON.parse(readFileSync(join(FIXTURE_DIR, `${name}.json`), "utf-8")) as T;
@@ -39,11 +46,14 @@ describe("generated TS ergonomics: error hierarchy", () => {
       AuthError,
       QuotaExceededError,
       StorageError,
+      CapabilityUnavailableError,
       PycolmapUnavailableError,
+      BackendUnavailableError,
       TransportError,
     ]) {
       const inst = new Cls(500, "x");
       expect(inst).toBeInstanceOf(SfmApiError);
+      expect(inst).toBeInstanceOf(RootSfmApiError);
       expect(inst).toBeInstanceOf(Cls);
       expect(inst.statusCode).toBe(500);
       expect(inst.name).toBe(Cls.name);
@@ -51,7 +61,7 @@ describe("generated TS ergonomics: error hierarchy", () => {
   });
 });
 
-describe.skipIf(!haveFixtures)("generated TS ergonomics: against real fixtures", () => {
+describe("generated TS ergonomics: against real fixtures", () => {
   it("buildSfmApiError translates 404 problem+json to NotFoundError", () => {
     const body = load<Record<string, unknown>>("error_404_project_missing");
     const err = buildSfmApiError(404, body);
@@ -71,6 +81,24 @@ describe.skipIf(!haveFixtures)("generated TS ergonomics: against real fixtures",
     const err = buildSfmApiError(418, {});
     expect(err.constructor).toBe(SfmApiError);
     expect(err.statusCode).toBe(418);
+  });
+
+  it("generic 501 uses CapabilityUnavailableError", () => {
+    const err = buildSfmApiError(501, {
+      detail: "custom typed processor pipeline execution is not available",
+      capability: "pipelines.custom_execution",
+    });
+    expect(err).toBeInstanceOf(CapabilityUnavailableError);
+    expect(err).not.toBeInstanceOf(PycolmapUnavailableError);
+  });
+
+  it("pycolmap 501 keeps the specialized error", () => {
+    const err = buildSfmApiError(501, {
+      detail: "pycolmap unavailable",
+      capability: "pycolmap",
+    });
+    expect(err).toBeInstanceOf(PycolmapUnavailableError);
+    expect(err).toBeInstanceOf(CapabilityUnavailableError);
   });
 
   it("raiseForStatus throws the typed subclass", () => {
@@ -94,6 +122,37 @@ describe.skipIf(!haveFixtures)("generated TS ergonomics: against real fixtures",
 });
 
 describe("generated TS ergonomics: input shapes", () => {
+  it("generic 501 uses CapabilityUnavailableError", () => {
+    const err = buildSfmApiError(501, {
+      detail: "custom typed processor pipeline execution is not available",
+      capability: "pipelines.custom_execution",
+    });
+    expect(err).toBeInstanceOf(CapabilityUnavailableError);
+    expect(err).not.toBeInstanceOf(PycolmapUnavailableError);
+  });
+
+  it("pycolmap 501 keeps the specialized error", () => {
+    const err = buildSfmApiError(501, {
+      detail: "pycolmap unavailable",
+      capability: "pycolmap",
+    });
+    expect(err).toBeInstanceOf(PycolmapUnavailableError);
+    expect(err).toBeInstanceOf(CapabilityUnavailableError);
+  });
+
+  it("maps all standard SDK error statuses", () => {
+    const cases = [
+      [400, ValidationError],
+      [401, AuthError],
+      [413, QuotaExceededError],
+      [503, BackendUnavailableError],
+      [507, StorageError],
+    ] as const;
+    for (const [status, Cls] of cases) {
+      expect(buildSfmApiError(status, { detail: `status ${status}` })).toBeInstanceOf(Cls);
+    }
+  });
+
   it("buildSfmApiError handles a non-object body without crashing", () => {
     const err = buildSfmApiError(500, "raw text body");
     expect(err.statusCode).toBe(500);

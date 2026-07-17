@@ -37,6 +37,7 @@
 #define SFMAPI_CLIENT_HPP_
 
 #include <chrono>
+#include <cctype>
 #include <cstdint>
 #include <fstream>
 #include <functional>
@@ -294,6 +295,34 @@ class Client {
                            const std::string& json_body) const {
     return Post("/v1/projects/" + project_id + "/pipelines/" + kind, json_body);
   }
+
+  HttpResponse ValidatePipeline(const std::string& json_body) const {
+    return Post("/v1/pipelines:validate", json_body);
+  }
+
+  HttpResponse ValidatePipeline(const PipelineValidateRequest& body) const {
+    return ValidatePipeline(body.ToJsonString());
+  }
+
+  HttpResponse RunPipeline(const std::string& project_id,
+                           const std::string& json_body) const {
+    return Post("/v1/projects/" + project_id + "/pipelines:run", json_body);
+  }
+
+  HttpResponse RunPipeline(const std::string& project_id,
+                           const PipelineRunRequest& body) const {
+    return RunPipeline(project_id, body.ToJsonString());
+  }
+
+  HttpResponse ListAttributes() const { return Get("/v1/attributes"); }
+
+  HttpResponse ListDataTypes() const { return Get("/v1/datatypes"); }
+
+  HttpResponse ListOperations() const { return Get("/v1/operations"); }
+
+  HttpResponse ListProcessors() const { return Get("/v1/processors"); }
+
+  HttpResponse ListPipelines() const { return Get("/v1/pipelines"); }
 
   // --- jobs -------------------------------------------------------
 
@@ -576,20 +605,32 @@ class Client {
 
   // --- stage artifacts -------------------------------------------
 
-  HttpResponse ListArtifactKinds(
-      const std::string& page_token = "",
-      int page_size = 0) const {
-    std::string path = "/v1/artifacts/kinds";
-    bool first = true;
-    AppendQueryParam(path, first, "page_token", page_token);
-    if (page_size > 0) {
-      AppendQueryParam(path, first, "page_size", std::to_string(page_size));
-    }
-    return Get(path);
+  HttpResponse ListArtifactKinds() const { return Get("/v1/artifacts/kinds"); }
+
+  HttpResponse ListArtifactFormats() const {
+    return Get("/v1/artifacts/formats");
+  }
+
+  HttpResponse ImportArtifact(const std::string& json_body) const {
+    return Post("/v1/artifacts:import", json_body);
   }
 
   HttpResponse GetArtifact(const std::string& artifact_id) const {
     return Get("/v1/artifacts/" + artifact_id);
+  }
+
+  HttpResponse PlanArtifactConversion(const std::string& artifact_id,
+                                      const std::string& json_body) const {
+    return Post("/v1/artifacts/" + artifact_id + ":conversionPlan", json_body);
+  }
+
+  HttpResponse ConvertArtifact(const std::string& artifact_id,
+                               const std::string& json_body) const {
+    return Post("/v1/artifacts/" + artifact_id + ":convert", json_body);
+  }
+
+  HttpResponse ValidateArtifact(const std::string& artifact_id) const {
+    return Post("/v1/artifacts/" + artifact_id + ":validate", "{}");
   }
 
   HttpResponse ReadArtifactContent(const std::string& artifact_id,
@@ -702,8 +743,24 @@ class Client {
 
   HttpResponse ListApiKeys() const { return Get("/v1/admin/api-keys"); }
 
-  HttpResponse CreateApiKey(const std::string& json_body = "{}") const {
+  HttpResponse CreateApiKey() const {
+    return CreateApiKeyForTenant("default");
+  }
+
+  HttpResponse CreateApiKey(const std::string& json_body) const {
     return Post("/v1/admin/api-keys", json_body);
+  }
+
+  HttpResponse CreateApiKeyForTenant(
+      const std::string& tenant_id,
+      const std::optional<std::string>& name = std::nullopt) const {
+    Json::Object body{{"tenant_id", tenant_id}};
+    if (name) body["name"] = *name;
+    return Post("/v1/admin/api-keys", Json(std::move(body)).Dump());
+  }
+
+  HttpResponse CreateApiKeyRaw(const std::string& json_body) const {
+    return CreateApiKey(json_body);
   }
 
   HttpResponse DeleteApiKey(const std::string& api_key_id) const {
@@ -784,6 +841,49 @@ class Client {
         out.features[kv.first] = kv.second.is_bool() ? kv.second.as_bool() : false;
       }
     }
+    return out;
+  }
+
+  static sfmapi::ApiKey ApiKeyFromJson(const Json& j) {
+    sfmapi::ApiKey out;
+    if (j.contains("api_key_id")) out.api_key_id = j["api_key_id"].as_string();
+    if (j.contains("tenant_id")) out.tenant_id = j["tenant_id"].as_string();
+    if (j.contains("name") && !j["name"].is_null()) {
+      out.name = j["name"].as_string();
+    }
+    if (j.contains("label") && !j["label"].is_null()) {
+      out.label = j["label"].as_string();
+    } else {
+      out.label = out.name;
+    }
+    if (j.contains("created_at") && !j["created_at"].is_null()) {
+      out.created_at = j["created_at"].as_string();
+    }
+    if (j.contains("revoked")) out.revoked = j["revoked"].as_bool();
+    return out;
+  }
+
+  static sfmapi::ApiKeyCreated ApiKeyCreatedFromJson(const Json& j) {
+    sfmapi::ApiKeyCreated out;
+    static_cast<sfmapi::ApiKey&>(out) = ApiKeyFromJson(j);
+    if (j.contains("raw_key")) out.raw_key = j["raw_key"].as_string();
+    return out;
+  }
+
+  static sfmapi::ApiKeyCreated ParseApiKeyCreated(const HttpResponse& resp) {
+    return ApiKeyCreatedFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static sfmapi::ApiKey ParseApiKey(const HttpResponse& resp) {
+    return ApiKeyFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static std::vector<sfmapi::ApiKey> ParseApiKeyList(const HttpResponse& resp) {
+    auto j = Json::Parse(std::string(resp.body.begin(), resp.body.end()));
+    std::vector<sfmapi::ApiKey> out;
+    for (const auto& item : j.as_array()) out.push_back(ApiKeyFromJson(item));
     return out;
   }
 
@@ -911,15 +1011,33 @@ class Client {
       const HttpResponse& resp) {
     auto body = Json::Parse(std::string(resp.body.begin(), resp.body.end()));
     sfmapi::JobSubmitResponse out;
+    auto get_string = [&](const char* key) {
+      return body.contains(key) && !body[key].is_null()
+                 ? body[key].as_string()
+                 : std::string();
+    };
     if (body.contains("job_id")) out.job_id = body["job_id"].as_string();
-    if (body.contains("recon_id") && !body["recon_id"].is_null()) {
-      out.recon_id = body["recon_id"].as_string();
+    out.recon_id = get_string("recon_id");
+    out.dataset_id = get_string("dataset_id");
+    out.project_id = get_string("project_id");
+    out.method = get_string("method");
+    out.target_recon_id = get_string("target_recon_id");
+    out.strategy = get_string("strategy");
+    out.action_id = get_string("action_id");
+    out.backend = get_string("backend");
+    out.provider = get_string("provider");
+    out.artifact_id = get_string("artifact_id");
+    out.target_format = get_string("target_format");
+    out.radiance_field_id = get_string("radiance_field_id");
+    out.radiance_evaluation_id = get_string("radiance_evaluation_id");
+    if (body.contains("applied_sim3") && !body["applied_sim3"].is_null()) {
+      out.applied_sim3_json = body["applied_sim3"].Dump();
     }
-    if (body.contains("dataset_id") && !body["dataset_id"].is_null()) {
-      out.dataset_id = body["dataset_id"].as_string();
-    }
-    if (body.contains("provider") && !body["provider"].is_null()) {
-      out.provider = body["provider"].as_string();
+    if (body.contains("source_recon_ids") &&
+        !body["source_recon_ids"].is_null()) {
+      for (const auto& item : body["source_recon_ids"].as_array()) {
+        out.source_recon_ids.push_back(item.as_string());
+      }
     }
     if (body.contains("task_ids")) {
       for (const auto& t : body["task_ids"].as_array()) {
@@ -929,12 +1047,317 @@ class Client {
     return out;
   }
 
+  static std::string OptionalString(const Json& j, const char* key) {
+    return j.contains(key) && !j[key].is_null() ? j[key].as_string()
+                                                : std::string();
+  }
+
+  static std::vector<std::string> StringArrayFromJson(const Json& j) {
+    std::vector<std::string> out;
+    if (j.is_null()) return out;
+    for (const auto& item : j.as_array()) out.push_back(item.as_string());
+    return out;
+  }
+
+  static std::map<std::string, std::string> StringMapFromJson(const Json& j) {
+    std::map<std::string, std::string> out;
+    if (j.is_null()) return out;
+    for (const auto& kv : j.as_object()) {
+      if (!kv.second.is_null()) out[kv.first] = kv.second.as_string();
+    }
+    return out;
+  }
+
+  static sfmapi::AttributeOut AttributeOutFromJson(const Json& j) {
+    sfmapi::AttributeOut out;
+    out.name = OptionalString(j, "name");
+    out.type = OptionalString(j, "type");
+    if (j.contains("required")) out.required = j["required"].as_bool();
+    out.description = OptionalString(j, "description");
+    if (j.contains("default") && !j["default"].is_null()) {
+      out.default_json = j["default"].Dump();
+    }
+    if (j.contains("enum") && !j["enum"].is_null()) {
+      out.enum_values = StringArrayFromJson(j["enum"]);
+    }
+    if (j.contains("min") && !j["min"].is_null()) {
+      out.min = j["min"].as_number();
+    }
+    if (j.contains("max") && !j["max"].is_null()) {
+      out.max = j["max"].as_number();
+    }
+    return out;
+  }
+
+  static sfmapi::DataTypeOut DataTypeOutFromJson(const Json& j) {
+    sfmapi::DataTypeOut out;
+    out.type_id = OptionalString(j, "type_id");
+    out.title = OptionalString(j, "title");
+    out.kind = OptionalString(j, "kind");
+    if (j.contains("aliases") && !j["aliases"].is_null()) {
+      out.aliases = StringArrayFromJson(j["aliases"]);
+    }
+    out.description = OptionalString(j, "description");
+    return out;
+  }
+
+  static sfmapi::PortSpecOut PortSpecOutFromJson(const Json& j) {
+    sfmapi::PortSpecOut out;
+    out.datatype = OptionalString(j, "datatype");
+    if (j.contains("required")) out.required = j["required"].as_bool();
+    if (j.contains("multiple")) out.multiple = j["multiple"].as_bool();
+    out.description = OptionalString(j, "description");
+    return out;
+  }
+
+  static std::map<std::string, sfmapi::PortSpecOut> PortSpecMapFromJson(
+      const Json& j) {
+    std::map<std::string, sfmapi::PortSpecOut> out;
+    if (j.is_null()) return out;
+    for (const auto& kv : j.as_object()) {
+      if (!kv.second.is_null()) out[kv.first] = PortSpecOutFromJson(kv.second);
+    }
+    return out;
+  }
+
+  static sfmapi::ProcessorOut ProcessorOutFromJson(const Json& j) {
+    sfmapi::ProcessorOut out;
+    out.processor_id = OptionalString(j, "processor_id");
+    out.title = OptionalString(j, "title");
+    if (j.contains("consumer")) out.consumer = PortSpecMapFromJson(j["consumer"]);
+    if (j.contains("supplier")) out.supplier = PortSpecMapFromJson(j["supplier"]);
+    if (j.contains("attributes") && !j["attributes"].is_null()) {
+      for (const auto& item : j["attributes"].as_array()) {
+        out.attributes.push_back(AttributeOutFromJson(item));
+      }
+    }
+    if (j.contains("special_inputs")) {
+      out.special_inputs = PortSpecMapFromJson(j["special_inputs"]);
+    }
+    if (j.contains("special_attributes") &&
+        !j["special_attributes"].is_null()) {
+      for (const auto& item : j["special_attributes"].as_array()) {
+        out.special_attributes.push_back(AttributeOutFromJson(item));
+      }
+    }
+    if (j.contains("capabilities") && !j["capabilities"].is_null()) {
+      out.capabilities = StringArrayFromJson(j["capabilities"]);
+    }
+    out.config_stage = OptionalString(j, "config_stage");
+    if (j.contains("aliases") && !j["aliases"].is_null()) {
+      out.aliases = StringArrayFromJson(j["aliases"]);
+    }
+    out.description = OptionalString(j, "description");
+    return out;
+  }
+
+  static sfmapi::OperationOut OperationOutFromJson(const Json& j) {
+    sfmapi::OperationOut out;
+    out.op_id = OptionalString(j, "op_id");
+    out.title = OptionalString(j, "title");
+    if (j.contains("consumes") && !j["consumes"].is_null()) {
+      out.consumes = StringArrayFromJson(j["consumes"]);
+    }
+    if (j.contains("produces") && !j["produces"].is_null()) {
+      out.produces = StringArrayFromJson(j["produces"]);
+    }
+    if (j.contains("capabilities") && !j["capabilities"].is_null()) {
+      out.capabilities = StringArrayFromJson(j["capabilities"]);
+    }
+    out.config_stage = OptionalString(j, "config_stage");
+    out.description = OptionalString(j, "description");
+    return out;
+  }
+
+  static sfmapi::PipelineDefinitionStepOut PipelineDefinitionStepOutFromJson(
+      const Json& j) {
+    sfmapi::PipelineDefinitionStepOut out;
+    out.ref = OptionalString(j, "ref");
+    out.processor = OptionalString(j, "processor");
+    if (j.contains("attributes") && !j["attributes"].is_null()) {
+      out.attributes_json = j["attributes"].Dump();
+    }
+    if (j.contains("wires") && !j["wires"].is_null()) {
+      out.wires_json = j["wires"].Dump();
+    }
+    return out;
+  }
+
+  static sfmapi::PipelineDefinitionOut PipelineDefinitionOutFromJson(
+      const Json& j) {
+    sfmapi::PipelineDefinitionOut out;
+    out.pipeline_id = OptionalString(j, "pipeline_id");
+    out.title = OptionalString(j, "title");
+    if (j.contains("aliases") && !j["aliases"].is_null()) {
+      out.aliases = StringArrayFromJson(j["aliases"]);
+    }
+    if (j.contains("initial_inputs") && !j["initial_inputs"].is_null()) {
+      out.initial_inputs = StringArrayFromJson(j["initial_inputs"]);
+    }
+    if (j.contains("steps") && !j["steps"].is_null()) {
+      for (const auto& item : j["steps"].as_array()) {
+        out.steps.push_back(PipelineDefinitionStepOutFromJson(item));
+      }
+    }
+    out.description = OptionalString(j, "description");
+    return out;
+  }
+
+  static std::map<std::string, std::vector<std::string>>
+  StringListMapFromJson(const Json& j) {
+    std::map<std::string, std::vector<std::string>> out;
+    if (j.is_null()) return out;
+    for (const auto& kv : j.as_object()) {
+      if (!kv.second.is_null()) out[kv.first] = StringArrayFromJson(kv.second);
+    }
+    return out;
+  }
+
+  static sfmapi::AttributesContractOut AttributesContractOutFromJson(
+      const Json& j) {
+    sfmapi::AttributesContractOut out;
+    out.contract = OptionalString(j, "contract");
+    if (j.contains("contract_schema_version")) {
+      out.contract_schema_version =
+          static_cast<std::int32_t>(j["contract_schema_version"].as_number());
+    }
+    if (j.contains("attribute_types") && !j["attribute_types"].is_null()) {
+      out.attribute_types = StringArrayFromJson(j["attribute_types"]);
+    }
+    if (j.contains("rules")) out.rules = StringMapFromJson(j["rules"]);
+    return out;
+  }
+
+  static sfmapi::DataTypesContractOut DataTypesContractOutFromJson(
+      const Json& j) {
+    sfmapi::DataTypesContractOut out;
+    out.contract = OptionalString(j, "contract");
+    if (j.contains("contract_schema_version")) {
+      out.contract_schema_version =
+          static_cast<std::int32_t>(j["contract_schema_version"].as_number());
+    }
+    if (j.contains("kinds") && !j["kinds"].is_null()) {
+      out.kinds = StringArrayFromJson(j["kinds"]);
+    }
+    if (j.contains("types") && !j["types"].is_null()) {
+      for (const auto& item : j["types"].as_array()) {
+        out.types.push_back(DataTypeOutFromJson(item));
+      }
+    }
+    return out;
+  }
+
+  static sfmapi::OperationsContractOut OperationsContractOutFromJson(
+      const Json& j) {
+    sfmapi::OperationsContractOut out;
+    out.contract = OptionalString(j, "contract");
+    if (j.contains("contract_schema_version")) {
+      out.contract_schema_version =
+          static_cast<std::int32_t>(j["contract_schema_version"].as_number());
+    }
+    if (j.contains("operations") && !j["operations"].is_null()) {
+      for (const auto& item : j["operations"].as_array()) {
+        out.operations.push_back(OperationOutFromJson(item));
+      }
+    }
+    if (j.contains("compatibility")) {
+      out.compatibility = StringMapFromJson(j["compatibility"]);
+    }
+    return out;
+  }
+
+  static sfmapi::ProcessorsContractOut ProcessorsContractOutFromJson(
+      const Json& j) {
+    sfmapi::ProcessorsContractOut out;
+    out.contract = OptionalString(j, "contract");
+    if (j.contains("contract_schema_version")) {
+      out.contract_schema_version =
+          static_cast<std::int32_t>(j["contract_schema_version"].as_number());
+    }
+    if (j.contains("processors") && !j["processors"].is_null()) {
+      for (const auto& item : j["processors"].as_array()) {
+        out.processors.push_back(ProcessorOutFromJson(item));
+      }
+    }
+    if (j.contains("rules")) out.rules = StringMapFromJson(j["rules"]);
+    return out;
+  }
+
+  static sfmapi::PipelinesContractOut PipelinesContractOutFromJson(
+      const Json& j) {
+    sfmapi::PipelinesContractOut out;
+    out.contract = OptionalString(j, "contract");
+    if (j.contains("contract_schema_version")) {
+      out.contract_schema_version =
+          static_cast<std::int32_t>(j["contract_schema_version"].as_number());
+    }
+    out.composition_rule = OptionalString(j, "composition_rule");
+    if (j.contains("initial_inputs") && !j["initial_inputs"].is_null()) {
+      out.initial_inputs = StringArrayFromJson(j["initial_inputs"]);
+    }
+    if (j.contains("canonical_pipelines")) {
+      out.canonical_pipelines = StringListMapFromJson(j["canonical_pipelines"]);
+    }
+    if (j.contains("plugin_pipelines") && !j["plugin_pipelines"].is_null()) {
+      for (const auto& item : j["plugin_pipelines"].as_array()) {
+        out.plugin_pipelines.push_back(PipelineDefinitionOutFromJson(item));
+      }
+    }
+    if (j.contains("step_schema") && !j["step_schema"].is_null()) {
+      out.step_schema_json = j["step_schema"].Dump();
+    }
+    if (j.contains("validation_reasons") &&
+        !j["validation_reasons"].is_null()) {
+      out.validation_reasons = StringArrayFromJson(j["validation_reasons"]);
+    }
+    return out;
+  }
+
+  static sfmapi::AttributesContractOut ParseAttributesContract(
+      const HttpResponse& resp) {
+    return AttributesContractOutFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static sfmapi::DataTypesContractOut ParseDataTypesContract(
+      const HttpResponse& resp) {
+    return DataTypesContractOutFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static sfmapi::OperationsContractOut ParseOperationsContract(
+      const HttpResponse& resp) {
+    return OperationsContractOutFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static sfmapi::ProcessorsContractOut ParseProcessorsContract(
+      const HttpResponse& resp) {
+    return ProcessorsContractOutFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static sfmapi::PipelinesContractOut ParsePipelinesContract(
+      const HttpResponse& resp) {
+    return PipelinesContractOutFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
   static sfmapi::ArtifactKind ArtifactKindFromJson(const Json& j) {
     sfmapi::ArtifactKind out;
     if (j.contains("kind")) out.kind = j["kind"].as_string();
+    if (j.contains("datatype") && !j["datatype"].is_null()) {
+      out.datatype = j["datatype"].as_string();
+    }
     if (j.contains("title")) out.title = j["title"].as_string();
     if (j.contains("description")) out.description = j["description"].as_string();
     if (j.contains("durable")) out.durable = j["durable"].as_bool();
+    if (j.contains("artifact_format") && !j["artifact_format"].is_null()) {
+      out.artifact_format = j["artifact_format"].as_string();
+    }
+    if (j.contains("schema_version") && !j["schema_version"].is_null()) {
+      out.schema_version = static_cast<std::int32_t>(j["schema_version"].as_number());
+    }
     return out;
   }
 
@@ -947,6 +1370,129 @@ class Client {
       const HttpResponse& resp) {
     return ParsePage<sfmapi::ArtifactKind>(
         resp, [](const Json& item) { return ArtifactKindFromJson(item); });
+  }
+
+  static sfmapi::ArtifactFormat ArtifactFormatFromJson(const Json& j) {
+    sfmapi::ArtifactFormat out;
+    if (j.contains("format_id")) out.format_id = j["format_id"].as_string();
+    if (j.contains("datatype")) out.datatype = j["datatype"].as_string();
+    if (j.contains("title")) out.title = j["title"].as_string();
+    if (j.contains("description")) out.description = j["description"].as_string();
+    if (j.contains("schema_version") && !j["schema_version"].is_null()) {
+      out.schema_version = static_cast<std::int32_t>(j["schema_version"].as_number());
+    }
+    if (j.contains("media_types") && j["media_types"].is_array()) {
+      for (const auto& item : j["media_types"].as_array()) {
+        out.media_types.push_back(item.as_string());
+      }
+    }
+    if (j.contains("json_schema") && !j["json_schema"].is_null()) {
+      out.json_schema_json = j["json_schema"].Dump();
+    }
+    if (j.contains("examples") && !j["examples"].is_null()) {
+      out.examples_json = j["examples"].Dump();
+    }
+    if (j.contains("portable")) out.portable = j["portable"].as_bool();
+    return out;
+  }
+
+  static sfmapi::ArtifactFormat ParseArtifactFormat(const HttpResponse& resp) {
+    return ArtifactFormatFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static Page<sfmapi::ArtifactFormat> ParseArtifactFormatPage(
+      const HttpResponse& resp) {
+    return ParsePage<sfmapi::ArtifactFormat>(
+        resp, [](const Json& item) { return ArtifactFormatFromJson(item); });
+  }
+
+  static sfmapi::ArtifactConversionStep ArtifactConversionStepFromJson(
+      const Json& j) {
+    sfmapi::ArtifactConversionStep out;
+    if (j.contains("contract_id") && !j["contract_id"].is_null()) {
+      out.contract_id = j["contract_id"].as_string();
+    }
+    if (j.contains("backend") && !j["backend"].is_null()) {
+      out.backend = j["backend"].as_string();
+    }
+    if (j.contains("provider") && !j["provider"].is_null()) {
+      out.provider = j["provider"].as_string();
+    }
+    if (j.contains("from_format")) out.from_format = j["from_format"].as_string();
+    if (j.contains("to_format")) out.to_format = j["to_format"].as_string();
+    if (j.contains("lossless")) out.lossless = j["lossless"].as_bool();
+    if (j.contains("description") && !j["description"].is_null()) {
+      out.description = j["description"].as_string();
+    }
+    return out;
+  }
+
+  static sfmapi::ArtifactConversionPlan ArtifactConversionPlanFromJson(
+      const Json& j) {
+    sfmapi::ArtifactConversionPlan out;
+    if (j.contains("artifact_id")) out.artifact_id = j["artifact_id"].as_string();
+    if (j.contains("source_format") && !j["source_format"].is_null()) {
+      out.source_format = j["source_format"].as_string();
+    }
+    if (j.contains("target_format")) out.target_format = j["target_format"].as_string();
+    if (j.contains("conversion_required")) {
+      out.conversion_required = j["conversion_required"].as_bool();
+    }
+    if (j.contains("executable")) out.executable = j["executable"].as_bool();
+    if (j.contains("reason") && !j["reason"].is_null()) {
+      out.reason = j["reason"].as_string();
+    }
+    if (j.contains("steps") && j["steps"].is_array()) {
+      for (const auto& item : j["steps"].as_array()) {
+        out.steps.push_back(ArtifactConversionStepFromJson(item));
+      }
+    }
+    return out;
+  }
+
+  static sfmapi::ArtifactConversionPlan ParseArtifactConversionPlan(
+      const HttpResponse& resp) {
+    return ArtifactConversionPlanFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
+  }
+
+  static sfmapi::ArtifactValidationIssue ArtifactValidationIssueFromJson(
+      const Json& j) {
+    sfmapi::ArtifactValidationIssue out;
+    if (j.contains("level")) out.level = j["level"].as_string();
+    if (j.contains("field") && !j["field"].is_null()) {
+      out.field = j["field"].as_string();
+    }
+    if (j.contains("message")) out.message = j["message"].as_string();
+    return out;
+  }
+
+  static sfmapi::ArtifactValidation ArtifactValidationFromJson(const Json& j) {
+    sfmapi::ArtifactValidation out;
+    if (j.contains("artifact_id")) out.artifact_id = j["artifact_id"].as_string();
+    if (j.contains("valid")) out.valid = j["valid"].as_bool();
+    if (j.contains("artifact_format") && !j["artifact_format"].is_null()) {
+      out.artifact_format = j["artifact_format"].as_string();
+    }
+    if (j.contains("datatype") && !j["datatype"].is_null()) {
+      out.datatype = j["datatype"].as_string();
+    }
+    if (j.contains("checked_content")) {
+      out.checked_content = j["checked_content"].as_bool();
+    }
+    if (j.contains("issues") && j["issues"].is_array()) {
+      for (const auto& item : j["issues"].as_array()) {
+        out.issues.push_back(ArtifactValidationIssueFromJson(item));
+      }
+    }
+    return out;
+  }
+
+  static sfmapi::ArtifactValidation ParseArtifactValidation(
+      const HttpResponse& resp) {
+    return ArtifactValidationFromJson(
+        Json::Parse(std::string(resp.body.begin(), resp.body.end())));
   }
 
   static sfmapi::StageArtifact StageArtifactFromJson(const Json& j) {
@@ -969,6 +1515,30 @@ class Client {
     }
     if (j.contains("media_type") && !j["media_type"].is_null()) {
       out.media_type = j["media_type"].as_string();
+    }
+    if (j.contains("artifact_format") && !j["artifact_format"].is_null()) {
+      out.artifact_format = j["artifact_format"].as_string();
+    }
+    if (j.contains("datatype") && !j["datatype"].is_null()) {
+      out.datatype = j["datatype"].as_string();
+    }
+    if (j.contains("schema_version") && !j["schema_version"].is_null()) {
+      out.schema_version = static_cast<std::int32_t>(j["schema_version"].as_number());
+    }
+    if (j.contains("files") && !j["files"].is_null()) {
+      out.files_json = j["files"].Dump();
+    }
+    if (j.contains("sha256") && !j["sha256"].is_null()) {
+      out.sha256 = j["sha256"].as_string();
+    }
+    if (j.contains("byte_size") && !j["byte_size"].is_null()) {
+      out.byte_size = static_cast<std::int64_t>(j["byte_size"].as_number());
+    }
+    if (j.contains("coordinate_frame") && !j["coordinate_frame"].is_null()) {
+      out.coordinate_frame = j["coordinate_frame"].as_string();
+    }
+    if (j.contains("producer") && !j["producer"].is_null()) {
+      out.producer_json = j["producer"].Dump();
     }
     if (j.contains("summary") && !j["summary"].is_null()) {
       out.summary_json = j["summary"].Dump();
@@ -1055,6 +1625,9 @@ class Client {
     if (j.contains("job_id")) out.job_id = j["job_id"].as_string();
     if (j.contains("kind")) out.kind = j["kind"].as_string();
     if (j.contains("status")) out.status = j["status"].as_string();
+    if (j.contains("provider") && !j["provider"].is_null()) {
+      out.provider = j["provider"].as_string();
+    }
     if (j.contains("cache_key")) out.cache_key = j["cache_key"].as_string();
     if (j.contains("inputs_hash")) out.inputs_hash = j["inputs_hash"].as_string();
     if (j.contains("params_hash")) out.params_hash = j["params_hash"].as_string();
@@ -1263,7 +1836,27 @@ class Client {
     }
     path += first ? "?" : "&";
     first = false;
-    path += name + "=" + value;
+    path += PercentEncodeQuery(name) + "=" + PercentEncodeQuery(value);
+  }
+
+  static bool IsQueryUnreserved(unsigned char c) {
+    return std::isalnum(c) || c == '-' || c == '.' || c == '_' || c == '~';
+  }
+
+  static std::string PercentEncodeQuery(const std::string& value) {
+    static constexpr char kHex[] = "0123456789ABCDEF";
+    std::string out;
+    out.reserve(value.size());
+    for (unsigned char c : value) {
+      if (IsQueryUnreserved(c)) {
+        out.push_back(static_cast<char>(c));
+      } else {
+        out.push_back('%');
+        out.push_back(kHex[c >> 4]);
+        out.push_back(kHex[c & 0x0F]);
+      }
+    }
+    return out;
   }
 
   static std::string JsonEscape(const std::string& s) {

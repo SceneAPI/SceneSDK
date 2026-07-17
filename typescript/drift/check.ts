@@ -1,7 +1,7 @@
 /**
  * Structural drift check between the hand-rolled SDK models in
  * `src/models.ts` and the auto-generated OpenAPI types in
- * `src/openapi-types.ts`.
+ * `src/_generated/openapi.d.ts`.
  *
  * Strategy: declare a series of `const _: GeneratedShape = {} as
  * SdkShape` assignments under `as` casts that force structural
@@ -23,14 +23,49 @@
  * This file never executes — it only exists for `tsc --noEmit`.
  */
 
-import type { components } from "../src/openapi-types.js";
+import type { components } from "../src/_generated/openapi.js";
 import type {
+  AttributeOut,
+  AttributesContractOut,
+  ApiKey,
+  ApiKeyCreated,
+  ArtifactConversionPlanOut,
+  ArtifactConversionPlanRequest,
+  ArtifactConversionStepOut,
+  ArtifactConvertRequest,
+  ArtifactFileRef,
+  ArtifactFormatOut,
+  ArtifactImportRequest,
+  ArtifactKindOut,
+  ArtifactValidationIssueOut,
+  ArtifactValidationOut,
+  BundleAdjustmentSpec,
+  ChainError,
+  DataTypeOut,
+  DataTypesContractOut,
   Dataset,
   Image,
   Job,
+  JobDetail,
+  JobSubmitResponse,
+  OperationOut,
+  OperationsContractOut,
+  PipelineDefinitionOut,
+  PipelineDefinitionStepOut,
+  PipelinesContractOut,
+  PipelineRunRequest,
+  PipelineStep,
+  PipelineValidateRequest,
+  PipelineValidateResponse,
+  PortSpecOut,
+  ProcessorOut,
+  ProcessorPipelineStep,
+  ProcessorsContractOut,
   Project,
   Reconstruction,
+  StageArtifact,
   SubModel,
+  Task,
   Upload,
   Page,
 } from "../src/models.js";
@@ -45,10 +80,19 @@ type SameKeys<A, B> = keyof A extends keyof B
     : ["DRIFT: B has extra keys", Exclude<keyof B, keyof A>]
   : ["DRIFT: A has extra keys", Exclude<keyof A, keyof B>];
 
-// Helper: deep "A is assignable to B AND B is assignable to A on every
-// shared key." We use plain Pick to compare on the SDK key set; the
-// `SameKeys` check above already enforces parity.
-type _Same<A, B> = SameKeys<A, B> extends true ? true : SameKeys<A, B>;
+// Helper: deep "A is assignable to B AND B is assignable to A." This catches
+// value-domain drift such as a new enum literal, not just missing fields.
+type _Same<A, B> = SameKeys<A, B> extends true
+  ? [A] extends [B]
+    ? [B] extends [A]
+      ? true
+      : ["DRIFT: SDK not assignable to generated", B, A]
+    : ["DRIFT: generated not assignable to SDK", A, B]
+  : SameKeys<A, B>;
+
+type WithRequiredDefaults<T, K extends keyof T> = Omit<T, K> & {
+  [P in K]-?: Exclude<T[P], undefined>;
+};
 
 // --- Per-resource invariants ------------------------------------------------
 
@@ -57,12 +101,147 @@ const _dataset: _Same<Schema<"DatasetOut">, Dataset> = true;
 const _image: _Same<Schema<"ImageOut">, Image> = true;
 const _upload: _Same<Schema<"UploadOut">, Upload> = true;
 const _job: _Same<Schema<"JobOut">, Job> = true;
+const _jobDetail: _Same<Schema<"JobDetail">, JobDetail> = true;
+const _jobAccepted: _Same<
+  WithRequiredDefaults<Schema<"JobAcceptedResponse">, "task_ids">,
+  JobSubmitResponse
+> = true;
+const _task: _Same<Schema<"TaskOut">, Task> = true;
 const _recon: _Same<Schema<"ReconstructionOut">, Reconstruction> = true;
 const _submodel: _Same<Schema<"SubModelOut">, SubModel> = true;
+const _apiKey: _Same<
+  Schema<"ApiKeyOut">,
+  WithRequiredDefaults<
+    Pick<ApiKey, "api_key_id" | "tenant_id" | "name" | "revoked">,
+    "name" | "revoked"
+  >
+> = true;
+const _apiKeyCreated: _Same<
+  Schema<"IssueKeyResponse">,
+  WithRequiredDefaults<
+    Pick<ApiKeyCreated, "api_key_id" | "tenant_id" | "name" | "raw_key">,
+    "name"
+  >
+> = true;
+const _bundleAdjustmentSpec: _Same<
+  Schema<"BundleAdjustmentSpec">,
+  WithRequiredDefaults<
+    BundleAdjustmentSpec,
+    | "version"
+    | "mode"
+    | "refine_focal_length"
+    | "refine_principal_point"
+    | "refine_extra_params"
+    | "max_num_iterations"
+    | "loss_kernel"
+    | "loss_threshold"
+  >
+> = true;
+const _artifactKind: _Same<Schema<"ArtifactKindOut">, ArtifactKindOut> = true;
+const _artifactFormat: _Same<
+  Schema<"ArtifactFormatOut">,
+  ArtifactFormatOut
+> = true;
+const _artifactConversionStep: _Same<
+  Schema<"ArtifactConversionStepOut">,
+  ArtifactConversionStepOut
+> = true;
+const _artifactConversionPlan: _Same<
+  Schema<"ArtifactConversionPlanOut">,
+  ArtifactConversionPlanOut
+> = true;
+const _artifactConversionPlanRequest: _Same<
+  Schema<"ArtifactConversionPlanRequest">,
+  ArtifactConversionPlanRequest
+> = true;
+const _artifactConvertRequest: _Same<
+  Schema<"ArtifactConvertRequest">,
+  ArtifactConvertRequest
+> = true;
+const _artifactFileRef: _Same<Schema<"ArtifactFileRef">, ArtifactFileRef> =
+  true;
+const _artifactImportRequest: _Same<
+  Schema<"ArtifactImportRequest">,
+  ArtifactImportRequest
+> = true;
+const _artifactValidationIssue: _Same<
+  Schema<"ArtifactValidationIssueOut">,
+  ArtifactValidationIssueOut
+> = true;
+const _artifactValidation: _Same<
+  Schema<"ArtifactValidationOut">,
+  ArtifactValidationOut
+> = true;
+const _stageArtifact: _Same<Schema<"StageArtifactOut">, StageArtifact> = true;
+const _attributeOut: _Same<Schema<"AttributeOut">, AttributeOut> = true;
+const _attributesContract: _Same<
+  Schema<"AttributesContractOut">,
+  AttributesContractOut
+> = true;
+const _dataTypeOut: _Same<Schema<"DataTypeOut">, DataTypeOut> = true;
+const _dataTypesContract: _Same<
+  Schema<"DataTypesContractOut">,
+  DataTypesContractOut
+> = true;
+const _operationOut: _Same<Schema<"OperationOut">, OperationOut> = true;
+const _operationsContract: _Same<
+  Schema<"OperationsContractOut">,
+  OperationsContractOut
+> = true;
+const _portSpecOut: _Same<Schema<"PortSpecOut">, PortSpecOut> = true;
+const _processorOut: _Same<Schema<"ProcessorOut">, ProcessorOut> = true;
+const _processorsContract: _Same<
+  Schema<"ProcessorsContractOut">,
+  ProcessorsContractOut
+> = true;
+const _pipelineStep: _Same<Schema<"PipelineStep">, PipelineStep> = true;
+const _processorPipelineStep: _Same<
+  Schema<"ProcessorPipelineStep">,
+  ProcessorPipelineStep
+> = true;
+const _pipelineDefinitionStep: _Same<
+  Schema<"PipelineDefinitionStepOut">,
+  PipelineDefinitionStepOut
+> = true;
+const _pipelineDefinition: _Same<
+  Schema<"PipelineDefinitionOut">,
+  PipelineDefinitionOut
+> = true;
+const _pipelinesContract: _Same<
+  Schema<"PipelinesContractOut">,
+  PipelinesContractOut
+> = true;
+const _chainError: _Same<Schema<"ChainErrorOut">, ChainError> = true;
+const _pipelineValidateRequest: _Same<
+  Schema<"PipelineValidateRequest">,
+  PipelineValidateRequest
+> = true;
+const _pipelineRunRequest: _Same<
+  Schema<"PipelineRunRequest">,
+  PipelineRunRequest
+> = true;
+const _pipelineValidateResponse: _Same<
+  Schema<"PipelineValidateResponse">,
+  PipelineValidateResponse
+> = true;
 
 // Generic Page<T> instantiations:
 const _pageProj: _Same<Schema<"Page_ProjectOut_">, Page<Project>> = true;
+const _pageDataset: _Same<Schema<"Page_DatasetOut_">, Page<Dataset>> = true;
 const _pageImg: _Same<Schema<"Page_ImageOut_">, Page<Image>> = true;
+const _pageSubmodel: _Same<Schema<"Page_SubModelOut_">, Page<SubModel>> = true;
+const _pageArtifactKind: _Same<
+  Schema<"Page_ArtifactKindOut_">,
+  Page<ArtifactKindOut>
+> = true;
+const _pageArtifactFormat: _Same<
+  Schema<"Page_ArtifactFormatOut_">,
+  Page<ArtifactFormatOut>
+> = true;
+const _pageStageArtifact: _Same<
+  Schema<"Page_StageArtifactOut_">,
+  Page<StageArtifact>
+> = true;
 
 // Touch the bindings so the compiler doesn't report them as unused.
 export const _drift = [
@@ -73,6 +252,43 @@ export const _drift = [
   _job,
   _recon,
   _submodel,
+  _apiKey,
+  _apiKeyCreated,
+  _bundleAdjustmentSpec,
+  _artifactKind,
+  _artifactFormat,
+  _artifactConversionStep,
+  _artifactConversionPlan,
+  _artifactConversionPlanRequest,
+  _artifactConvertRequest,
+  _artifactFileRef,
+  _artifactImportRequest,
+  _artifactValidationIssue,
+  _artifactValidation,
+  _stageArtifact,
+  _attributeOut,
+  _attributesContract,
+  _dataTypeOut,
+  _dataTypesContract,
+  _operationOut,
+  _operationsContract,
+  _portSpecOut,
+  _processorOut,
+  _processorsContract,
+  _pipelineStep,
+  _processorPipelineStep,
+  _pipelineDefinitionStep,
+  _pipelineDefinition,
+  _pipelinesContract,
+  _chainError,
+  _pipelineValidateRequest,
+  _pipelineRunRequest,
+  _pipelineValidateResponse,
   _pageProj,
+  _pageDataset,
   _pageImg,
+  _pageSubmodel,
+  _pageArtifactKind,
+  _pageArtifactFormat,
+  _pageStageArtifact,
 ];

@@ -108,15 +108,25 @@ static void TestSpecs() {
   CHECK(fs_json["max_num_features"].as_number() == 4096, "features.max_num");
   CHECK(fs_json["backend_options"]["SuperPoint.max_keypoints"].as_number() == 4096,
         "features.backend_options");
+  CHECK(!fs_json.contains("extractor_options"), "features has no stale extractor_options");
   CHECK(fs_json["version"].as_number() == 1, "features.version");
 
   sfmapi::PairsSpec ps;
-  ps.strategy = sfmapi::kPairRetrieval;
+  ps.strategy = sfmapi::kPairExplicit;
   ps.retrieval_strategy = "vlad";
   ps.retrieval_k = 30;
+  ps.image_pairs.push_back({"a.jpg", "b.jpg"});
+  ps.pairs_blob_sha = std::string(64, 'a');
   auto ps_json = sfmapi::Json::Parse(ps.ToJsonString());
-  CHECK(ps_json["strategy"].as_string() == "retrieval", "pairs.strategy");
+  CHECK(ps_json["strategy"].as_string() == "explicit", "pairs.strategy");
   CHECK(ps_json["retrieval_k"].as_number() == 30, "pairs.k");
+  CHECK(ps_json["image_pairs"].as_array().size() == 1, "pairs image_pairs");
+  CHECK(ps_json["image_pairs"][0]["image_name1"].as_string() == "a.jpg",
+        "pairs image_name1");
+  CHECK(ps_json["pairs_blob_sha"].as_string() == std::string(64, 'a'),
+        "pairs blob sha");
+  CHECK(ps_json["pairs_blob_format"].as_string() == "image_name_pairs_txt",
+        "pairs blob format");
   CHECK(!ps_json.contains("vocab_tree_path"), "optional omitted when nullopt");
 
   sfmapi::MatcherSpec ms;
@@ -130,6 +140,7 @@ static void TestSpecs() {
   CHECK(ms_json["type"].as_string() == "lightglue", "matcher.type");
   CHECK(ms_json["backend_options"]["LightGlue.depth_confidence"].as_number() == 0.9,
         "matcher.backend_options");
+  CHECK(!ms_json.contains("matcher_options"), "matcher has no stale matcher_options");
   CHECK(ms_json["input_artifacts"]["features"]["artifact_id"].as_string() ==
             "01HZARTIFACT000000000000",
         "matcher input_artifacts artifact_id");
@@ -152,11 +163,61 @@ static void TestSpecs() {
   CHECK(inc_json["init_image_pair"].as_array().size() == 2, "inc pair");
   CHECK(inc_json["init_image_pair"][0].as_string() == "a.jpg", "inc pair[0]");
   CHECK(inc_json["max_runtime_seconds"].as_number() == 600, "inc max_rt");
+  CHECK(inc_json["ba_global_use_pba"].as_bool() == true, "inc pba default");
+
+  sfmapi::GlobalSpec global;
+  global.max_runtime_seconds = 900;
+  auto global_json = sfmapi::Json::Parse(global.ToJsonString());
+  CHECK(global_json["kind"].as_string() == "global", "global.kind");
+  CHECK(global_json["max_runtime_seconds"].as_number() == 900, "global max_rt");
+  CHECK(global_json["snapshot_frames_freq"].as_number() == 50, "global snapshot freq");
+
+  sfmapi::HierarchicalSpec hierarchical;
+  hierarchical.max_runtime_seconds = 1200;
+  auto hierarchical_json = sfmapi::Json::Parse(hierarchical.ToJsonString());
+  CHECK(hierarchical_json["kind"].as_string() == "hierarchical", "hier.kind");
+  CHECK(hierarchical_json["max_runtime_seconds"].as_number() == 1200, "hier max_rt");
 
   sfmapi::SphericalSpec sp;
+  sp.max_runtime_seconds = 300;
   auto sp_json = sfmapi::Json::Parse(sp.ToJsonString());
   CHECK(sp_json["kind"].as_string() == "spherical", "sp.kind");
   CHECK(sp_json["panorama"].as_bool() == true, "sp.panorama default");
+  CHECK(sp_json["max_runtime_seconds"].as_number() == 300, "sp max_rt");
+  CHECK(sp_json["snapshot_frames_freq"].as_number() == 50, "sp snapshot freq");
+
+  sfmapi::ProcessorPipelineStep proc_step;
+  proc_step.processor = "features";
+  proc_step.ref = "feat";
+  proc_step.provider = "hloc";
+  proc_step.attributes["type"] = "superpoint";
+  proc_step.wires["images"] = "input.images";
+  sfmapi::PipelineValidateRequest validate_req;
+  validate_req.initial_inputs.push_back("images");
+  validate_req.AddStep(proc_step);
+  auto validate_json = sfmapi::Json::Parse(validate_req.ToJsonString());
+  CHECK(validate_json["initial_inputs"].as_array()[0].as_string() == "images",
+        "validate initial input");
+  CHECK(validate_json["steps"].as_array()[0]["processor"].as_string() == "features",
+        "processor pipeline step");
+  CHECK(validate_json["steps"].as_array()[0]["attributes"]["type"].as_string() ==
+            "superpoint",
+        "processor attributes");
+  CHECK(validate_json["steps"].as_array()[0]["wires"]["images"].as_string() ==
+            "input.images",
+        "processor wires");
+
+  sfmapi::PipelineRunRequest run_req;
+  run_req.dataset_id = "01HZDATASET0000000000000";
+  sfmapi::PipelineStep legacy_step;
+  legacy_step.op = "map";
+  legacy_step.params["quality"] = "draft";
+  run_req.AddStep(legacy_step);
+  auto run_json = sfmapi::Json::Parse(run_req.ToJsonString());
+  CHECK(run_json["dataset_id"].as_string() == "01HZDATASET0000000000000",
+        "run dataset_id");
+  CHECK(run_json["steps"].as_array()[0]["op"].as_string() == "map",
+        "legacy pipeline step");
 
   std::printf("  specs ToJson OK\n");
 }
@@ -172,20 +233,37 @@ static void TestArtifactDecoders() {
 
   auto kind_resp = make_json(
       200,
-      R"({"items":[{"kind":"features.database","title":"Feature database","description":"COLMAP database","durable":true}],"next_page_token":null})");
+      R"({"items":[{"kind":"features.database","datatype":"feature_set","title":"Feature database","description":"COLMAP database","durable":true,"artifact_format":"sfmapi.features.colmap_db.v1","schema_version":1}],"next_page_token":null})");
   auto kinds = sfmapi::Client::ParseArtifactKindPage(kind_resp);
   CHECK(kinds.items.size() == 1, "artifact kind page item");
   CHECK(kinds.items[0].kind == "features.database", "artifact kind");
   CHECK(kinds.items[0].durable, "artifact kind durable");
+  CHECK(kinds.items[0].datatype == "feature_set", "artifact kind datatype");
+  CHECK(kinds.items[0].artifact_format == "sfmapi.features.colmap_db.v1",
+        "artifact kind format");
 
   auto artifact_resp = make_json(
       200,
-      R"({"artifact_id":"01HZARTIFACT000000000000","job_id":"01HZJOB000000000000000000","task_id":"01HZTASK0000000000000000A","recon_id":null,"dataset_id":"01HZDATASET0000000000000","kind":"features.database","name":"database","uri":"file:///tmp/database.db","media_type":"application/vnd.sqlite3","summary":{"num_images":2},"metadata":{"backend":"colmap"},"created_at":"2026-05-10T00:00:00Z","_links":{"self":{"href":"/v1/artifacts/01HZARTIFACT000000000000"}}})");
+      R"({"artifact_id":"01HZARTIFACT000000000000","job_id":"01HZJOB000000000000000000","task_id":"01HZTASK0000000000000000A","recon_id":null,"dataset_id":"01HZDATASET0000000000000","kind":"features.database","name":"database","uri":"/v1/artifacts/01HZARTIFACT000000000000/content","media_type":"application/vnd.sqlite3","artifact_format":"sfmapi.features.colmap_db.v1","datatype":"feature_set","schema_version":1,"files":[{"name":"database.db","uri":"/v1/artifacts/01HZARTIFACT000000000000/content","sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","byte_size":12}],"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","byte_size":12,"coordinate_frame":"world","producer":{"provider":"colmap"},"summary":{"num_images":2},"metadata":{"backend":"colmap"},"created_at":"2026-05-10T00:00:00Z","_links":{"self":{"href":"/v1/artifacts/01HZARTIFACT000000000000"}}})");
   auto artifact = sfmapi::Client::ParseStageArtifact(artifact_resp);
   CHECK(artifact.artifact_id == "01HZARTIFACT000000000000", "artifact_id");
   CHECK(artifact.kind == "features.database", "artifact kind");
   CHECK(artifact.dataset_id == "01HZDATASET0000000000000", "artifact dataset");
-  CHECK(artifact.uri == "file:///tmp/database.db", "artifact uri");
+  CHECK(artifact.uri == "/v1/artifacts/01HZARTIFACT000000000000/content",
+        "artifact uri");
+  CHECK(artifact.artifact_format == "sfmapi.features.colmap_db.v1",
+        "artifact format");
+  CHECK(artifact.datatype == "feature_set", "artifact datatype");
+  CHECK(artifact.schema_version && *artifact.schema_version == 1,
+        "artifact schema_version");
+  CHECK(artifact.files_json.find("database.db") != std::string::npos,
+        "artifact files json");
+  CHECK(artifact.sha256 == "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "artifact sha256");
+  CHECK(artifact.byte_size && *artifact.byte_size == 12, "artifact byte size");
+  CHECK(artifact.coordinate_frame == "world", "artifact coordinate frame");
+  CHECK(artifact.producer_json.find("colmap") != std::string::npos,
+        "artifact producer json");
   CHECK(artifact.summary_json.find("num_images") != std::string::npos,
         "artifact summary json");
   CHECK(artifact.metadata_json.find("colmap") != std::string::npos,
@@ -200,7 +278,124 @@ static void TestArtifactDecoders() {
   CHECK(page.items.size() == 1, "artifact page item");
   CHECK(page.items[0].kind == "matches.raw", "artifact page kind");
   CHECK(page.next_page_token == "next", "artifact page token");
+
+  auto formats_resp = make_json(
+      200,
+      R"({"items":[{"format_id":"sfmapi.features.local.v1","datatype":"feature_set","title":"Local features","description":"Portable local features","schema_version":1,"media_types":["application/json"],"json_schema":{"type":"object"},"examples":[{"features":[]}],"portable":true}],"next_page_token":null})");
+  auto formats = sfmapi::Client::ParseArtifactFormatPage(formats_resp);
+  CHECK(formats.items.size() == 1, "artifact format page item");
+  CHECK(formats.items[0].format_id == "sfmapi.features.local.v1",
+        "artifact format id");
+  CHECK(formats.items[0].media_types.size() == 1, "artifact media type list");
+  CHECK(formats.items[0].json_schema_json.find("object") != std::string::npos,
+        "artifact format schema json");
+
+  auto plan_resp = make_json(
+      200,
+      R"({"artifact_id":"a1","source_format":"sfmapi.features.colmap_db.v1","target_format":"sfmapi.features.local.v1","conversion_required":true,"executable":true,"reason":null,"steps":[{"contract_id":"c1","backend":"hloc","provider":"hloc","from_format":"sfmapi.features.colmap_db.v1","to_format":"sfmapi.features.local.v1","lossless":true,"description":"export"}]})");
+  auto plan = sfmapi::Client::ParseArtifactConversionPlan(plan_resp);
+  CHECK(plan.executable, "artifact conversion executable");
+  CHECK(plan.steps.size() == 1, "artifact conversion step");
+  CHECK(plan.steps[0].provider == "hloc", "artifact conversion provider");
+
+  auto validation_resp = make_json(
+      200,
+      R"({"artifact_id":"a1","valid":false,"artifact_format":"sfmapi.features.local.v1","datatype":"feature_set","checked_content":true,"issues":[{"level":"error","field":"files[0]","message":"missing"}]})");
+  auto validation = sfmapi::Client::ParseArtifactValidation(validation_resp);
+  CHECK(!validation.valid, "artifact validation valid");
+  CHECK(validation.checked_content, "artifact validation checked content");
+  CHECK(validation.issues.size() == 1, "artifact validation issue");
+  CHECK(validation.issues[0].field == "files[0]", "artifact validation field");
   std::printf("  artifact decoders OK\n");
+}
+
+static void TestDataflowContractDecoders() {
+  auto make_json = [](int status, std::string body) {
+    sfmapi::HttpResponse r;
+    r.status = status;
+    r.headers["content-type"] = "application/json";
+    r.body.assign(body.begin(), body.end());
+    return r;
+  };
+
+  auto attributes = sfmapi::Client::ParseAttributesContract(make_json(
+      200,
+      R"({"contract":"attributes","contract_schema_version":1,)"
+      R"("attribute_types":["string","integer"],)"
+      R"("rules":{"required":"must be supplied"}})"));
+  CHECK(attributes.contract == "attributes", "attributes contract");
+  CHECK(attributes.attribute_types.size() == 2, "attribute types");
+  CHECK(attributes.rules["required"] == "must be supplied", "attribute rules");
+
+  auto datatypes = sfmapi::Client::ParseDataTypesContract(make_json(
+      200,
+      R"({"contract":"datatypes","contract_schema_version":1,)"
+      R"("kinds":["core"],"types":[{"type_id":"feature_set",)"
+      R"("title":"Feature set","kind":"core","aliases":["features"],)"
+      R"("description":"Local features"}]})"));
+  CHECK(datatypes.types.size() == 1, "datatype item");
+  CHECK(datatypes.types[0].type_id == "feature_set", "datatype id");
+  CHECK(datatypes.types[0].aliases[0] == "features", "datatype alias");
+
+  auto operations = sfmapi::Client::ParseOperationsContract(make_json(
+      200,
+      R"({"contract":"operations","contract_schema_version":1,)"
+      R"("operations":[{"op_id":"features","title":"Features",)"
+      R"("consumes":["image_sequence"],"produces":["feature_set"],)"
+      R"("capabilities":["features.extract"],"config_stage":"features",)"
+      R"("description":"extract"}],)"
+      R"("compatibility":{"operation":"legacy"}})"));
+  CHECK(operations.operations.size() == 1, "operation item");
+  CHECK(operations.operations[0].produces[0] == "feature_set",
+        "operation produces");
+  CHECK(operations.compatibility["operation"] == "legacy",
+        "operation compatibility");
+
+  auto processors = sfmapi::Client::ParseProcessorsContract(make_json(
+      200,
+      R"({"contract":"processors","contract_schema_version":1,)"
+      R"("processors":[{"processor_id":"features","title":"Features",)"
+      R"("consumer":{"images":{"datatype":"image_sequence",)"
+      R"("required":true,"multiple":false,"description":"images"}},)"
+      R"("supplier":{"features":{"datatype":"feature_set",)"
+      R"("required":true,"multiple":false,"description":"features"}},)"
+      R"("attributes":[{"name":"type","type":"string","required":true,)"
+      R"("description":"extractor","default":"sift","enum":["sift"]}],)"
+      R"("special_inputs":{},"special_attributes":[],)"
+      R"("capabilities":["features.extract"],"config_stage":"features",)"
+      R"("aliases":["extract"],"description":"extract"}],)"
+      R"("rules":{"composition":"datatype match"}})"));
+  CHECK(processors.processors.size() == 1, "processor item");
+  CHECK(processors.processors[0].consumer["images"].datatype ==
+            "image_sequence",
+        "processor consumer");
+  CHECK(processors.processors[0].attributes[0].default_json == "\"sift\"",
+        "processor attribute default");
+
+  auto pipelines = sfmapi::Client::ParsePipelinesContract(make_json(
+      200,
+      R"({"contract":"pipelines","contract_schema_version":1,)"
+      R"("composition_rule":"supplier datatype must match consumer datatype",)"
+      R"("initial_inputs":["image_sequence"],)"
+      R"("canonical_pipelines":{"incremental":["features","map"]},)"
+      R"("plugin_pipelines":[{"pipeline_id":"radiance","title":"Radiance",)"
+      R"("aliases":["3dgs"],"initial_inputs":["sparse_model"],)"
+      R"("steps":[{"ref":"train","processor":"radiance.train",)"
+      R"("attributes":{"method":"gsplat"},)"
+      R"("wires":{"model":"input.sparse_model"}}],)"
+      R"("description":"train"}],)"
+      R"("step_schema":{"type":"object"},)"
+      R"("validation_reasons":["datatype_mismatch"]})"));
+  CHECK(pipelines.canonical_pipelines["incremental"].size() == 2,
+        "canonical pipeline");
+  CHECK(pipelines.plugin_pipelines.size() == 1, "plugin pipeline");
+  CHECK(pipelines.plugin_pipelines[0].steps[0].attributes_json.find("gsplat") !=
+            std::string::npos,
+        "pipeline step attributes");
+  CHECK(pipelines.validation_reasons[0] == "datatype_mismatch",
+        "pipeline validation reason");
+
+  std::printf("  dataflow contract decoders OK\n");
 }
 
 // ---- sse.hpp -----------------------------------------------------------
@@ -354,13 +549,35 @@ static void TestParseJobSubmitResponse() {
   sfmapi::HttpResponse r = OkJson(
       200,
       R"({"job_id":"j_x","task_ids":["t_a","t_b"],"recon_id":"r_1",)"
-      R"("provider":"colmap_cli"})");
+      R"("dataset_id":"d_1","project_id":"p_1","method":"stub",)"
+      R"("applied_sim3":{"rotation":{"w":1,"x":0,"y":0,"z":0},)"
+      R"("translation":[0,0,0],"scale":1},)"
+      R"("target_recon_id":"r_target","source_recon_ids":["r_a","r_b"],)"
+      R"("strategy":"dhash","action_id":"hloc.extractFeatures","backend":"hloc",)"
+      R"("provider":"colmap_cli","artifact_id":"a_1",)"
+      R"("target_format":"sfmapi.features.local.v1",)"
+      R"("radiance_field_id":"rf_1","radiance_evaluation_id":"re_1"})");
   auto js = sfmapi::Client::ParseJobSubmitResponse(r);
   CHECK(js.job_id == "j_x", "job_id");
   CHECK(js.task_ids.size() == 2, "2 tasks");
   CHECK(js.task_ids[0] == "t_a", "task[0]");
   CHECK(js.recon_id == "r_1", "recon_id");
+  CHECK(js.dataset_id == "d_1", "dataset_id");
+  CHECK(js.project_id == "p_1", "project_id");
+  CHECK(js.method == "stub", "method");
+  CHECK(js.applied_sim3_json.find("\"scale\":1") != std::string::npos,
+        "applied_sim3 json");
+  CHECK(js.target_recon_id == "r_target", "target_recon_id");
+  CHECK(js.source_recon_ids.size() == 2, "source_recon_ids");
+  CHECK(js.source_recon_ids[1] == "r_b", "source_recon_ids[1]");
+  CHECK(js.strategy == "dhash", "strategy");
+  CHECK(js.action_id == "hloc.extractFeatures", "action_id");
+  CHECK(js.backend == "hloc", "backend");
   CHECK(js.provider == "colmap_cli", "provider echoed from 202");
+  CHECK(js.artifact_id == "a_1", "artifact_id");
+  CHECK(js.target_format == "sfmapi.features.local.v1", "target_format");
+  CHECK(js.radiance_field_id == "rf_1", "radiance_field_id");
+  CHECK(js.radiance_evaluation_id == "re_1", "radiance_evaluation_id");
 
   auto r2 = OkJson(
       200,
@@ -372,6 +589,7 @@ static void TestParseJobSubmitResponse() {
   CHECK(js2.recon_id.empty(), "null recon_id => empty string");
   CHECK(js2.dataset_id == "d_1", "dataset_id");
   CHECK(js2.provider.empty(), "null provider => empty string");
+  CHECK(js2.source_recon_ids.empty(), "null source_recon_ids => empty vector");
   std::printf("  ParseJobSubmitResponse OK\n");
 }
 
@@ -453,6 +671,7 @@ int main() {
   TestJsonBuilder();
   TestSpecs();
   TestArtifactDecoders();
+  TestDataflowContractDecoders();
   TestSseParse();
   TestSseCrLf();
   TestUploadFile();

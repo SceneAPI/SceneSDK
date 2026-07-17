@@ -36,10 +36,13 @@ auto resp = sfmapi::Client::RaiseOnError(c.Capabilities());
 // sfmapi::Capabilities, then `.Supports("ba.standard")`.
 ```
 
-The client surface mirrors the Python and TypeScript SDKs — every
-endpoint has a method (`SubmitLocalize`, `SubmitBundleAdjust`,
-`SubmitExport`, `PutPosePrior`, `SimilarityNeighbors`,
-`SubmitVideoFrames`, `ListJobArtifacts`, `GetArtifact`, ...). Errors come back as `HttpStatusError`
+The client surface covers common project, dataset, upload, job,
+pipeline, reconstruction, artifact, and sparse-stage workflows
+(`SubmitLocalize`, `SubmitBundleAdjust`, `SubmitExport`,
+`PutPosePrior`, `SimilarityNeighbors`, `SubmitVideoFrames`,
+`ListJobArtifacts`, `GetArtifact`, ...). Newer endpoints such as
+typed-dataflow, radiance, and admin surfaces may require adding a
+wrapper or using your transport directly. Errors come back as `HttpStatusError`
 exceptions whose `capability()` field carries the canonical name when
 the body is a problem+json with a `capability` extra.
 

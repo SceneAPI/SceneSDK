@@ -50,8 +50,16 @@ class StorageError(SfmApiError):
     pass
 
 
-class PycolmapUnavailableError(SfmApiError):
+class CapabilityUnavailableError(SfmApiError):
+    """Server returned 501 for a capability unsupported by this deployment."""
+
+
+class PycolmapUnavailableError(CapabilityUnavailableError):
     pass
+
+
+class BackendUnavailableError(SfmApiError):
+    """Server returned 503 — the backend is temporarily unavailable."""
 
 
 class TransportError(SfmApiError):
@@ -72,16 +80,22 @@ def raise_for_response(resp: httpx.Response) -> None:
             problem = {"title": resp.reason_phrase, "status": resp.status_code}
     msg = problem.get("detail") or problem.get("title") or resp.text or resp.reason_phrase
     cls = _STATUS_MAP.get(resp.status_code, SfmApiError)
+    if cls is CapabilityUnavailableError:
+        if str(problem.get("capability") or "").lower() == "pycolmap":
+            cls = PycolmapUnavailableError
     raise cls(msg, status_code=resp.status_code, problem=problem, response=resp)
 
 
 _STATUS_MAP: dict[int, type[SfmApiError]] = {
+    400: ValidationError,
+    401: AuthError,
     403: AuthError,
     404: NotFoundError,
     409: ConflictError,
     413: QuotaExceededError,
     422: ValidationError,
     429: QuotaExceededError,
-    501: PycolmapUnavailableError,
+    501: CapabilityUnavailableError,
+    503: BackendUnavailableError,
     507: StorageError,
 }

@@ -28,13 +28,14 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/_generated/client.ts --format esm,cjs --dts --sourcemap --clean",
+    "build": "tsup src/index.ts src/_generated/client.ts src/errors.ts --format esm,cjs --dts --sourcemap --clean --splitting && node -e \"require('node:fs').mkdirSync('dist/_generated',{recursive:true});require('node:fs').copyFileSync('src/_generated/openapi.d.ts','dist/_generated/openapi.d.ts')\" && node --input-type=module -e \"const [r,g,cr,cg]=await Promise.all([import('./dist/index.js'),import('./dist/_generated/client.js'),import('./dist/index.cjs'),import('./dist/_generated/client.cjs')]);const e=g.buildSfmApiError(404,{detail:'missing'});if(r.SfmApiError!==g.SfmApiError||!(e instanceof r.SfmApiError))throw new Error('ESM root/generated SfmApiError identity split');const ce=cg.buildSfmApiError(404,{detail:'missing'});if(cr.SfmApiError!==cg.SfmApiError||!(ce instanceof cr.SfmApiError))throw new Error('CJS root/generated SfmApiError identity split');\"",
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "gen:openapi-types": "openapi-typescript ../openapi.json -o src/openapi-types.ts",
-    "gen:sdk": "openapi-typescript ../openapi.json -o src/_generated/openapi.d.ts",
-    "check:openapi-drift": "tsc --noEmit --project tsconfig.drift.json"
+    "gen:openapi-types": "python ../scripts/regen_from_openapi.py --typescript-only",
+    "gen:sdk": "python ../scripts/regen_from_openapi.py",
+    "check:openapi-drift": "tsc --noEmit --project tsconfig.drift.json",
+    "check:codegen-provenance": "python ../scripts/check_codegen_provenance.py"
   },
   "engines": {
     "node": ">=20"
