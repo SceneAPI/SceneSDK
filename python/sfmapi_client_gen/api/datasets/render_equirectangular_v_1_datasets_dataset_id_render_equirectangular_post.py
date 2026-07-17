@@ -23,7 +23,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/datasets/{dataset_id}:render_equirectangular".format(
+        "url": "/v1/datasets/{dataset_id}:renderEquirectangular".format(
             dataset_id=quote(str(dataset_id), safe=""),
         ),
     }

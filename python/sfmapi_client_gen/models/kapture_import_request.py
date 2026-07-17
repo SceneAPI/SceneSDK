@@ -10,7 +10,7 @@ T = TypeVar("T", bound="KaptureImportRequest")
 
 @_attrs_define
 class KaptureImportRequest:
-    """``POST /v1/projects/{pid}/datasets:import_kapture``.
+    """``POST /v1/projects/{pid}/datasets:importKapture``.
 
     Attributes:
         archive_path (str):

@@ -21,7 +21,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/projects/{project_id}/datasets:from_video".format(
+        "url": "/v1/projects/{project_id}/datasets:fromVideo".format(
             project_id=quote(str(project_id), safe=""),
         ),
     }
@@ -131,7 +131,7 @@ def sync_detailed(
 
     Args:
         project_id (str):
-        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:from_video`` — extract
+        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:fromVideo`` — extract
             keyframes from a worker-local video file.
 
     Raises:
@@ -168,7 +168,7 @@ def sync(
 
     Args:
         project_id (str):
-        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:from_video`` — extract
+        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:fromVideo`` — extract
             keyframes from a worker-local video file.
 
     Raises:
@@ -200,7 +200,7 @@ async def asyncio_detailed(
 
     Args:
         project_id (str):
-        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:from_video`` — extract
+        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:fromVideo`` — extract
             keyframes from a worker-local video file.
 
     Raises:
@@ -235,7 +235,7 @@ async def asyncio(
 
     Args:
         project_id (str):
-        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:from_video`` — extract
+        body (VideoFramesRequest): ``POST /v1/projects/{pid}/datasets:fromVideo`` — extract
             keyframes from a worker-local video file.
 
     Raises:

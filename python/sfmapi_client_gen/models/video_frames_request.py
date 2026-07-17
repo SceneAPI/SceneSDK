@@ -12,7 +12,7 @@ T = TypeVar("T", bound="VideoFramesRequest")
 
 @_attrs_define
 class VideoFramesRequest:
-    """``POST /v1/projects/{pid}/datasets:from_video`` — extract
+    """``POST /v1/projects/{pid}/datasets:fromVideo`` — extract
     keyframes from a worker-local video file.
 
         Attributes:

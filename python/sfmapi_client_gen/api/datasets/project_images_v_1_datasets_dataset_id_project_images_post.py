@@ -21,7 +21,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/datasets/{dataset_id}:project_images".format(
+        "url": "/v1/datasets/{dataset_id}:projectImages".format(
             dataset_id=quote(str(dataset_id), safe=""),
         ),
     }

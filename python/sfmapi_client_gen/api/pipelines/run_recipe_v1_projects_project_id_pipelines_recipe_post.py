@@ -133,6 +133,13 @@ def sync_detailed(
 
      Run an end-to-end mapping recipe in one POST.
 
+    .. deprecated::
+        Prefer ``POST /v1/projects/{project_id}/pipelines:run`` — the
+        AIP-136 custom-verb spelling of the same submission surface.
+        This ``/{recipe}`` path segment form remains served for
+        existing clients but is marked deprecated in OpenAPI and will
+        be removed no earlier than the next pre-1.0 breaking window.
+
     Composes ``features -> matches -> verify -> map`` into a single
     job DAG keyed on ``recipe`` (one of ``incremental``
     | ``global`` | ``hierarchical`` | ``spherical``). The recipe MUST
@@ -187,6 +194,13 @@ def sync(
 
      Run an end-to-end mapping recipe in one POST.
 
+    .. deprecated::
+        Prefer ``POST /v1/projects/{project_id}/pipelines:run`` — the
+        AIP-136 custom-verb spelling of the same submission surface.
+        This ``/{recipe}`` path segment form remains served for
+        existing clients but is marked deprecated in OpenAPI and will
+        be removed no earlier than the next pre-1.0 breaking window.
+
     Composes ``features -> matches -> verify -> map`` into a single
     job DAG keyed on ``recipe`` (one of ``incremental``
     | ``global`` | ``hierarchical`` | ``spherical``). The recipe MUST
@@ -235,6 +249,13 @@ async def asyncio_detailed(
     """Run Recipe
 
      Run an end-to-end mapping recipe in one POST.
+
+    .. deprecated::
+        Prefer ``POST /v1/projects/{project_id}/pipelines:run`` — the
+        AIP-136 custom-verb spelling of the same submission surface.
+        This ``/{recipe}`` path segment form remains served for
+        existing clients but is marked deprecated in OpenAPI and will
+        be removed no earlier than the next pre-1.0 breaking window.
 
     Composes ``features -> matches -> verify -> map`` into a single
     job DAG keyed on ``recipe`` (one of ``incremental``
@@ -287,6 +308,13 @@ async def asyncio(
     """Run Recipe
 
      Run an end-to-end mapping recipe in one POST.
+
+    .. deprecated::
+        Prefer ``POST /v1/projects/{project_id}/pipelines:run`` — the
+        AIP-136 custom-verb spelling of the same submission surface.
+        This ``/{recipe}`` path segment form remains served for
+        existing clients but is marked deprecated in OpenAPI and will
+        be removed no earlier than the next pre-1.0 breaking window.
 
     Composes ``features -> matches -> verify -> map`` into a single
     job DAG keyed on ``recipe`` (one of ``incremental``

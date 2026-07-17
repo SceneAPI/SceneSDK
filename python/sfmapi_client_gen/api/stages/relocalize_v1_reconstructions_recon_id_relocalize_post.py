@@ -127,6 +127,11 @@ def sync_detailed(
 
      Register additional images into the existing reconstruction.
 
+    Not to be confused with ``POST /v1/reconstructions/{rid}/localize``:
+    ``:relocalize`` mutates the model by registering new images, while
+    ``/localize`` only queries the pose of a single image and leaves the
+    reconstruction untouched.
+
     Args:
         recon_id (str):
         body (RelocalizeSpec): ``POST /v1/reconstructions/{rid}:relocalize`` — register additional
@@ -163,6 +168,11 @@ def sync(
 
      Register additional images into the existing reconstruction.
 
+    Not to be confused with ``POST /v1/reconstructions/{rid}/localize``:
+    ``:relocalize`` mutates the model by registering new images, while
+    ``/localize`` only queries the pose of a single image and leaves the
+    reconstruction untouched.
+
     Args:
         recon_id (str):
         body (RelocalizeSpec): ``POST /v1/reconstructions/{rid}:relocalize`` — register additional
@@ -193,6 +203,11 @@ async def asyncio_detailed(
     """Relocalize
 
      Register additional images into the existing reconstruction.
+
+    Not to be confused with ``POST /v1/reconstructions/{rid}/localize``:
+    ``:relocalize`` mutates the model by registering new images, while
+    ``/localize`` only queries the pose of a single image and leaves the
+    reconstruction untouched.
 
     Args:
         recon_id (str):
@@ -227,6 +242,11 @@ async def asyncio(
     """Relocalize
 
      Register additional images into the existing reconstruction.
+
+    Not to be confused with ``POST /v1/reconstructions/{rid}/localize``:
+    ``:relocalize`` mutates the model by registering new images, while
+    ``/localize`` only queries the pose of a single image and leaves the
+    reconstruction untouched.
 
     Args:
         recon_id (str):

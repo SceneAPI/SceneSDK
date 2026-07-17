@@ -6,8 +6,8 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.cubemap_projection_request import CubemapProjectionRequest
 from ...models.job_accepted_response import JobAcceptedResponse
-from ...models.perspective_projection_request import PerspectiveProjectionRequest
 from ...models.problem_response import ProblemResponse
 from ...types import UNSET, Response, Unset
 
@@ -15,18 +15,31 @@ from ...types import UNSET, Response, Unset
 def _get_kwargs(
     dataset_id: str,
     *,
-    body: None | PerspectiveProjectionRequest | Unset = UNSET,
+    body: CubemapProjectionRequest | None | Unset = UNSET,
+    face_size: int | None | Unset = UNSET,
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
 
+    params: dict[str, Any] = {}
+
+    json_face_size: int | None | Unset
+    if isinstance(face_size, Unset):
+        json_face_size = UNSET
+    else:
+        json_face_size = face_size
+    params["face_size"] = json_face_size
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/datasets/{dataset_id}:render_perspective".format(
+        "url": "/v1/datasets/{dataset_id}:renderCubemap".format(
             dataset_id=quote(str(dataset_id), safe=""),
         ),
+        "params": params,
     }
 
-    if isinstance(body, PerspectiveProjectionRequest):
+    if isinstance(body, CubemapProjectionRequest):
         _kwargs["json"] = body.to_dict()
     else:
         _kwargs["json"] = body
@@ -124,15 +137,22 @@ def sync_detailed(
     dataset_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: None | PerspectiveProjectionRequest | Unset = UNSET,
+    body: CubemapProjectionRequest | None | Unset = UNSET,
+    face_size: int | None | Unset = UNSET,
 ) -> Response[JobAcceptedResponse | ProblemResponse]:
-    """Render Perspective
+    """Render Cubemap
 
-     Render pinhole perspective views from spherical panoramas.
+     Render every spherical panorama in this dataset into 6 cubemap faces.
+
+    Requires the dataset to be marked ``is_spherical=true``. The
+    output directory is returned in the task result; clients can then
+    register it as a new ``local`` source for downstream pinhole-only
+    pipelines.
 
     Args:
         dataset_id (str):
-        body (None | PerspectiveProjectionRequest | Unset):
+        face_size (int | None | Unset): Pixel edge length per cubemap face
+        body (CubemapProjectionRequest | None | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -145,6 +165,7 @@ def sync_detailed(
     kwargs = _get_kwargs(
         dataset_id=dataset_id,
         body=body,
+        face_size=face_size,
     )
 
     response = client.get_httpx_client().request(
@@ -158,15 +179,22 @@ def sync(
     dataset_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: None | PerspectiveProjectionRequest | Unset = UNSET,
+    body: CubemapProjectionRequest | None | Unset = UNSET,
+    face_size: int | None | Unset = UNSET,
 ) -> JobAcceptedResponse | ProblemResponse | None:
-    """Render Perspective
+    """Render Cubemap
 
-     Render pinhole perspective views from spherical panoramas.
+     Render every spherical panorama in this dataset into 6 cubemap faces.
+
+    Requires the dataset to be marked ``is_spherical=true``. The
+    output directory is returned in the task result; clients can then
+    register it as a new ``local`` source for downstream pinhole-only
+    pipelines.
 
     Args:
         dataset_id (str):
-        body (None | PerspectiveProjectionRequest | Unset):
+        face_size (int | None | Unset): Pixel edge length per cubemap face
+        body (CubemapProjectionRequest | None | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -180,6 +208,7 @@ def sync(
         dataset_id=dataset_id,
         client=client,
         body=body,
+        face_size=face_size,
     ).parsed
 
 
@@ -187,15 +216,22 @@ async def asyncio_detailed(
     dataset_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: None | PerspectiveProjectionRequest | Unset = UNSET,
+    body: CubemapProjectionRequest | None | Unset = UNSET,
+    face_size: int | None | Unset = UNSET,
 ) -> Response[JobAcceptedResponse | ProblemResponse]:
-    """Render Perspective
+    """Render Cubemap
 
-     Render pinhole perspective views from spherical panoramas.
+     Render every spherical panorama in this dataset into 6 cubemap faces.
+
+    Requires the dataset to be marked ``is_spherical=true``. The
+    output directory is returned in the task result; clients can then
+    register it as a new ``local`` source for downstream pinhole-only
+    pipelines.
 
     Args:
         dataset_id (str):
-        body (None | PerspectiveProjectionRequest | Unset):
+        face_size (int | None | Unset): Pixel edge length per cubemap face
+        body (CubemapProjectionRequest | None | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -208,6 +244,7 @@ async def asyncio_detailed(
     kwargs = _get_kwargs(
         dataset_id=dataset_id,
         body=body,
+        face_size=face_size,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -219,15 +256,22 @@ async def asyncio(
     dataset_id: str,
     *,
     client: AuthenticatedClient | Client,
-    body: None | PerspectiveProjectionRequest | Unset = UNSET,
+    body: CubemapProjectionRequest | None | Unset = UNSET,
+    face_size: int | None | Unset = UNSET,
 ) -> JobAcceptedResponse | ProblemResponse | None:
-    """Render Perspective
+    """Render Cubemap
 
-     Render pinhole perspective views from spherical panoramas.
+     Render every spherical panorama in this dataset into 6 cubemap faces.
+
+    Requires the dataset to be marked ``is_spherical=true``. The
+    output directory is returned in the task result; clients can then
+    register it as a new ``local`` source for downstream pinhole-only
+    pipelines.
 
     Args:
         dataset_id (str):
-        body (None | PerspectiveProjectionRequest | Unset):
+        face_size (int | None | Unset): Pixel edge length per cubemap face
+        body (CubemapProjectionRequest | None | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -242,5 +286,6 @@ async def asyncio(
             dataset_id=dataset_id,
             client=client,
             body=body,
+            face_size=face_size,
         )
     ).parsed

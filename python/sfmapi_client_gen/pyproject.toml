@@ -1,6 +1,6 @@
 [project]
 name = "sfmapi-client-gen"
-version = "0.0.1"
+version = "0.0.2"
 description = "Auto-generated typed Python SDK for sfmapi. Generated from the live OpenAPI spec by openapi-python-client."
 readme = "README.md"
 requires-python = ">=3.10"

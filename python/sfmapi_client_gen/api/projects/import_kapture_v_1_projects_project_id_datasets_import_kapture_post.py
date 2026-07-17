@@ -7,35 +7,30 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.job_accepted_response import JobAcceptedResponse
+from ...models.kapture_import_request import KaptureImportRequest
 from ...models.problem_response import ProblemResponse
-from ...types import UNSET, Response, Unset
+from ...types import Response
 
 
 def _get_kwargs(
-    recon_id: str,
+    project_id: str,
     *,
-    provider: None | str | Unset = UNSET,
+    body: KaptureImportRequest,
 ) -> dict[str, Any]:
-
-    params: dict[str, Any] = {}
-
-    json_provider: None | str | Unset
-    if isinstance(provider, Unset):
-        json_provider = UNSET
-    else:
-        json_provider = provider
-    params["provider"] = json_provider
-
-    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+    headers: dict[str, Any] = {}
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/reconstructions/{recon_id}:to_cubemap".format(
-            recon_id=quote(str(recon_id), safe=""),
+        "url": "/v1/projects/{project_id}/datasets:importKapture".format(
+            project_id=quote(str(project_id), safe=""),
         ),
-        "params": params,
     }
 
+    _kwargs["json"] = body.to_dict()
+
+    headers["Content-Type"] = "application/json"
+
+    _kwargs["headers"] = headers
     return _kwargs
 
 
@@ -123,23 +118,21 @@ def _build_response(
 
 
 def sync_detailed(
-    recon_id: str,
+    project_id: str,
     *,
     client: AuthenticatedClient | Client,
-    provider: None | str | Unset = UNSET,
+    body: KaptureImportRequest,
 ) -> Response[JobAcceptedResponse | ProblemResponse]:
-    """To Cubemap
+    """Import Kapture
 
-     Convert a spherical reconstruction to a 6-face cubemap rig.
-
-    Requires the dataset to be marked ``is_spherical=true``. The
-    worker re-projects each panorama into 6 faces, builds a cubemap
-    rig + frames, and seals a fresh snapshot whose ``rigs.json`` and
-    ``frames.json`` carry the cubemap layout.
+     Parse a Kapture archive into a sensors+records inventory; the
+    job result carries the parsed contents and the recommended
+    ``image_root`` so the client can register a ``local`` dataset
+    pointing at it.
 
     Args:
-        recon_id (str):
-        provider (None | str | Unset): Optional provider id to execute this conversion.
+        project_id (str):
+        body (KaptureImportRequest): ``POST /v1/projects/{pid}/datasets:importKapture``.
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -150,8 +143,8 @@ def sync_detailed(
     """
 
     kwargs = _get_kwargs(
-        recon_id=recon_id,
-        provider=provider,
+        project_id=project_id,
+        body=body,
     )
 
     response = client.get_httpx_client().request(
@@ -162,23 +155,21 @@ def sync_detailed(
 
 
 def sync(
-    recon_id: str,
+    project_id: str,
     *,
     client: AuthenticatedClient | Client,
-    provider: None | str | Unset = UNSET,
+    body: KaptureImportRequest,
 ) -> JobAcceptedResponse | ProblemResponse | None:
-    """To Cubemap
+    """Import Kapture
 
-     Convert a spherical reconstruction to a 6-face cubemap rig.
-
-    Requires the dataset to be marked ``is_spherical=true``. The
-    worker re-projects each panorama into 6 faces, builds a cubemap
-    rig + frames, and seals a fresh snapshot whose ``rigs.json`` and
-    ``frames.json`` carry the cubemap layout.
+     Parse a Kapture archive into a sensors+records inventory; the
+    job result carries the parsed contents and the recommended
+    ``image_root`` so the client can register a ``local`` dataset
+    pointing at it.
 
     Args:
-        recon_id (str):
-        provider (None | str | Unset): Optional provider id to execute this conversion.
+        project_id (str):
+        body (KaptureImportRequest): ``POST /v1/projects/{pid}/datasets:importKapture``.
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -189,30 +180,28 @@ def sync(
     """
 
     return sync_detailed(
-        recon_id=recon_id,
+        project_id=project_id,
         client=client,
-        provider=provider,
+        body=body,
     ).parsed
 
 
 async def asyncio_detailed(
-    recon_id: str,
+    project_id: str,
     *,
     client: AuthenticatedClient | Client,
-    provider: None | str | Unset = UNSET,
+    body: KaptureImportRequest,
 ) -> Response[JobAcceptedResponse | ProblemResponse]:
-    """To Cubemap
+    """Import Kapture
 
-     Convert a spherical reconstruction to a 6-face cubemap rig.
-
-    Requires the dataset to be marked ``is_spherical=true``. The
-    worker re-projects each panorama into 6 faces, builds a cubemap
-    rig + frames, and seals a fresh snapshot whose ``rigs.json`` and
-    ``frames.json`` carry the cubemap layout.
+     Parse a Kapture archive into a sensors+records inventory; the
+    job result carries the parsed contents and the recommended
+    ``image_root`` so the client can register a ``local`` dataset
+    pointing at it.
 
     Args:
-        recon_id (str):
-        provider (None | str | Unset): Optional provider id to execute this conversion.
+        project_id (str):
+        body (KaptureImportRequest): ``POST /v1/projects/{pid}/datasets:importKapture``.
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -223,8 +212,8 @@ async def asyncio_detailed(
     """
 
     kwargs = _get_kwargs(
-        recon_id=recon_id,
-        provider=provider,
+        project_id=project_id,
+        body=body,
     )
 
     response = await client.get_async_httpx_client().request(**kwargs)
@@ -233,23 +222,21 @@ async def asyncio_detailed(
 
 
 async def asyncio(
-    recon_id: str,
+    project_id: str,
     *,
     client: AuthenticatedClient | Client,
-    provider: None | str | Unset = UNSET,
+    body: KaptureImportRequest,
 ) -> JobAcceptedResponse | ProblemResponse | None:
-    """To Cubemap
+    """Import Kapture
 
-     Convert a spherical reconstruction to a 6-face cubemap rig.
-
-    Requires the dataset to be marked ``is_spherical=true``. The
-    worker re-projects each panorama into 6 faces, builds a cubemap
-    rig + frames, and seals a fresh snapshot whose ``rigs.json`` and
-    ``frames.json`` carry the cubemap layout.
+     Parse a Kapture archive into a sensors+records inventory; the
+    job result carries the parsed contents and the recommended
+    ``image_root`` so the client can register a ``local`` dataset
+    pointing at it.
 
     Args:
-        recon_id (str):
-        provider (None | str | Unset): Optional provider id to execute this conversion.
+        project_id (str):
+        body (KaptureImportRequest): ``POST /v1/projects/{pid}/datasets:importKapture``.
 
     Raises:
         errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
@@ -261,8 +248,8 @@ async def asyncio(
 
     return (
         await asyncio_detailed(
-            recon_id=recon_id,
+            project_id=project_id,
             client=client,
-            provider=provider,
+            body=body,
         )
     ).parsed

@@ -173,7 +173,7 @@ export interface paths {
         patch: operations["patch_v1_projects__project_id__patch"];
         trace?: never;
     };
-    "/v1/projects/{project_id}/datasets:from_video": {
+    "/v1/projects/{project_id}/datasets:fromVideo": {
         parameters: {
             query?: never;
             header?: never;
@@ -188,14 +188,14 @@ export interface paths {
          *     the output directory; the client follows up with a ``local``-source
          *     dataset pointing at it.
          */
-        post: operations["from_video_v1_projects__project_id__datasets_from_video_post"];
+        post: operations["from_video_v1_projects__project_id__datasets_fromVideo_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/projects/{project_id}/datasets:import_kapture": {
+    "/v1/projects/{project_id}/datasets:importKapture": {
         parameters: {
             query?: never;
             header?: never;
@@ -211,14 +211,14 @@ export interface paths {
          *     ``image_root`` so the client can register a ``local`` dataset
          *     pointing at it.
          */
-        post: operations["import_kapture_v1_projects__project_id__datasets_import_kapture_post"];
+        post: operations["import_kapture_v1_projects__project_id__datasets_importKapture_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/projects/{project_id}/datasets:from_archive": {
+    "/v1/projects/{project_id}/datasets:fromArchive": {
         parameters: {
             query?: never;
             header?: never;
@@ -238,7 +238,7 @@ export interface paths {
          *     ``Location`` to the job; the terminal job's task carries
          *     ``num_images`` and the registered ``derived_dataset``.
          */
-        post: operations["from_archive_v1_projects__project_id__datasets_from_archive_post"];
+        post: operations["from_archive_v1_projects__project_id__datasets_fromArchive_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -831,7 +831,7 @@ export interface paths {
         patch: operations["patch_v1_projects__project_id__datasets__dataset_id__patch"];
         trace?: never;
     };
-    "/v1/datasets/{dataset_id}:render_cubemap": {
+    "/v1/datasets/{dataset_id}:renderCubemap": {
         parameters: {
             query?: never;
             header?: never;
@@ -849,14 +849,14 @@ export interface paths {
          *     register it as a new ``local`` source for downstream pinhole-only
          *     pipelines.
          */
-        post: operations["render_cubemap_v1_datasets__dataset_id__render_cubemap_post"];
+        post: operations["render_cubemap_v1_datasets__dataset_id__renderCubemap_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/datasets/{dataset_id}:project_images": {
+    "/v1/datasets/{dataset_id}:projectImages": {
         parameters: {
             query?: never;
             header?: never;
@@ -869,14 +869,14 @@ export interface paths {
          * Project Images
          * @description Run a portable projection transform over the dataset images.
          */
-        post: operations["project_images_v1_datasets__dataset_id__project_images_post"];
+        post: operations["project_images_v1_datasets__dataset_id__projectImages_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/datasets/{dataset_id}:render_equirectangular": {
+    "/v1/datasets/{dataset_id}:renderEquirectangular": {
         parameters: {
             query?: never;
             header?: never;
@@ -889,14 +889,14 @@ export interface paths {
          * Render Equirectangular
          * @description Render a cubemap dataset back to equirectangular panoramas.
          */
-        post: operations["render_equirectangular_v1_datasets__dataset_id__render_equirectangular_post"];
+        post: operations["render_equirectangular_v1_datasets__dataset_id__renderEquirectangular_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/datasets/{dataset_id}:render_perspective": {
+    "/v1/datasets/{dataset_id}:renderPerspective": {
         parameters: {
             query?: never;
             header?: never;
@@ -909,7 +909,7 @@ export interface paths {
          * Render Perspective
          * @description Render pinhole perspective views from spherical panoramas.
          */
-        post: operations["render_perspective_v1_datasets__dataset_id__render_perspective_post"];
+        post: operations["render_perspective_v1_datasets__dataset_id__renderPerspective_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1901,6 +1901,11 @@ export interface paths {
         /**
          * Relocalize
          * @description Register additional images into the existing reconstruction.
+         *
+         *     Not to be confused with ``POST /v1/reconstructions/{rid}/localize``:
+         *     ``:relocalize`` mutates the model by registering new images, while
+         *     ``/localize`` only queries the pose of a single image and leaves the
+         *     reconstruction untouched.
          */
         post: operations["relocalize_v1_reconstructions__recon_id__relocalize_post"];
         delete?: never;
@@ -1940,7 +1945,15 @@ export interface paths {
         put?: never;
         /**
          * Run Recipe
+         * @deprecated
          * @description Run an end-to-end mapping recipe in one POST.
+         *
+         *     .. deprecated::
+         *         Prefer ``POST /v1/projects/{project_id}/pipelines:run`` — the
+         *         AIP-136 custom-verb spelling of the same submission surface.
+         *         This ``/{recipe}`` path segment form remains served for
+         *         existing clients but is marked deprecated in OpenAPI and will
+         *         be removed no earlier than the next pre-1.0 breaking window.
          *
          *     Composes ``features -> matches -> verify -> map`` into a single
          *     job DAG keyed on ``recipe`` (one of ``incremental``
@@ -2461,6 +2474,11 @@ export interface paths {
          *
          *     The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
          *     shaped payload in its ``outputs_ref`` once finished.
+         *
+         *     Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
+         *     ``/localize`` is a read-style pose query — it answers "where was this
+         *     image taken?" without touching the model — while ``:relocalize``
+         *     registers additional images *into* the reconstruction.
          */
         post: operations["localize_v1_reconstructions__recon_id__localize_post"];
         delete?: never;
@@ -2494,7 +2512,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/reconstructions/{recon_id}:to_cubemap": {
+    "/v1/reconstructions/{recon_id}:toCubemap": {
         parameters: {
             query?: never;
             header?: never;
@@ -2512,7 +2530,7 @@ export interface paths {
          *     rig + frames, and seals a fresh snapshot whose ``rigs.json`` and
          *     ``frames.json`` carry the cubemap layout.
          */
-        post: operations["to_cubemap_v1_reconstructions__recon_id__to_cubemap_post"];
+        post: operations["to_cubemap_v1_reconstructions__recon_id__toCubemap_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2647,7 +2665,7 @@ export interface components {
         };
         /**
          * ArchiveImportRequest
-         * @description ``POST /v1/projects/{pid}/datasets:from_archive`` — register a
+         * @description ``POST /v1/projects/{pid}/datasets:fromArchive`` — register a
          *     dataset from an already-uploaded image zip.
          *
          *     Upload the zip through the normal chunked-upload protocol first
@@ -4554,7 +4572,7 @@ export interface components {
         };
         /**
          * KaptureImportRequest
-         * @description ``POST /v1/projects/{pid}/datasets:import_kapture``.
+         * @description ``POST /v1/projects/{pid}/datasets:importKapture``.
          */
         KaptureImportRequest: {
             /** Archive Path */
@@ -7084,7 +7102,7 @@ export interface components {
         };
         /**
          * VideoFramesRequest
-         * @description ``POST /v1/projects/{pid}/datasets:from_video`` — extract
+         * @description ``POST /v1/projects/{pid}/datasets:fromVideo`` — extract
          *     keyframes from a worker-local video file.
          */
         VideoFramesRequest: {
@@ -8194,7 +8212,7 @@ export interface operations {
             };
         };
     };
-    from_video_v1_projects__project_id__datasets_from_video_post: {
+    from_video_v1_projects__project_id__datasets_fromVideo_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -8320,7 +8338,7 @@ export interface operations {
             };
         };
     };
-    import_kapture_v1_projects__project_id__datasets_import_kapture_post: {
+    import_kapture_v1_projects__project_id__datasets_importKapture_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -8446,7 +8464,7 @@ export interface operations {
             };
         };
     };
-    from_archive_v1_projects__project_id__datasets_from_archive_post: {
+    from_archive_v1_projects__project_id__datasets_fromArchive_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -12143,7 +12161,7 @@ export interface operations {
             };
         };
     };
-    render_cubemap_v1_datasets__dataset_id__render_cubemap_post: {
+    render_cubemap_v1_datasets__dataset_id__renderCubemap_post: {
         parameters: {
             query?: {
                 /** @description Pixel edge length per cubemap face */
@@ -12272,7 +12290,7 @@ export interface operations {
             };
         };
     };
-    project_images_v1_datasets__dataset_id__project_images_post: {
+    project_images_v1_datasets__dataset_id__projectImages_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -12398,7 +12416,7 @@ export interface operations {
             };
         };
     };
-    render_equirectangular_v1_datasets__dataset_id__render_equirectangular_post: {
+    render_equirectangular_v1_datasets__dataset_id__renderEquirectangular_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -12524,7 +12542,7 @@ export interface operations {
             };
         };
     };
-    render_perspective_v1_datasets__dataset_id__render_perspective_post: {
+    render_perspective_v1_datasets__dataset_id__renderPerspective_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -21846,7 +21864,7 @@ export interface operations {
             };
         };
     };
-    to_cubemap_v1_reconstructions__recon_id__to_cubemap_post: {
+    to_cubemap_v1_reconstructions__recon_id__toCubemap_post: {
         parameters: {
             query?: {
                 /** @description Optional provider id to execute this conversion. */

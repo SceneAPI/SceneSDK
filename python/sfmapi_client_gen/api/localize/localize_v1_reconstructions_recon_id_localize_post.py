@@ -123,12 +123,17 @@ def sync_detailed(
     client: AuthenticatedClient | Client,
     body: LocalizationRequest,
 ) -> Response[JobAcceptedResponse | ProblemResponse]:
-    """Localize
+    r"""Localize
 
      Localize a single query image against the reconstruction.
 
     The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
+
+    Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
+    ``/localize`` is a read-style pose query — it answers \"where was this
+    image taken?\" without touching the model — while ``:relocalize``
+    registers additional images *into* the reconstruction.
 
     Args:
         recon_id (str):
@@ -160,12 +165,17 @@ def sync(
     client: AuthenticatedClient | Client,
     body: LocalizationRequest,
 ) -> JobAcceptedResponse | ProblemResponse | None:
-    """Localize
+    r"""Localize
 
      Localize a single query image against the reconstruction.
 
     The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
+
+    Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
+    ``/localize`` is a read-style pose query — it answers \"where was this
+    image taken?\" without touching the model — while ``:relocalize``
+    registers additional images *into* the reconstruction.
 
     Args:
         recon_id (str):
@@ -192,12 +202,17 @@ async def asyncio_detailed(
     client: AuthenticatedClient | Client,
     body: LocalizationRequest,
 ) -> Response[JobAcceptedResponse | ProblemResponse]:
-    """Localize
+    r"""Localize
 
      Localize a single query image against the reconstruction.
 
     The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
+
+    Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
+    ``/localize`` is a read-style pose query — it answers \"where was this
+    image taken?\" without touching the model — while ``:relocalize``
+    registers additional images *into* the reconstruction.
 
     Args:
         recon_id (str):
@@ -227,12 +242,17 @@ async def asyncio(
     client: AuthenticatedClient | Client,
     body: LocalizationRequest,
 ) -> JobAcceptedResponse | ProblemResponse | None:
-    """Localize
+    r"""Localize
 
      Localize a single query image against the reconstruction.
 
     The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
+
+    Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
+    ``/localize`` is a read-style pose query — it answers \"where was this
+    image taken?\" without touching the model — while ``:relocalize``
+    registers additional images *into* the reconstruction.
 
     Args:
         recon_id (str):

@@ -21,7 +21,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/projects/{project_id}/datasets:from_archive".format(
+        "url": "/v1/projects/{project_id}/datasets:fromArchive".format(
             project_id=quote(str(project_id), safe=""),
         ),
     }
@@ -136,8 +136,7 @@ def sync_detailed(
 
     Args:
         project_id (str):
-        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:from_archive`` — register
-            a
+        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:fromArchive`` — register a
             dataset from an already-uploaded image zip.
 
             Upload the zip through the normal chunked-upload protocol first
@@ -186,8 +185,7 @@ def sync(
 
     Args:
         project_id (str):
-        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:from_archive`` — register
-            a
+        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:fromArchive`` — register a
             dataset from an already-uploaded image zip.
 
             Upload the zip through the normal chunked-upload protocol first
@@ -231,8 +229,7 @@ async def asyncio_detailed(
 
     Args:
         project_id (str):
-        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:from_archive`` — register
-            a
+        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:fromArchive`` — register a
             dataset from an already-uploaded image zip.
 
             Upload the zip through the normal chunked-upload protocol first
@@ -279,8 +276,7 @@ async def asyncio(
 
     Args:
         project_id (str):
-        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:from_archive`` — register
-            a
+        body (ArchiveImportRequest): ``POST /v1/projects/{pid}/datasets:fromArchive`` — register a
             dataset from an already-uploaded image zip.
 
             Upload the zip through the normal chunked-upload protocol first

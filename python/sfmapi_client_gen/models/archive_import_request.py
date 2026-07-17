@@ -12,7 +12,7 @@ T = TypeVar("T", bound="ArchiveImportRequest")
 
 @_attrs_define
 class ArchiveImportRequest:
-    """``POST /v1/projects/{pid}/datasets:from_archive`` — register a
+    """``POST /v1/projects/{pid}/datasets:fromArchive`` — register a
     dataset from an already-uploaded image zip.
 
     Upload the zip through the normal chunked-upload protocol first

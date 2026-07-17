@@ -1,6 +1,6 @@
 [project]
 name = "sfmapi-client"
-version = "0.0.1"
+version = "0.0.2"
 description = "Typed Python SDK for sfmapi (sync + async) plus the sfmapi-client CLI."
 readme = "README.md"
 requires-python = ">=3.10"
