@@ -68,16 +68,13 @@ jobs:
         run: |
           uv venv --seed
           uv pip install -e ".[dev]"
-          uv pip install -e sceneapi_client_gen
           uv pip install build
       - name: Test Python SDK
         run: uv run pytest -q
       - name: Import generated Python SDK
         run: uv run python -c "import sceneapi_client_gen, sceneapi_client_gen.models; print(sceneapi_client_gen.__name__)"
-      - name: Build packages
-        run: |
-          .venv/bin/python -m build --sdist --wheel
-          .venv/bin/python -m build sceneapi_client_gen --sdist --wheel
+      - name: Build package
+        run: .venv/bin/python -m build sceneapi_client_gen --sdist --wheel
 
   typescript:
     needs: [resolve, cpp]
@@ -158,10 +155,18 @@ jobs:
           from pathlib import Path
 
           version = os.environ["VERSION"]
+          # Both build roots carry the same sceneapi-client distribution;
+          # only python/sceneapi_client_gen/dist is published.
           packages = [
-              ("sfmapi-client", Path("python/pyproject.toml")),
               ("sceneapi-client", Path("python/sceneapi_client_gen/pyproject.toml")),
           ]
+          dev_root_version = tomllib.loads(
+              Path("python/pyproject.toml").read_text()
+          )["project"]["version"]
+          if dev_root_version != version:
+              raise SystemExit(
+                  f"python dev-root version {dev_root_version!r} does not match tag {version!r}"
+              )
           for name, path in packages:
               actual = tomllib.loads(path.read_text())["project"]["version"]
               if actual != version:
@@ -192,12 +197,11 @@ jobs:
               sys.stderr.write(proc.stderr)
               raise SystemExit(proc.returncode)
           PY
-      - name: Build Python packages
+      - name: Build Python package
         working-directory: python
         run: |
           uv venv --seed
           uv pip install build
-          .venv/bin/python -m build --sdist --wheel
           .venv/bin/python -m build sceneapi_client_gen --sdist --wheel
       - name: Install npm dependencies
         working-directory: typescript
@@ -206,10 +210,6 @@ jobs:
         working-directory: typescript
         run: npm run build
       - name: Publish Python SDK
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: python/dist
-      - name: Publish generated Python SDK
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: python/sceneapi_client_gen/dist

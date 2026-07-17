@@ -26,8 +26,9 @@ import {
 import { sha256Hex } from "../hash.js";
 
 // ---------------------------------------------------------------------
-// Typed error hierarchy. Mirrors clients/python/sfmapi_client/errors.py
-// and the Python generated `_ergonomics.py` shim — `instanceof
+// Typed error hierarchy. Mirrors the Python generated SDK's
+// `sceneapi_client_gen/_ergonomics.py` shim (the hand-rolled Python
+// SDK it originally mirrored was removed at 0.1.0) — `instanceof
 // SfmApiError` works regardless of which SDK threw.
 // ---------------------------------------------------------------------
 

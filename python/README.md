@@ -1,111 +1,47 @@
-# sfmapi-client
+# sceneapi-client
 
-Legacy compatibility Python SDK for [sfmapi](https://github.com/SFMAPI/sfmapi),
-plus the `sfmapi-client` CLI. New application code should use the generated
-`sceneapi_client_gen` package documented in `sceneapi_client_gen/README.md`; this
-package remains for the CLI and older handwritten helper surface.
-
-```bash
-pip install "sfmapi-client[cli]"     # SDK + the `sfmapi-client` command
-pip install sfmapi-client            # SDK only
-```
-
-## CLI
+Typed Python SDK for [sceneapi](https://github.com/SFMAPI/sfmapi): the
+auto-generated `sceneapi_client_gen` package, regenerated from the live
+OpenAPI spec on every release. Package documentation, usage examples,
+and the ergonomics-helper surface are described in
+[`sceneapi_client_gen/README.md`](sceneapi_client_gen/README.md).
 
 ```bash
-export SFMAPI_BASE_URL=http://localhost:8080
-export SFMAPI_KEY=sfm_xxx          # only when auth_mode=api_key
-
-sfmapi-client health version
-sfmapi-client projects create my-proj
-sfmapi-client uploads dir ./images        # prints `name<TAB>sha` per file
-sfmapi-client datasets create <pid> ds1 \
-    --entry a.jpg:<sha> --entry b.jpg:<sha>
-sfmapi-client pipelines run <pid> \
-    --dataset-id <did> --image-root /data \
-    --image a.jpg --image b.jpg --kind incremental
-sfmapi-client jobs watch <job_id>
-sfmapi-client jobs events <job_id>        # SSE tail
-sfmapi-client snapshots list <recon_id>
-sfmapi-client snapshots get <recon_id> <seq> points.bin --out cloud.bin
+pip install sceneapi-client
 ```
-
-Add `--json` (between the program name and the subcommand) to get raw
-JSON instead of Rich-rendered tables — convenient for scripting.
-
-## Sync usage
 
 ```python
-from sfmapi_client import SfmApiClient, IncrementalSpec
+from sceneapi_client_gen.client import Client
+from sceneapi_client_gen.api.capabilities import capabilities_v1_capabilities_get
 
-with SfmApiClient("http://localhost:8080", api_key="sfm_xxx") as c:
-    proj = c.create_project("photogrammetry")
-    sha  = c.upload_bytes(open("a.jpg", "rb").read(), content_type="image/jpeg")
-    ds   = c.create_dataset(
-        proj.project_id,
-        name="dataset-1",
-        source={"kind": "upload",
-                "entries": [{"name": "a.jpg", "blob_sha": sha}]},
-        camera_model="SIMPLE_RADIAL",
-    )
-    job = c.run_pipeline(
-        proj.project_id,
-        dataset_id=ds.dataset_id,
-        image_root="/data/images",
-        image_list=["a.jpg"],
-        spec=IncrementalSpec(),
-    )
-    print("job_id:", job.job_id)
-    detail = c.get_job(job.job_id)
-    print("status:", detail.status, "tasks:", [(t.kind, t.status) for t in detail.tasks])
+client = Client(base_url="http://localhost:8080")
+caps = capabilities_v1_capabilities_get.sync_detailed(client=client)
+print(caps.parsed)  # CapabilitiesOut with schema_version, backend, features
 ```
 
-## Async usage
+`sceneapi_client_gen._ergonomics` adds the helper surface on top of the
+generated endpoint and model types: the typed `SfmApiError` exception
+hierarchy, `supports()`, chunked upload (`upload_bytes` /
+`upload_file`), the SSE event iterator (`stream_events`), the
+`application/x-sfm-points-v1` parser, and the `wait_for_job` /
+`submit_and_wait` / `submit_and_stream` job combinators.
 
-```python
-import asyncio
-from sfmapi_client import AsyncSfmApiClient, FeaturesSpec
+## Layout
 
-async def main():
-    async with AsyncSfmApiClient("http://localhost:8080") as c:
-        proj = await c.create_project("p")
-        sha  = await c.upload_bytes(b"...")
-        ds   = await c.create_dataset(proj.project_id, name="ds",
-                                      source={"kind": "upload", "entries": []})
-        job = await c.submit_features(
-            ds.dataset_id, spec=FeaturesSpec(use_gpu=False),
-            image_root="/data", image_list=["a.jpg"],
-        )
-        async for event in c.stream_events(job.job_id):
-            print(event)
+- `sceneapi_client_gen/` — the distribution's self-contained build root
+  (generated code + repo-owned metadata and `_ergonomics.py`). Release
+  builds and publishes run from there.
+- `pyproject.toml` (this directory) — dev-install root for the same
+  `sceneapi-client` distribution: `pip install -e ".[dev]"` gives the
+  generated package plus the test toolchain for `tests/`.
 
-asyncio.run(main())
-```
+## History
 
-## Errors
-
-All HTTP errors raise typed exceptions:
-
-| HTTP | Exception |
-|---|---|
-| 400 / 422 | `ValidationError` |
-| 401 / 403 | `AuthError` |
-| 404 | `NotFoundError` |
-| 409 | `ConflictError` |
-| 413 / 429 | `QuotaExceededError` |
-| 501 | `CapabilityUnavailableError` (`PycolmapUnavailableError` when `capability="pycolmap"`) |
-| 503 | `BackendUnavailableError` |
-| 507 | `StorageError` |
-| other 4xx/5xx | `SfmApiError` |
-
-Each exception carries `status_code`, `problem` (parsed
-`application/problem+json` body), and the original `httpx.Response`.
-
-## Streaming progress events
-
-`stream_events(job_id, last_event_id=...)` yields parsed `ProgressEvent`
-dicts (see server-side schema). The `last_event_id` parameter triggers
-SSE replay so reconnects don't drop history.
+The hand-rolled `sfmapi-client` package (sync + async clients plus the
+`sfmapi-client` CLI) that used to live here was deprecated at 0.0.2 and
+**removed at 0.1.0 as scheduled**, together with the sceneapi package
+rename. Its full ergonomics surface lives on in
+`sceneapi_client_gen._ergonomics`.
 
 ## License
 

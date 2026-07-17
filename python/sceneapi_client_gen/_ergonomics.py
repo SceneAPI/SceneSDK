@@ -8,8 +8,9 @@ single `UnexpectedStatus` exception. This module adds the
 typed-exception hierarchy, the `supports()` capability helper, the
 chunked-upload convenience, the SSE event iterator, and the
 `application/x-sfm-points-v1` binary wire-format parser that the
-hand-rolled `sfmapi_client` package ships, so consumers of the
-generated SDK don't have to reinvent them.
+hand-rolled `sfmapi_client` package used to ship (removed at 0.1.0
+as scheduled), so consumers of the generated SDK don't have to
+reinvent them.
 
 This file is OWNED by the repo (preserved across `regen_sdk.py`
 runs); it does NOT come from the generator.
@@ -29,11 +30,11 @@ from .errors import UnexpectedStatus
 from .models.capabilities_out import CapabilitiesOut
 
 # ---------------------------------------------------------------------
-# Typed exception hierarchy. Mirrors the hand-rolled SDK's class names
-# and attribute surface (`status_code` / `problem` / `response`, plus
-# `detail` / `body`) so migrating callers only swap the import — but it
-# is rooted in this package: the supported generated SDK must not
-# derive its exceptions from the deprecated `sfmapi_client` package
+# Typed exception hierarchy. Mirrors the class names and attribute
+# surface (`status_code` / `problem` / `response`, plus `detail` /
+# `body`) of the removed hand-rolled SDK so migrated callers only
+# swapped the import — and it is rooted in this package: the supported
+# generated SDK must not derive its exceptions from any other package
 # (lean audit 2026-07, item 5.1).
 # ---------------------------------------------------------------------
 

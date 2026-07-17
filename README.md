@@ -1,20 +1,17 @@
-# sfmapi SDKs
+# sceneapi SDKs
 
-Client SDK repository for sfmapi. The server, wire specification, plugin hub,
-backend interfaces, and conformance tests live in
+Client SDK repository for sceneapi. The server, wire specification, plugin
+hub, backend interfaces, and conformance tests live in
 [`SFMAPI/sfmapi`](https://github.com/SFMAPI/sfmapi).
 
 This repository is client-only:
 
-- `python/sceneapi_client_gen/`: **supported** generated Python SDK (default
-  import target; covers the full surface including radiance, backend actions,
-  config-schemas, and the latest pipeline specs).
-- `python/sfmapi_client/`: **deprecated** hand-written compatibility SDK,
-  emits a `DeprecationWarning` on import and is removed at v0.1.0. Missing the
-  radiance/backend-action/config-schema surface; `IncrementalSpec` is missing
-  `ba_global_use_pba`. New code should `from sceneapi_client_gen import ...`
-  instead.
-- `typescript/`: browser and Node TypeScript SDK.
+- `python/sceneapi_client_gen/`: **supported** generated Python SDK
+  (dist `sceneapi-client`, import `sceneapi_client_gen`; covers the full
+  surface including radiance, backend actions, config-schemas, and the
+  latest pipeline specs). The deprecated hand-written `sfmapi_client`
+  compatibility SDK (and its CLI) was removed at 0.1.0 as scheduled.
+- `typescript/`: browser and Node TypeScript SDK (`@sceneapi/client`).
 - `cpp/`: header-only C++17 client helpers.
 - `openapi.json`: OpenAPI snapshot used to regenerate clients.
 
@@ -35,8 +32,8 @@ cmake --build build
 ctest --test-dir build
 ```
 
-Backend plugins should depend on `sfmapi`, not this SDK package. This repo is
-for clients that call an existing sfmapi server.
+Backend plugins should depend on `sceneapi`, not this SDK package. This repo
+is for clients that call an existing sceneapi server.
 
 ## Regeneration
 

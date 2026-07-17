@@ -1,12 +1,12 @@
 [project]
-name = "sfmapi-client"
-version = "0.0.2"
-description = "Typed Python SDK for sfmapi (sync + async) plus the sfmapi-client CLI."
+name = "sceneapi-client"
+version = "0.1.0"
+description = "Auto-generated typed Python SDK for sceneapi (import package sceneapi_client_gen)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
-keywords = ["sfmapi", "structure-from-motion", "colmap", "sdk"]
-authors = [{ name = "sfmapi authors" }]
+keywords = ["sceneapi", "sfm", "structure-from-motion", "colmap", "sdk"]
+authors = [{ name = "sceneapi authors" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -16,26 +16,18 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
+    "attrs>=23.2",
     "httpx>=0.28",
-    "pydantic>=2.9",
+    "python-dateutil>=2.9",
 ]
 
 [project.optional-dependencies]
-cli = [
-    "click>=8.1",
-    "rich>=13.9",
-]
 dev = [
     "pytest>=8.3",
     "pytest-asyncio>=0.24",
     "respx>=0.21",
     "ruff>=0.8",
-    "click>=8.1",
-    "rich>=13.9",
 ]
-
-[project.scripts]
-sfmapi-client = "sfmapi_client.cli:main"
 
 [project.urls]
 Repository = "https://github.com/SFMAPI/sfmapi-sdk"
@@ -45,8 +37,12 @@ Documentation = "https://sfmapi.github.io/"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+# Dev-install build root for the same `sceneapi-client` distribution the
+# self-contained root at sceneapi_client_gen/pyproject.toml publishes:
+# `pip install -e .` here yields the generated package plus the test
+# extras. Release builds/publishes run from sceneapi_client_gen/ only.
 [tool.hatch.build.targets.wheel]
-packages = ["sfmapi_client"]
+packages = ["sceneapi_client_gen"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -25,7 +25,6 @@ CODEGEN_PROVENANCE_PATHS = (
     "python/sceneapi_client_gen/types.py",
     "python/sceneapi_client_gen/_ergonomics.py",
     "python/sceneapi_client_gen/pyproject.toml",
-    "python/sfmapi_client/errors.py",
     "typescript/src/_generated",
     "typescript/src/errors.ts",
     "typescript/src/index.ts",

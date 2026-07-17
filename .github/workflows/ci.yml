@@ -28,7 +28,7 @@ jobs:
           uv pip install -e ".[dev]"
           uv pip install build
       - name: Ruff
-        run: uv run ruff check sfmapi_client tests
+        run: uv run ruff check tests
       - name: Test
         run: uv run pytest -q
       - name: Build package

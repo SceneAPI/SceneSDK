@@ -23,18 +23,19 @@ caps_resp = capabilities_v1_capabilities_get.sync_detailed(client=client)
 print(caps_resp.parsed)  # CapabilitiesOut with schema_version, backend, features
 ```
 
-## Versus the hand-rolled `sfmapi-client`
+## The canonical SDK surface
 
 This package is regenerated from the OpenAPI spec on every release. The
 generated package is the canonical SDK surface; its
 `sceneapi_client_gen._ergonomics` module adds helpers for common workflows
 on top of the generated endpoint and model types.
 
-The hand-rolled `sfmapi-client` package remains for compatibility and
-migration support. Prefer the generated client for new code.
-
-Both decode identical wire formats. The contract test suite in the
-server repo replays recorded server responses through both.
+The deprecated hand-rolled `sfmapi-client` package was removed at 0.1.0
+as scheduled; its ergonomics surface (typed exceptions, `supports()`,
+chunked upload, SSE streaming, points parsing, job combinators) is
+reproduced in `sceneapi_client_gen._ergonomics`. The contract test
+suite in the server repo replays recorded server responses through the
+generated models so wire drift fails CI immediately.
 
 ## License
 
