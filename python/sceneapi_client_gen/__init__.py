@@ -1,4 +1,4 @@
-"""A client library for accessing sfmapi"""
+"""A client library for accessing SceneAPI"""
 
 from .client import AuthenticatedClient, Client
 

@@ -125,7 +125,7 @@ def sync_detailed(
     Body
     ----
     ``Content-Type: text/event-stream``. Each event is one
-    :class:`~sfmapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
+    :class:`~sceneapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
     in the SSE ``data:`` field, prefixed by an ``id:`` line carrying
     the monotonic per-job event sequence.
 
@@ -146,7 +146,7 @@ def sync_detailed(
     pending events. Without this exit condition, ``submit_and_stream``
     consumers would block forever waiting for EOF on a job that
     already finished. The terminal vocabulary is shared with
-    ``sfmapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
+    ``sceneapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
     ``L14`` in ``decisions.md``).
 
     Mid-stream deletion
@@ -197,7 +197,7 @@ def sync(
     Body
     ----
     ``Content-Type: text/event-stream``. Each event is one
-    :class:`~sfmapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
+    :class:`~sceneapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
     in the SSE ``data:`` field, prefixed by an ``id:`` line carrying
     the monotonic per-job event sequence.
 
@@ -218,7 +218,7 @@ def sync(
     pending events. Without this exit condition, ``submit_and_stream``
     consumers would block forever waiting for EOF on a job that
     already finished. The terminal vocabulary is shared with
-    ``sfmapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
+    ``sceneapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
     ``L14`` in ``decisions.md``).
 
     Mid-stream deletion
@@ -264,7 +264,7 @@ async def asyncio_detailed(
     Body
     ----
     ``Content-Type: text/event-stream``. Each event is one
-    :class:`~sfmapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
+    :class:`~sceneapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
     in the SSE ``data:`` field, prefixed by an ``id:`` line carrying
     the monotonic per-job event sequence.
 
@@ -285,7 +285,7 @@ async def asyncio_detailed(
     pending events. Without this exit condition, ``submit_and_stream``
     consumers would block forever waiting for EOF on a job that
     already finished. The terminal vocabulary is shared with
-    ``sfmapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
+    ``sceneapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
     ``L14`` in ``decisions.md``).
 
     Mid-stream deletion
@@ -334,7 +334,7 @@ async def asyncio(
     Body
     ----
     ``Content-Type: text/event-stream``. Each event is one
-    :class:`~sfmapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
+    :class:`~sceneapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
     in the SSE ``data:`` field, prefixed by an ``id:`` line carrying
     the monotonic per-job event sequence.
 
@@ -355,7 +355,7 @@ async def asyncio(
     pending events. Without this exit condition, ``submit_and_stream``
     consumers would block forever waiting for EOF on a job that
     already finished. The terminal vocabulary is shared with
-    ``sfmapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
+    ``sceneapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
     ``L14`` in ``decisions.md``).
 
     Mid-stream deletion

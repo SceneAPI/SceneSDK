@@ -21,7 +21,7 @@ class SpecResponse:
     this server implements so clients can pick a compatible SDK.
 
     ``spec_url`` defaults to the canonical GitHub Pages doc site;
-    deployments may override via ``SFMAPI_SPEC_URL`` to point at a
+    deployments may override via ``SCENEAPI_SPEC_URL`` to point at a
     private mirror, or set it ``None`` to omit the field entirely.
 
         Attributes:

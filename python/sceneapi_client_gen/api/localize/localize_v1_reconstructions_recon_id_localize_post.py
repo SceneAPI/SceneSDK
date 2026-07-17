@@ -127,7 +127,7 @@ def sync_detailed(
 
      Localize a single query image against the reconstruction.
 
-    The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
+    The job's task carries a :class:`~sceneapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
 
     Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
@@ -169,7 +169,7 @@ def sync(
 
      Localize a single query image against the reconstruction.
 
-    The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
+    The job's task carries a :class:`~sceneapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
 
     Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
@@ -206,7 +206,7 @@ async def asyncio_detailed(
 
      Localize a single query image against the reconstruction.
 
-    The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
+    The job's task carries a :class:`~sceneapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
 
     Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
@@ -246,7 +246,7 @@ async def asyncio(
 
      Localize a single query image against the reconstruction.
 
-    The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
+    The job's task carries a :class:`~sceneapi.server.schemas.api.scene.LocalizationResult`-
     shaped payload in its ``outputs_ref`` once finished.
 
     Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:

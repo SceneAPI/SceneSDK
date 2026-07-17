@@ -28,7 +28,7 @@ class OneShotLocalizeResponse:
     """``POST /v1/oneshot/localize`` envelope. Single-frame pose
     against an existing reconstruction with no DB row, no Job row,
     no upload step. The ``result`` field re-uses the existing
-    :class:`~sfmapi.server.schemas.api.scene.LocalizationResult` shape verbatim
+    :class:`~sceneapi.server.schemas.api.scene.LocalizationResult` shape verbatim
     so SDK consumers can re-decode through the typed model.
 
         Attributes:

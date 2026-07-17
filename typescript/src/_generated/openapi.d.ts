@@ -87,7 +87,7 @@ export interface paths {
          *     implements. Clients can hit this to learn the spec version + a
          *     pointer to the human-readable doc.
          *
-         *     ``spec_url`` is configurable via ``SFMAPI_SPEC_URL`` because sfmapi
+         *     ``spec_url`` is configurable via ``SCENEAPI_SPEC_URL`` because sfmapi
          *     has no canonical hosting; deployments point clients at their own
          *     spec mirror or leave it ``None``.
          */
@@ -1295,7 +1295,7 @@ export interface paths {
          *     Body
          *     ----
          *     ``Content-Type: text/event-stream``. Each event is one
-         *     :class:`~sfmapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
+         *     :class:`~sceneapi.server.schemas.progress_event.ProgressEvent` JSON-encoded
          *     in the SSE ``data:`` field, prefixed by an ``id:`` line carrying
          *     the monotonic per-job event sequence.
          *
@@ -1316,7 +1316,7 @@ export interface paths {
          *     pending events. Without this exit condition, ``submit_and_stream``
          *     consumers would block forever waiting for EOF on a job that
          *     already finished. The terminal vocabulary is shared with
-         *     ``sfmapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
+         *     ``sceneapi/server/workers/dispatcher.py::_maybe_finalize_job`` (see ``L13``,
          *     ``L14`` in ``decisions.md``).
          *
          *     Mid-stream deletion
@@ -2472,7 +2472,7 @@ export interface paths {
          * Localize
          * @description Localize a single query image against the reconstruction.
          *
-         *     The job's task carries a :class:`~sfmapi.server.schemas.api.scene.LocalizationResult`-
+         *     The job's task carries a :class:`~sceneapi.server.schemas.api.scene.LocalizationResult`-
          *     shaped payload in its ``outputs_ref`` once finished.
          *
          *     Not to be confused with ``POST /v1/reconstructions/{rid}:relocalize``:
@@ -4483,7 +4483,7 @@ export interface components {
          *     A Job is a long-running operation rolled up from N constituent
          *     Task rows (see :class:`TaskOut`). ``status`` reaches a terminal
          *     state (see :data:`JobStatus`) once every Task is terminal; the
-         *     rollup is driven by ``sfmapi/server/workers/dispatcher.py::_maybe_finalize_job``.
+         *     rollup is driven by ``sceneapi/server/workers/dispatcher.py::_maybe_finalize_job``.
          *     ``cancel_requested`` flips when ``POST /v1/jobs/{id}:cancel``
          *     arrives; ``cancel_force`` flips when ``?force=true`` was passed.
          *     ``error_class`` / ``error_message`` are populated only when the
@@ -4816,7 +4816,7 @@ export interface components {
          * @description ``POST /v1/oneshot/localize`` envelope. Single-frame pose
          *     against an existing reconstruction with no DB row, no Job row,
          *     no upload step. The ``result`` field re-uses the existing
-         *     :class:`~sfmapi.server.schemas.api.scene.LocalizationResult` shape verbatim
+         *     :class:`~sceneapi.server.schemas.api.scene.LocalizationResult` shape verbatim
          *     so SDK consumers can re-decode through the typed model.
          */
         OneShotLocalizeResponse: {
@@ -6548,7 +6548,7 @@ export interface components {
          *     this server implements so clients can pick a compatible SDK.
          *
          *     ``spec_url`` defaults to the canonical GitHub Pages doc site;
-         *     deployments may override via ``SFMAPI_SPEC_URL`` to point at a
+         *     deployments may override via ``SCENEAPI_SPEC_URL`` to point at a
          *     private mirror, or set it ``None`` to omit the field entirely.
          */
         SpecResponse: {

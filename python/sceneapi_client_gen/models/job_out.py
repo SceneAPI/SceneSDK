@@ -24,7 +24,7 @@ class JobOut:
     A Job is a long-running operation rolled up from N constituent
     Task rows (see :class:`TaskOut`). ``status`` reaches a terminal
     state (see :data:`JobStatus`) once every Task is terminal; the
-    rollup is driven by ``sfmapi/server/workers/dispatcher.py::_maybe_finalize_job``.
+    rollup is driven by ``sceneapi/server/workers/dispatcher.py::_maybe_finalize_job``.
     ``cancel_requested`` flips when ``POST /v1/jobs/{id}:cancel``
     arrives; ``cancel_force`` flips when ``?force=true`` was passed.
     ``error_class`` / ``error_message`` are populated only when the

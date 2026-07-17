@@ -19,14 +19,23 @@
  *   - `Page<T>` in the SDK is a generic; the generated schema
  *     produces one type per instantiation (`Page_ImageOut_`,
  *     `Page_ProjectOut_`). We check each instantiation explicitly.
+ *   - The dataflow/processor preview surface (`AttributeOut`,
+ *     `DataTypesContractOut`, `OperationsContractOut`,
+ *     `ProcessorsContractOut`, `PipelinesContractOut`,
+ *     `PipelineDefinition*`, `PipelineValidate*`, `ChainErrorOut`,
+ *     `PortSpecOut`) is preview-fenced OUT of the published OpenAPI
+ *     contract. The hand-rolled models keep those types, but there is
+ *     no generated counterpart to pin them against — instead the
+ *     `_FencedOut` block below asserts those schema names stay ABSENT
+ *     from the generated contract, so a fence regression (preview
+ *     schemas leaking into the public document) fails this check and
+ *     re-adding the structural rows becomes a conscious step.
  *
  * This file never executes — it only exists for `tsc --noEmit`.
  */
 
 import type { components } from "../src/_generated/openapi.js";
 import type {
-  AttributeOut,
-  AttributesContractOut,
   ApiKey,
   ApiKeyCreated,
   ArtifactConversionPlanOut,
@@ -40,27 +49,14 @@ import type {
   ArtifactValidationIssueOut,
   ArtifactValidationOut,
   BundleAdjustmentSpec,
-  ChainError,
-  DataTypeOut,
-  DataTypesContractOut,
   Dataset,
   Image,
   Job,
   JobDetail,
   JobSubmitResponse,
-  OperationOut,
-  OperationsContractOut,
-  PipelineDefinitionOut,
-  PipelineDefinitionStepOut,
-  PipelinesContractOut,
   PipelineRunRequest,
   PipelineStep,
-  PipelineValidateRequest,
-  PipelineValidateResponse,
-  PortSpecOut,
-  ProcessorOut,
   ProcessorPipelineStep,
-  ProcessorsContractOut,
   Project,
   Reconstruction,
   StageArtifact,
@@ -173,57 +169,45 @@ const _artifactValidation: _Same<
   ArtifactValidationOut
 > = true;
 const _stageArtifact: _Same<Schema<"StageArtifactOut">, StageArtifact> = true;
-const _attributeOut: _Same<Schema<"AttributeOut">, AttributeOut> = true;
-const _attributesContract: _Same<
-  Schema<"AttributesContractOut">,
-  AttributesContractOut
-> = true;
-const _dataTypeOut: _Same<Schema<"DataTypeOut">, DataTypeOut> = true;
-const _dataTypesContract: _Same<
-  Schema<"DataTypesContractOut">,
-  DataTypesContractOut
-> = true;
-const _operationOut: _Same<Schema<"OperationOut">, OperationOut> = true;
-const _operationsContract: _Same<
-  Schema<"OperationsContractOut">,
-  OperationsContractOut
-> = true;
-const _portSpecOut: _Same<Schema<"PortSpecOut">, PortSpecOut> = true;
-const _processorOut: _Same<Schema<"ProcessorOut">, ProcessorOut> = true;
-const _processorsContract: _Same<
-  Schema<"ProcessorsContractOut">,
-  ProcessorsContractOut
-> = true;
 const _pipelineStep: _Same<Schema<"PipelineStep">, PipelineStep> = true;
 const _processorPipelineStep: _Same<
   Schema<"ProcessorPipelineStep">,
   ProcessorPipelineStep
 > = true;
-const _pipelineDefinitionStep: _Same<
-  Schema<"PipelineDefinitionStepOut">,
-  PipelineDefinitionStepOut
-> = true;
-const _pipelineDefinition: _Same<
-  Schema<"PipelineDefinitionOut">,
-  PipelineDefinitionOut
-> = true;
-const _pipelinesContract: _Same<
-  Schema<"PipelinesContractOut">,
-  PipelinesContractOut
-> = true;
-const _chainError: _Same<Schema<"ChainErrorOut">, ChainError> = true;
-const _pipelineValidateRequest: _Same<
-  Schema<"PipelineValidateRequest">,
-  PipelineValidateRequest
-> = true;
 const _pipelineRunRequest: _Same<
   Schema<"PipelineRunRequest">,
   PipelineRunRequest
 > = true;
-const _pipelineValidateResponse: _Same<
-  Schema<"PipelineValidateResponse">,
-  PipelineValidateResponse
-> = true;
+
+// --- Preview fence ----------------------------------------------------------
+//
+// The dataflow/processor preview surface is intentionally excluded from
+// the published OpenAPI document (preview fence). These names must stay
+// ABSENT from the generated schema map: if one shows up, the fence
+// regressed (a preview route/schema leaked into the public contract) and
+// the corresponding structural `_Same` row above must be reinstated.
+type _FencedOut<K extends string> = K extends keyof components["schemas"]
+  ? ["DRIFT: preview schema leaked into the fenced contract", K]
+  : true;
+
+const _fencedAttributeOut: _FencedOut<"AttributeOut"> = true;
+const _fencedAttributesContract: _FencedOut<"AttributesContractOut"> = true;
+const _fencedDataTypeOut: _FencedOut<"DataTypeOut"> = true;
+const _fencedDataTypesContract: _FencedOut<"DataTypesContractOut"> = true;
+const _fencedOperationOut: _FencedOut<"OperationOut"> = true;
+const _fencedOperationsContract: _FencedOut<"OperationsContractOut"> = true;
+const _fencedPortSpecOut: _FencedOut<"PortSpecOut"> = true;
+const _fencedProcessorOut: _FencedOut<"ProcessorOut"> = true;
+const _fencedProcessorsContract: _FencedOut<"ProcessorsContractOut"> = true;
+const _fencedPipelineDefinitionStep: _FencedOut<"PipelineDefinitionStepOut"> =
+  true;
+const _fencedPipelineDefinition: _FencedOut<"PipelineDefinitionOut"> = true;
+const _fencedPipelinesContract: _FencedOut<"PipelinesContractOut"> = true;
+const _fencedChainError: _FencedOut<"ChainErrorOut"> = true;
+const _fencedPipelineValidateRequest: _FencedOut<"PipelineValidateRequest"> =
+  true;
+const _fencedPipelineValidateResponse: _FencedOut<"PipelineValidateResponse"> =
+  true;
 
 // Generic Page<T> instantiations:
 const _pageProj: _Same<Schema<"Page_ProjectOut_">, Page<Project>> = true;
@@ -266,24 +250,24 @@ export const _drift = [
   _artifactValidationIssue,
   _artifactValidation,
   _stageArtifact,
-  _attributeOut,
-  _attributesContract,
-  _dataTypeOut,
-  _dataTypesContract,
-  _operationOut,
-  _operationsContract,
-  _portSpecOut,
-  _processorOut,
-  _processorsContract,
   _pipelineStep,
   _processorPipelineStep,
-  _pipelineDefinitionStep,
-  _pipelineDefinition,
-  _pipelinesContract,
-  _chainError,
-  _pipelineValidateRequest,
   _pipelineRunRequest,
-  _pipelineValidateResponse,
+  _fencedAttributeOut,
+  _fencedAttributesContract,
+  _fencedDataTypeOut,
+  _fencedDataTypesContract,
+  _fencedOperationOut,
+  _fencedOperationsContract,
+  _fencedPortSpecOut,
+  _fencedProcessorOut,
+  _fencedProcessorsContract,
+  _fencedPipelineDefinitionStep,
+  _fencedPipelineDefinition,
+  _fencedPipelinesContract,
+  _fencedChainError,
+  _fencedPipelineValidateRequest,
+  _fencedPipelineValidateResponse,
   _pageProj,
   _pageDataset,
   _pageImg,

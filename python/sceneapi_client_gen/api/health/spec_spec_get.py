@@ -108,7 +108,7 @@ def sync_detailed(
     implements. Clients can hit this to learn the spec version + a
     pointer to the human-readable doc.
 
-    ``spec_url`` is configurable via ``SFMAPI_SPEC_URL`` because sfmapi
+    ``spec_url`` is configurable via ``SCENEAPI_SPEC_URL`` because sfmapi
     has no canonical hosting; deployments point clients at their own
     spec mirror or leave it ``None``.
 
@@ -139,7 +139,7 @@ def sync(
     implements. Clients can hit this to learn the spec version + a
     pointer to the human-readable doc.
 
-    ``spec_url`` is configurable via ``SFMAPI_SPEC_URL`` because sfmapi
+    ``spec_url`` is configurable via ``SCENEAPI_SPEC_URL`` because sfmapi
     has no canonical hosting; deployments point clients at their own
     spec mirror or leave it ``None``.
 
@@ -166,7 +166,7 @@ async def asyncio_detailed(
     implements. Clients can hit this to learn the spec version + a
     pointer to the human-readable doc.
 
-    ``spec_url`` is configurable via ``SFMAPI_SPEC_URL`` because sfmapi
+    ``spec_url`` is configurable via ``SCENEAPI_SPEC_URL`` because sfmapi
     has no canonical hosting; deployments point clients at their own
     spec mirror or leave it ``None``.
 
@@ -195,7 +195,7 @@ async def asyncio(
     implements. Clients can hit this to learn the spec version + a
     pointer to the human-readable doc.
 
-    ``spec_url`` is configurable via ``SFMAPI_SPEC_URL`` because sfmapi
+    ``spec_url`` is configurable via ``SCENEAPI_SPEC_URL`` because sfmapi
     has no canonical hosting; deployments point clients at their own
     spec mirror or leave it ``None``.
 
