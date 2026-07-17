@@ -11,20 +11,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC_PATH = ROOT / "openapi.json"
-PYTHON_OUT = ROOT / "python" / "sfmapi_client_gen"
+PYTHON_OUT = ROOT / "python" / "sceneapi_client_gen"
 TS_ROOT = ROOT / "typescript"
 TS_OUT = TS_ROOT / "src" / "_generated" / "openapi.d.ts"
 PYTHON_METADATA_FILES = ("pyproject.toml", "README.md", "py.typed", "_ergonomics.py")
 CODEGEN_PROVENANCE_PATHS = (
     "openapi.json",
-    "python/sfmapi_client_gen/api",
-    "python/sfmapi_client_gen/models",
-    "python/sfmapi_client_gen/client.py",
-    "python/sfmapi_client_gen/__init__.py",
-    "python/sfmapi_client_gen/errors.py",
-    "python/sfmapi_client_gen/types.py",
-    "python/sfmapi_client_gen/_ergonomics.py",
-    "python/sfmapi_client_gen/pyproject.toml",
+    "python/sceneapi_client_gen/api",
+    "python/sceneapi_client_gen/models",
+    "python/sceneapi_client_gen/client.py",
+    "python/sceneapi_client_gen/__init__.py",
+    "python/sceneapi_client_gen/errors.py",
+    "python/sceneapi_client_gen/types.py",
+    "python/sceneapi_client_gen/_ergonomics.py",
+    "python/sceneapi_client_gen/pyproject.toml",
     "python/sfmapi_client/errors.py",
     "typescript/src/_generated",
     "typescript/src/errors.ts",

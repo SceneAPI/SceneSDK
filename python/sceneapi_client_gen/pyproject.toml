@@ -1,7 +1,7 @@
 [project]
-name = "sfmapi-client-gen"
-version = "0.0.2"
-description = "Auto-generated typed Python SDK for sfmapi. Generated from the live OpenAPI spec by openapi-python-client."
+name = "sceneapi-client"
+version = "0.1.0"
+description = "Auto-generated typed Python SDK for sceneapi. Generated from the live OpenAPI spec by openapi-python-client."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -10,8 +10,8 @@ dependencies = [
     "python-dateutil>=2.9",
 ]
 license = { text = "Apache-2.0" }
-keywords = ["sfmapi", "structure-from-motion", "colmap", "sdk", "generated"]
-authors = [{ name = "sfmapi authors" }]
+keywords = ["sceneapi", "sfm", "structure-from-motion", "colmap", "sdk", "generated"]
+authors = [{ name = "sceneapi authors" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -35,11 +35,11 @@ exclude = ["__pycache__", "*.pyc", "*.pyo"]
 [tool.hatch.build.targets.wheel]
 
 [tool.hatch.build.targets.wheel.force-include]
-"api" = "sfmapi_client_gen/api"
-"models" = "sfmapi_client_gen/models"
-"client.py" = "sfmapi_client_gen/client.py"
-"errors.py" = "sfmapi_client_gen/errors.py"
-"types.py" = "sfmapi_client_gen/types.py"
-"__init__.py" = "sfmapi_client_gen/__init__.py"
-"py.typed" = "sfmapi_client_gen/py.typed"
-"_ergonomics.py" = "sfmapi_client_gen/_ergonomics.py"
+"api" = "sceneapi_client_gen/api"
+"models" = "sceneapi_client_gen/models"
+"client.py" = "sceneapi_client_gen/client.py"
+"errors.py" = "sceneapi_client_gen/errors.py"
+"types.py" = "sceneapi_client_gen/types.py"
+"__init__.py" = "sceneapi_client_gen/__init__.py"
+"py.typed" = "sceneapi_client_gen/py.typed"
+"_ergonomics.py" = "sceneapi_client_gen/_ergonomics.py"

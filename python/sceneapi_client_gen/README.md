@@ -1,6 +1,7 @@
-# sfmapi-client-gen
+# sceneapi-client
 
-Auto-generated typed Python SDK for [sfmapi](https://github.com/SFMAPI/sfmapi).
+Auto-generated typed Python SDK for [sceneapi](https://github.com/SFMAPI/sfmapi)
+(import package `sceneapi_client_gen`).
 
 > **Generated** - do not hand-edit generated endpoint or model files.
 > Update `openapi.json` from the server repo, then regenerate the SDK.
@@ -8,14 +9,14 @@ Auto-generated typed Python SDK for [sfmapi](https://github.com/SFMAPI/sfmapi).
 ## Install
 
 ```bash
-pip install sfmapi-client-gen
+pip install sceneapi-client
 ```
 
 ## Usage
 
 ```python
-from sfmapi_client_gen.client import Client
-from sfmapi_client_gen.api.capabilities import capabilities_v1_capabilities_get
+from sceneapi_client_gen.client import Client
+from sceneapi_client_gen.api.capabilities import capabilities_v1_capabilities_get
 
 client = Client(base_url="http://localhost:8080")
 caps_resp = capabilities_v1_capabilities_get.sync_detailed(client=client)
@@ -26,7 +27,7 @@ print(caps_resp.parsed)  # CapabilitiesOut with schema_version, backend, feature
 
 This package is regenerated from the OpenAPI spec on every release. The
 generated package is the canonical SDK surface; its
-`sfmapi_client_gen._ergonomics` module adds helpers for common workflows
+`sceneapi_client_gen._ergonomics` module adds helpers for common workflows
 on top of the generated endpoint and model types.
 
 The hand-rolled `sfmapi-client` package remains for compatibility and

@@ -6,13 +6,13 @@ backend interfaces, and conformance tests live in
 
 This repository is client-only:
 
-- `python/sfmapi_client_gen/`: **supported** generated Python SDK (default
+- `python/sceneapi_client_gen/`: **supported** generated Python SDK (default
   import target; covers the full surface including radiance, backend actions,
   config-schemas, and the latest pipeline specs).
 - `python/sfmapi_client/`: **deprecated** hand-written compatibility SDK,
   emits a `DeprecationWarning` on import and is removed at v0.1.0. Missing the
   radiance/backend-action/config-schema surface; `IncrementalSpec` is missing
-  `ba_global_use_pba`. New code should `from sfmapi_client_gen import ...`
+  `ba_global_use_pba`. New code should `from sceneapi_client_gen import ...`
   instead.
 - `typescript/`: browser and Node TypeScript SDK.
 - `cpp/`: header-only C++17 client helpers.

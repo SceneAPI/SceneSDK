@@ -46,12 +46,12 @@ jobs:
       - name: Install
         run: |
           uv venv --seed
-          uv pip install -e sfmapi_client_gen
+          uv pip install -e sceneapi_client_gen
           uv pip install build
       - name: Import package
-        run: uv run python -c "import sfmapi_client_gen, sfmapi_client_gen.models; print(sfmapi_client_gen.__name__)"
+        run: uv run python -c "import sceneapi_client_gen, sceneapi_client_gen.models; print(sceneapi_client_gen.__name__)"
       - name: Build package
-        run: uv run python -m build sfmapi_client_gen --sdist --wheel
+        run: uv run python -m build sceneapi_client_gen --sdist --wheel
 
   typescript:
     runs-on: ubuntu-latest

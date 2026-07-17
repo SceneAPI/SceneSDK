@@ -41,13 +41,13 @@ from sfmapi_client import (
     SubModel,
     ValidationError,
 )
-from sfmapi_client_gen import Client
-from sfmapi_client_gen import errors as generated_errors
-from sfmapi_client_gen._ergonomics import SfmApiError as GeneratedSfmApiError
-from sfmapi_client_gen._ergonomics import NotFoundError as GeneratedNotFoundError
-from sfmapi_client_gen._ergonomics import raise_for_status
-from sfmapi_client_gen.api.projects import get_v1_projects_project_id_get as get_project
-from sfmapi_client_gen.models import ArtifactConversionPlanRequest, ArtifactConvertRequest
+from sceneapi_client_gen import Client
+from sceneapi_client_gen import errors as generated_errors
+from sceneapi_client_gen._ergonomics import SfmApiError as GeneratedSfmApiError
+from sceneapi_client_gen._ergonomics import NotFoundError as GeneratedNotFoundError
+from sceneapi_client_gen._ergonomics import raise_for_status
+from sceneapi_client_gen.api.projects import get_v1_projects_project_id_get as get_project
+from sceneapi_client_gen.models import ArtifactConversionPlanRequest, ArtifactConvertRequest
 from sfmapi_client.models import JobSubmitResponse, Sim3
 from sfmapi_client.models import (
     ArtifactConversionPlanRequest as LegacyArtifactConversionPlanRequest,

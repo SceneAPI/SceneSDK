@@ -645,8 +645,8 @@ def iter_paginated(
 
     Usage with the generated typed API::
 
-        from sfmapi_client_gen.api.projects import list_projects
-        from sfmapi_client_gen._ergonomics import iter_paginated
+        from sceneapi_client_gen.api.projects import list_projects
+        from sceneapi_client_gen._ergonomics import iter_paginated
 
         with Client(base_url=base) as client:
             for project in iter_paginated(

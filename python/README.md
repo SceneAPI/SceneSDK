@@ -2,7 +2,7 @@
 
 Legacy compatibility Python SDK for [sfmapi](https://github.com/SFMAPI/sfmapi),
 plus the `sfmapi-client` CLI. New application code should use the generated
-`sfmapi_client_gen` package documented in `sfmapi_client_gen/README.md`; this
+`sceneapi_client_gen` package documented in `sceneapi_client_gen/README.md`; this
 package remains for the CLI and older handwritten helper surface.
 
 ```bash

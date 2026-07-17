@@ -56,7 +56,7 @@ jobs:
           expected = os.environ["VERSION"]
           if actual != expected:
               raise SystemExit(f"python package version {actual!r} does not match tag {expected!r}")
-          generated = tomllib.loads(Path("sfmapi_client_gen/pyproject.toml").read_text())["project"]["version"]
+          generated = tomllib.loads(Path("sceneapi_client_gen/pyproject.toml").read_text())["project"]["version"]
           if generated != expected:
               raise SystemExit(
                   f"generated package version {generated!r} does not match tag {expected!r}"
@@ -68,16 +68,16 @@ jobs:
         run: |
           uv venv --seed
           uv pip install -e ".[dev]"
-          uv pip install -e sfmapi_client_gen
+          uv pip install -e sceneapi_client_gen
           uv pip install build
       - name: Test Python SDK
         run: uv run pytest -q
       - name: Import generated Python SDK
-        run: uv run python -c "import sfmapi_client_gen, sfmapi_client_gen.models; print(sfmapi_client_gen.__name__)"
+        run: uv run python -c "import sceneapi_client_gen, sceneapi_client_gen.models; print(sceneapi_client_gen.__name__)"
       - name: Build packages
         run: |
           .venv/bin/python -m build --sdist --wheel
-          .venv/bin/python -m build sfmapi_client_gen --sdist --wheel
+          .venv/bin/python -m build sceneapi_client_gen --sdist --wheel
 
   typescript:
     needs: [resolve, cpp]
@@ -160,7 +160,7 @@ jobs:
           version = os.environ["VERSION"]
           packages = [
               ("sfmapi-client", Path("python/pyproject.toml")),
-              ("sfmapi-client-gen", Path("python/sfmapi_client_gen/pyproject.toml")),
+              ("sceneapi-client", Path("python/sceneapi_client_gen/pyproject.toml")),
           ]
           for name, path in packages:
               actual = tomllib.loads(path.read_text())["project"]["version"]
@@ -198,7 +198,7 @@ jobs:
           uv venv --seed
           uv pip install build
           .venv/bin/python -m build --sdist --wheel
-          .venv/bin/python -m build sfmapi_client_gen --sdist --wheel
+          .venv/bin/python -m build sceneapi_client_gen --sdist --wheel
       - name: Install npm dependencies
         working-directory: typescript
         run: npm ci
@@ -212,7 +212,7 @@ jobs:
       - name: Publish generated Python SDK
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: python/sfmapi_client_gen/dist
+          packages-dir: python/sceneapi_client_gen/dist
       - name: Publish npm package
         working-directory: typescript
         env:
