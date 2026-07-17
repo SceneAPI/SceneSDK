@@ -124,6 +124,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: [resolve, python, typescript, cpp]
     runs-on: ubuntu-latest
+    environment: pypi
     steps:
       - uses: actions/checkout@v4
         with:
@@ -213,7 +214,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: python/sceneapi_client_gen/dist
-          password: ${{ secrets.PYPI_API_TOKEN }}
       - name: Publish npm package
         working-directory: typescript
         env:
