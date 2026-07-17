@@ -213,6 +213,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: python/sceneapi_client_gen/dist
+          password: ${{ secrets.PYPI_API_TOKEN }}
       - name: Publish npm package
         working-directory: typescript
         env:
