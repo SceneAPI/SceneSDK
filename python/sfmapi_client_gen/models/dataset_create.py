@@ -4,7 +4,6 @@ from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from attrs import define as _attrs_define
-from attrs import field as _attrs_field
 
 from ..models.dataset_create_intrinsics_mode import DatasetCreateIntrinsicsMode
 from ..types import UNSET, Unset
@@ -41,7 +40,6 @@ class DatasetCreate:
     is_spherical: bool | Unset = False
     rig_config: DatasetCreateRigConfigType0 | None | Unset = UNSET
     respect_exif_orientation: bool | Unset = False
-    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.dataset_create_rig_config_type_0 import (
@@ -79,7 +77,7 @@ class DatasetCreate:
         respect_exif_orientation = self.respect_exif_orientation
 
         field_dict: dict[str, Any] = {}
-        field_dict.update(self.additional_properties)
+
         field_dict.update(
             {
                 "name": name,
@@ -180,21 +178,4 @@ class DatasetCreate:
             respect_exif_orientation=respect_exif_orientation,
         )
 
-        dataset_create.additional_properties = d
         return dataset_create
-
-    @property
-    def additional_keys(self) -> list[str]:
-        return list(self.additional_properties.keys())
-
-    def __getitem__(self, key: str) -> Any:
-        return self.additional_properties[key]
-
-    def __setitem__(self, key: str, value: Any) -> None:
-        self.additional_properties[key] = value
-
-    def __delitem__(self, key: str) -> None:
-        del self.additional_properties[key]
-
-    def __contains__(self, key: str) -> bool:
-        return key in self.additional_properties

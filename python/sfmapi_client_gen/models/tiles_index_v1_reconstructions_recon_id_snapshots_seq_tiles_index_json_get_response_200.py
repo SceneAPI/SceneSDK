@@ -7,12 +7,13 @@ from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
 T = TypeVar(
-    "T", bound="ListOperationsV1OperationsGetResponseListOperationsV1OperationsGet"
+    "T",
+    bound="TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200",
 )
 
 
 @_attrs_define
-class ListOperationsV1OperationsGetResponseListOperationsV1OperationsGet:
+class TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200:
     """ """
 
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -27,14 +28,10 @@ class ListOperationsV1OperationsGetResponseListOperationsV1OperationsGet:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        list_operations_v1_operations_get_response_list_operations_v1_operations_get = (
-            cls()
-        )
+        tiles_index_v1_reconstructions_recon_id_snapshots_seq_tiles_index_json_get_response_200 = cls()
 
-        list_operations_v1_operations_get_response_list_operations_v1_operations_get.additional_properties = d
-        return (
-            list_operations_v1_operations_get_response_list_operations_v1_operations_get
-        )
+        tiles_index_v1_reconstructions_recon_id_snapshots_seq_tiles_index_json_get_response_200.additional_properties = d
+        return tiles_index_v1_reconstructions_recon_id_snapshots_seq_tiles_index_json_get_response_200
 
     @property
     def additional_keys(self) -> list[str]:

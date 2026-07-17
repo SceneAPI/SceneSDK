@@ -6,51 +6,29 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="SimilarityNeighborOut")
+T = TypeVar("T", bound="ProcessorPipelineStepParams")
 
 
 @_attrs_define
-class SimilarityNeighborOut:
-    """
-    Attributes:
-        image_id (str):
-        distance (int):
-    """
+class ProcessorPipelineStepParams:
+    """Legacy alias for attributes; attributes win on overlap."""
 
-    image_id: str
-    distance: int
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        image_id = self.image_id
-
-        distance = self.distance
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "image_id": image_id,
-                "distance": distance,
-            }
-        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        image_id = d.pop("image_id")
+        processor_pipeline_step_params = cls()
 
-        distance = d.pop("distance")
-
-        similarity_neighbor_out = cls(
-            image_id=image_id,
-            distance=distance,
-        )
-
-        similarity_neighbor_out.additional_properties = d
-        return similarity_neighbor_out
+        processor_pipeline_step_params.additional_properties = d
+        return processor_pipeline_step_params
 
     @property
     def additional_keys(self) -> list[str]:

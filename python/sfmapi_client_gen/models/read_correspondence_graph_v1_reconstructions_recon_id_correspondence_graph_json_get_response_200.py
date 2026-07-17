@@ -6,11 +6,14 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="ListDatatypesV1DatatypesGetResponseListDatatypesV1DatatypesGet")
+T = TypeVar(
+    "T",
+    bound="ReadCorrespondenceGraphV1ReconstructionsReconIdCorrespondenceGraphJsonGetResponse200",
+)
 
 
 @_attrs_define
-class ListDatatypesV1DatatypesGetResponseListDatatypesV1DatatypesGet:
+class ReadCorrespondenceGraphV1ReconstructionsReconIdCorrespondenceGraphJsonGetResponse200:
     """ """
 
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -25,10 +28,10 @@ class ListDatatypesV1DatatypesGetResponseListDatatypesV1DatatypesGet:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        list_datatypes_v1_datatypes_get_response_list_datatypes_v1_datatypes_get = cls()
+        read_correspondence_graph_v1_reconstructions_recon_id_correspondence_graph_json_get_response_200 = cls()
 
-        list_datatypes_v1_datatypes_get_response_list_datatypes_v1_datatypes_get.additional_properties = d
-        return list_datatypes_v1_datatypes_get_response_list_datatypes_v1_datatypes_get
+        read_correspondence_graph_v1_reconstructions_recon_id_correspondence_graph_json_get_response_200.additional_properties = d
+        return read_correspondence_graph_v1_reconstructions_recon_id_correspondence_graph_json_get_response_200
 
     @property
     def additional_keys(self) -> list[str]:

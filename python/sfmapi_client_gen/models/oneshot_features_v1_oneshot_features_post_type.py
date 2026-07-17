@@ -7,6 +7,7 @@ class OneshotFeaturesV1OneshotFeaturesPostType(str, Enum):
     DISK = "disk"
     R2D2 = "r2d2"
     SIFT = "sift"
+    SOSNET = "sosnet"
     SUPERPOINT = "superpoint"
 
     def __str__(self) -> str:

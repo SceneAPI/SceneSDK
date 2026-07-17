@@ -6,7 +6,10 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.http_validation_error import HTTPValidationError
+from ...models.problem_response import ProblemResponse
+from ...models.tiles_index_v1_reconstructions_recon_id_snapshots_seq_tiles_index_json_get_response_200 import (
+    TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200,
+)
 from ...types import UNSET, Response, Unset
 
 
@@ -37,15 +40,75 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Any | HTTPValidationError | None:
+) -> (
+    ProblemResponse
+    | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
+    | None
+):
+    if response.status_code >= 400 and client.raise_on_unexpected_status:
+        raise errors.UnexpectedStatus(response.status_code, response.content)
+
     if response.status_code == 200:
-        response_200 = response.json()
+        response_200 = TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200.from_dict(
+            response.json()
+        )
+
         return response_200
 
+    if response.status_code == 400:
+        response_400 = ProblemResponse.from_dict(response.json())
+
+        return response_400
+
+    if response.status_code == 401:
+        response_401 = ProblemResponse.from_dict(response.json())
+
+        return response_401
+
+    if response.status_code == 403:
+        response_403 = ProblemResponse.from_dict(response.json())
+
+        return response_403
+
+    if response.status_code == 404:
+        response_404 = ProblemResponse.from_dict(response.json())
+
+        return response_404
+
+    if response.status_code == 409:
+        response_409 = ProblemResponse.from_dict(response.json())
+
+        return response_409
+
+    if response.status_code == 413:
+        response_413 = ProblemResponse.from_dict(response.json())
+
+        return response_413
+
     if response.status_code == 422:
-        response_422 = HTTPValidationError.from_dict(response.json())
+        response_422 = ProblemResponse.from_dict(response.json())
 
         return response_422
+
+    if response.status_code == 429:
+        response_429 = ProblemResponse.from_dict(response.json())
+
+        return response_429
+
+    if response.status_code == 501:
+        response_501 = ProblemResponse.from_dict(response.json())
+
+        return response_501
+
+    if response.status_code == 503:
+        response_503 = ProblemResponse.from_dict(response.json())
+
+        return response_503
+
+    if response.status_code == 507:
+        response_507 = ProblemResponse.from_dict(response.json())
+
+        return response_507
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -55,7 +118,10 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[Any | HTTPValidationError]:
+) -> Response[
+    ProblemResponse
+    | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
+]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -70,7 +136,10 @@ def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
     max_level: int | Unset = 4,
-) -> Response[Any | HTTPValidationError]:
+) -> Response[
+    ProblemResponse
+    | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
+]:
     """Tiles Index
 
      Octree tile index for the snapshot's `points.bin`. Tiles are
@@ -84,11 +153,11 @@ def sync_detailed(
         max_level (int | Unset):  Default: 4.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | HTTPValidationError]
+        Response[ProblemResponse | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200]
     """
 
     kwargs = _get_kwargs(
@@ -110,7 +179,11 @@ def sync(
     *,
     client: AuthenticatedClient | Client,
     max_level: int | Unset = 4,
-) -> Any | HTTPValidationError | None:
+) -> (
+    ProblemResponse
+    | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
+    | None
+):
     """Tiles Index
 
      Octree tile index for the snapshot's `points.bin`. Tiles are
@@ -124,11 +197,11 @@ def sync(
         max_level (int | Unset):  Default: 4.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | HTTPValidationError
+        ProblemResponse | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
     """
 
     return sync_detailed(
@@ -145,7 +218,10 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
     max_level: int | Unset = 4,
-) -> Response[Any | HTTPValidationError]:
+) -> Response[
+    ProblemResponse
+    | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
+]:
     """Tiles Index
 
      Octree tile index for the snapshot's `points.bin`. Tiles are
@@ -159,11 +235,11 @@ async def asyncio_detailed(
         max_level (int | Unset):  Default: 4.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | HTTPValidationError]
+        Response[ProblemResponse | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200]
     """
 
     kwargs = _get_kwargs(
@@ -183,7 +259,11 @@ async def asyncio(
     *,
     client: AuthenticatedClient | Client,
     max_level: int | Unset = 4,
-) -> Any | HTTPValidationError | None:
+) -> (
+    ProblemResponse
+    | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
+    | None
+):
     """Tiles Index
 
      Octree tile index for the snapshot's `points.bin`. Tiles are
@@ -197,11 +277,11 @@ async def asyncio(
         max_level (int | Unset):  Default: 4.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | HTTPValidationError
+        ProblemResponse | TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200
     """
 
     return (

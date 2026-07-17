@@ -21,14 +21,22 @@ class BackendActionValidateRequest:
     """Validate action input without submitting work.
 
     Attributes:
+        project_id (None | str | Unset):
         provider (None | str | Unset):
         inputs (BackendActionValidateRequestInputs | Unset):
     """
 
+    project_id: None | str | Unset = UNSET
     provider: None | str | Unset = UNSET
     inputs: BackendActionValidateRequestInputs | Unset = UNSET
 
     def to_dict(self) -> dict[str, Any]:
+        project_id: None | str | Unset
+        if isinstance(self.project_id, Unset):
+            project_id = UNSET
+        else:
+            project_id = self.project_id
+
         provider: None | str | Unset
         if isinstance(self.provider, Unset):
             provider = UNSET
@@ -42,6 +50,8 @@ class BackendActionValidateRequest:
         field_dict: dict[str, Any] = {}
 
         field_dict.update({})
+        if project_id is not UNSET:
+            field_dict["project_id"] = project_id
         if provider is not UNSET:
             field_dict["provider"] = provider
         if inputs is not UNSET:
@@ -56,6 +66,15 @@ class BackendActionValidateRequest:
         )
 
         d = dict(src_dict)
+
+        def _parse_project_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        project_id = _parse_project_id(d.pop("project_id", UNSET))
 
         def _parse_provider(data: object) -> None | str | Unset:
             if data is None:
@@ -74,6 +93,7 @@ class BackendActionValidateRequest:
             inputs = BackendActionValidateRequestInputs.from_dict(_inputs)
 
         backend_action_validate_request = cls(
+            project_id=project_id,
             provider=provider,
             inputs=inputs,
         )

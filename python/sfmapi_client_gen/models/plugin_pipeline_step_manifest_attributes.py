@@ -6,11 +6,11 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="FinalizeV1UploadsUploadIdFinalizePostPayload")
+T = TypeVar("T", bound="PluginPipelineStepManifestAttributes")
 
 
 @_attrs_define
-class FinalizeV1UploadsUploadIdFinalizePostPayload:
+class PluginPipelineStepManifestAttributes:
     """ """
 
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -25,10 +25,10 @@ class FinalizeV1UploadsUploadIdFinalizePostPayload:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        finalize_v1_uploads_upload_id_finalize_post_payload = cls()
+        plugin_pipeline_step_manifest_attributes = cls()
 
-        finalize_v1_uploads_upload_id_finalize_post_payload.additional_properties = d
-        return finalize_v1_uploads_upload_id_finalize_post_payload
+        plugin_pipeline_step_manifest_attributes.additional_properties = d
+        return plugin_pipeline_step_manifest_attributes
 
     @property
     def additional_keys(self) -> list[str]:

@@ -21,7 +21,8 @@ class ArtifactConvertRequest:
     Attributes:
         provider (None | str | Unset): Optional provider id to use when planning backend-native conversions.
         to_format (None | str | Unset): Exact target format id. Mutually compatible with accepted_formats.
-        accepted_formats (list[str] | Unset): Acceptable target format ids in preference order.
+        accepted_formats (list[str] | Unset): Acceptable target format ids in preference order. Required to be non-empty
+            when to_format is omitted.
         require_lossless (bool | Unset):  Default: False.
         name (None | str | Unset):
         to_kind (None | str | Unset):
@@ -52,6 +53,17 @@ class ArtifactConvertRequest:
         accepted_formats: list[str] | Unset = UNSET
         if not isinstance(self.accepted_formats, Unset):
             accepted_formats = self.accepted_formats
+
+        if accepted_formats is not UNSET and len(accepted_formats) == 0:
+            raise ValueError(
+                "Artifact conversion requests require to_format or "
+                "non-empty accepted_formats"
+            )
+        if (to_format is UNSET or to_format is None) and accepted_formats is UNSET:
+            raise ValueError(
+                "Artifact conversion requests require to_format or "
+                "non-empty accepted_formats"
+            )
 
         require_lossless = self.require_lossless
 

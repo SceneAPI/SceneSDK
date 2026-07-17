@@ -33,7 +33,8 @@ class JobAcceptedResponse:
 
     - ``recon_id`` — endpoints nested under a reconstruction
     - ``dataset_id`` / ``project_id`` — parent-pointer for top-level routes
-    - ``method`` — mesh submission method
+    - ``method`` — optional stage/backend method selector echoed by
+      submitters that accept one
     - ``applied_sim3`` — georegister applied transform
     - ``target_recon_id`` / ``source_recon_ids`` — ``reconstructions:merge``
     - ``strategy`` — ``similarity:build``

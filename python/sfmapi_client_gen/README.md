@@ -25,10 +25,12 @@ print(caps_resp.parsed)  # CapabilitiesOut with schema_version, backend, feature
 ## Versus the hand-rolled `sfmapi-client`
 
 This package is regenerated from the OpenAPI spec on every release. The
-hand-rolled `sfmapi-client` package adds ergonomic helpers such as typed
-errors, binary parsers, SSE event iterators, and sync/async parity. Use
-the generated client for raw typed access; use the hand-rolled client
-when you want the ergonomic surface.
+generated package is the canonical SDK surface; its
+`sfmapi_client_gen._ergonomics` module adds helpers for common workflows
+on top of the generated endpoint and model types.
+
+The hand-rolled `sfmapi-client` package remains for compatibility and
+migration support. Prefer the generated client for new code.
 
 Both decode identical wire formats. The contract test suite in the
 server repo replays recorded server responses through both.

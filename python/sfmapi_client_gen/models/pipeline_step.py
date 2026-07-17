@@ -16,7 +16,7 @@ T = TypeVar("T", bound="PipelineStep")
 
 @_attrs_define
 class PipelineStep:
-    """One operation in a custom typed pipeline.
+    """Compatibility schema name for the legacy operation-list step.
 
     Attributes:
         op (str):
@@ -39,7 +39,7 @@ class PipelineStep:
 
         params: dict[str, Any] | Unset = UNSET
         if not isinstance(self.params, Unset):
-            params = self.params.to_dict()
+            params = self.params.to_dict() if hasattr(self.params, "to_dict") else dict(self.params)
 
         field_dict: dict[str, Any] = {}
 

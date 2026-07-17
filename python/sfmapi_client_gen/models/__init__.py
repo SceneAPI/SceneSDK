@@ -68,7 +68,6 @@ from .camera_model_out_distortion import CameraModelOutDistortion
 from .camera_model_out_projection import CameraModelOutProjection
 from .capabilities_out import CapabilitiesOut
 from .capabilities_out_features import CapabilitiesOutFeatures
-from .chain_error_out import ChainErrorOut
 from .compatibility import Compatibility
 from .compatibility_tool_versions import CompatibilityToolVersions
 from .conformance import Conformance
@@ -119,9 +118,6 @@ from .features_spec import FeaturesSpec
 from .features_spec_backend_options import FeaturesSpecBackendOptions
 from .features_spec_input_artifacts import FeaturesSpecInputArtifacts
 from .features_spec_type import FeaturesSpecType
-from .finalize_v1_uploads_upload_id_finalize_post_payload import (
-    FinalizeV1UploadsUploadIdFinalizePostPayload,
-)
 from .georegister_request import GeoregisterRequest
 from .georegister_request_backend_options import GeoregisterRequestBackendOptions
 from .georegister_request_mode import GeoregisterRequestMode
@@ -165,12 +161,6 @@ from .job_progress_out_task_counts import JobProgressOutTaskCounts
 from .kapture_import_request import KaptureImportRequest
 from .license_info import LicenseInfo
 from .link import Link
-from .list_datatypes_v1_datatypes_get_response_list_datatypes_v1_datatypes_get import (
-    ListDatatypesV1DatatypesGetResponseListDatatypesV1DatatypesGet,
-)
-from .list_operations_v1_operations_get_response_list_operations_v1_operations_get import (
-    ListOperationsV1OperationsGetResponseListOperationsV1OperationsGet,
-)
 from .list_v1_jobs_get_status_type_0 import ListV1JobsGetStatusType0
 from .local_source_spec import LocalSourceSpec
 from .localization_request import LocalizationRequest
@@ -227,8 +217,13 @@ from .pipeline_request_input_artifacts import PipelineRequestInputArtifacts
 from .pipeline_run_request import PipelineRunRequest
 from .pipeline_step import PipelineStep
 from .pipeline_step_params import PipelineStepParams
-from .pipeline_validate_request import PipelineValidateRequest
-from .pipeline_validate_response import PipelineValidateResponse
+from .legacy_operation_step import LegacyOperationStep
+from .legacy_operation_step_params import LegacyOperationStepParams
+from .plugin_attribute_manifest import PluginAttributeManifest
+from .plugin_attribute_manifest_type import PluginAttributeManifestType
+from .plugin_data_type_manifest import PluginDataTypeManifest
+from .plugin_data_type_manifest_kind import PluginDataTypeManifestKind
+from .plugin_dependency_manifest import PluginDependencyManifest
 from .plugin_detail_out import PluginDetailOut
 from .plugin_detail_out_links_type_0 import PluginDetailOutLinksType0
 from .plugin_doctor_out import PluginDoctorOut
@@ -240,6 +235,20 @@ from .plugin_install_response import PluginInstallResponse
 from .plugin_install_response_method import PluginInstallResponseMethod
 from .plugin_manifest import PluginManifest
 from .plugin_manifest_trust_tier import PluginManifestTrustTier
+from .plugin_pipeline_manifest import PluginPipelineManifest
+from .plugin_pipeline_step_manifest import PluginPipelineStepManifest
+from .plugin_pipeline_step_manifest_attributes import (
+    PluginPipelineStepManifestAttributes,
+)
+from .plugin_pipeline_step_manifest_wires import PluginPipelineStepManifestWires
+from .plugin_port_spec_manifest import PluginPortSpecManifest
+from .plugin_processor_extension_manifest import PluginProcessorExtensionManifest
+from .plugin_processor_extension_manifest_special_inputs import (
+    PluginProcessorExtensionManifestSpecialInputs,
+)
+from .plugin_processor_manifest import PluginProcessorManifest
+from .plugin_processor_manifest_consumer import PluginProcessorManifestConsumer
+from .plugin_processor_manifest_supplier import PluginProcessorManifestSupplier
 from .plugin_provision_step_out import PluginProvisionStepOut
 from .plugin_provisioning_out import PluginProvisioningOut
 from .plugin_provisioning_out_metadata import PluginProvisioningOutMetadata
@@ -247,6 +256,9 @@ from .plugin_provisioning_out_outputs import PluginProvisioningOutOutputs
 from .plugin_provisioning_out_redacted_env import PluginProvisioningOutRedactedEnv
 from .plugin_registry_item_out import PluginRegistryItemOut
 from .plugin_registry_item_out_links_type_0 import PluginRegistryItemOutLinksType0
+from .plugin_special_attribute_manifest import PluginSpecialAttributeManifest
+from .plugin_special_attribute_manifest_type import PluginSpecialAttributeManifestType
+from .plugin_special_input_port_spec_manifest import PluginSpecialInputPortSpecManifest
 from .point_observation_row import PointObservationRow
 from .point_visibility_response import PointVisibilityResponse
 from .pose_graph_spec import PoseGraphSpec
@@ -255,6 +267,13 @@ from .pose_prior import PosePrior
 from .pose_priors_bulk_response import PosePriorsBulkResponse
 from .pose_priors_bulk_response_pose_priors import PosePriorsBulkResponsePosePriors
 from .pose_priors_bulk_write_response import PosePriorsBulkWriteResponse
+from .problem_error import ProblemError
+from .problem_error_ctx_type_0 import ProblemErrorCtxType0
+from .problem_response import ProblemResponse
+from .processor_pipeline_step import ProcessorPipelineStep
+from .processor_pipeline_step_attributes import ProcessorPipelineStepAttributes
+from .processor_pipeline_step_params import ProcessorPipelineStepParams
+from .processor_pipeline_step_wires import ProcessorPipelineStepWires
 from .project_create import ProjectCreate
 from .project_out import ProjectOut
 from .project_out_links_type_0 import ProjectOutLinksType0
@@ -268,7 +287,6 @@ from .projection_sampling_interpolation import ProjectionSamplingInterpolation
 from .provider_manifest import ProviderManifest
 from .provider_out import ProviderOut
 from .provider_out_links_type_0 import ProviderOutLinksType0
-from .provider_priority_request import ProviderPriorityRequest
 from .radiance_eval_config import RadianceEvalConfig
 from .radiance_eval_config_background import RadianceEvalConfigBackground
 from .radiance_eval_config_lpips_net import RadianceEvalConfigLpipsNet
@@ -301,6 +319,12 @@ from .radiance_snapshot_out_links_type_0 import RadianceSnapshotOutLinksType0
 from .radiance_snapshot_out_summary_type_0 import RadianceSnapshotOutSummaryType0
 from .radiance_train_request import RadianceTrainRequest
 from .radiance_train_request_backend_options import RadianceTrainRequestBackendOptions
+from .read_correspondence_graph_v1_reconstructions_recon_id_correspondence_graph_json_get_response_200 import (
+    ReadCorrespondenceGraphV1ReconstructionsReconIdCorrespondenceGraphJsonGetResponse200,
+)
+from .read_two_view_geometries_v1_reconstructions_recon_id_two_view_geometries_json_get_response_200 import (
+    ReadTwoViewGeometriesV1ReconstructionsReconIdTwoViewGeometriesJsonGetResponse200,
+)
 from .readyz_response import ReadyzResponse
 from .readyz_response_checks import ReadyzResponseChecks
 from .reconstruction_out import ReconstructionOut
@@ -318,9 +342,6 @@ from .routing_out_profiles import RoutingOutProfiles
 from .routing_out_project_profiles import RoutingOutProjectProfiles
 from .routing_out_workspace_profiles import RoutingOutWorkspaceProfiles
 from .routing_profile import RoutingProfile
-from .routing_profile_assignment_request import RoutingProfileAssignmentRequest
-from .routing_profile_request import RoutingProfileRequest
-from .routing_profile_request_routes import RoutingProfileRequestRoutes
 from .routing_profile_routes import RoutingProfileRoutes
 from .run_recipe_v1_projects_project_id_pipelines_recipe_post_recipe import (
     RunRecipeV1ProjectsProjectIdPipelinesRecipePostRecipe,
@@ -328,9 +349,6 @@ from .run_recipe_v1_projects_project_id_pipelines_recipe_post_recipe import (
 from .runtime_modes import RuntimeModes
 from .s3_source_spec import S3SourceSpec
 from .sim_3 import Sim3
-from .similarity_build_response import SimilarityBuildResponse
-from .similarity_neighbor_out import SimilarityNeighborOut
-from .similarity_query_response import SimilarityQueryResponse
 from .snapshot_list_response import SnapshotListResponse
 from .snapshot_list_response_links_type_0 import SnapshotListResponseLinksType0
 from .spec_response import SpecResponse
@@ -352,6 +370,9 @@ from .task_out_outputs_ref_type_0 import TaskOutOutputsRefType0
 from .task_out_status import TaskOutStatus
 from .task_progress_out import TaskProgressOut
 from .task_progress_out_status import TaskProgressOutStatus
+from .tiles_index_v1_reconstructions_recon_id_snapshots_seq_tiles_index_json_get_response_200 import (
+    TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200,
+)
 from .tool_detection import ToolDetection
 from .tool_detection_out import ToolDetectionOut
 from .tool_detection_out_tools import ToolDetectionOutTools
@@ -367,6 +388,7 @@ from .two_view_spec_backend_options import TwoViewSpecBackendOptions
 from .undistort_spec import UndistortSpec
 from .undistort_spec_backend_options import UndistortSpecBackendOptions
 from .upload_entry_spec import UploadEntrySpec
+from .upload_finalize_request import UploadFinalizeRequest
 from .upload_init import UploadInit
 from .upload_out import UploadOut
 from .upload_out_state import UploadOutState
@@ -446,7 +468,6 @@ __all__ = (
     "CameraModelOutProjection",
     "CapabilitiesOut",
     "CapabilitiesOutFeatures",
-    "ChainErrorOut",
     "Compatibility",
     "CompatibilityToolVersions",
     "Conformance",
@@ -495,7 +516,6 @@ __all__ = (
     "FeaturesSpecBackendOptions",
     "FeaturesSpecInputArtifacts",
     "FeaturesSpecType",
-    "FinalizeV1UploadsUploadIdFinalizePostPayload",
     "GeoregisterRequest",
     "GeoregisterRequestBackendOptions",
     "GeoregisterRequestMode",
@@ -539,8 +559,6 @@ __all__ = (
     "KaptureImportRequest",
     "LicenseInfo",
     "Link",
-    "ListDatatypesV1DatatypesGetResponseListDatatypesV1DatatypesGet",
-    "ListOperationsV1OperationsGetResponseListOperationsV1OperationsGet",
     "ListV1JobsGetStatusType0",
     "LocalizationRequest",
     "LocalizationRequestSiftType0",
@@ -593,8 +611,13 @@ __all__ = (
     "PipelineRunRequest",
     "PipelineStep",
     "PipelineStepParams",
-    "PipelineValidateRequest",
-    "PipelineValidateResponse",
+    "LegacyOperationStep",
+    "LegacyOperationStepParams",
+    "PluginAttributeManifest",
+    "PluginAttributeManifestType",
+    "PluginDataTypeManifest",
+    "PluginDataTypeManifestKind",
+    "PluginDependencyManifest",
     "PluginDetailOut",
     "PluginDetailOutLinksType0",
     "PluginDoctorOut",
@@ -606,6 +629,16 @@ __all__ = (
     "PluginInstallResponseMethod",
     "PluginManifest",
     "PluginManifestTrustTier",
+    "PluginPipelineManifest",
+    "PluginPipelineStepManifest",
+    "PluginPipelineStepManifestAttributes",
+    "PluginPipelineStepManifestWires",
+    "PluginPortSpecManifest",
+    "PluginProcessorExtensionManifest",
+    "PluginProcessorExtensionManifestSpecialInputs",
+    "PluginProcessorManifest",
+    "PluginProcessorManifestConsumer",
+    "PluginProcessorManifestSupplier",
     "PluginProvisioningOut",
     "PluginProvisioningOutMetadata",
     "PluginProvisioningOutOutputs",
@@ -613,6 +646,9 @@ __all__ = (
     "PluginProvisionStepOut",
     "PluginRegistryItemOut",
     "PluginRegistryItemOutLinksType0",
+    "PluginSpecialAttributeManifest",
+    "PluginSpecialAttributeManifestType",
+    "PluginSpecialInputPortSpecManifest",
     "PointObservationRow",
     "PointVisibilityResponse",
     "PoseGraphSpec",
@@ -621,6 +657,13 @@ __all__ = (
     "PosePriorsBulkResponse",
     "PosePriorsBulkResponsePosePriors",
     "PosePriorsBulkWriteResponse",
+    "ProblemError",
+    "ProblemErrorCtxType0",
+    "ProblemResponse",
+    "ProcessorPipelineStep",
+    "ProcessorPipelineStepAttributes",
+    "ProcessorPipelineStepParams",
+    "ProcessorPipelineStepWires",
     "ProjectCreate",
     "ProjectionJobRequest",
     "ProjectionJobRequestOperation",
@@ -634,7 +677,6 @@ __all__ = (
     "ProviderManifest",
     "ProviderOut",
     "ProviderOutLinksType0",
-    "ProviderPriorityRequest",
     "RadianceEvalConfig",
     "RadianceEvalConfigBackground",
     "RadianceEvalConfigLpipsNet",
@@ -661,6 +703,8 @@ __all__ = (
     "RadianceSnapshotOutSummaryType0",
     "RadianceTrainRequest",
     "RadianceTrainRequestBackendOptions",
+    "ReadCorrespondenceGraphV1ReconstructionsReconIdCorrespondenceGraphJsonGetResponse200",
+    "ReadTwoViewGeometriesV1ReconstructionsReconIdTwoViewGeometriesJsonGetResponse200",
     "ReadyzResponse",
     "ReadyzResponseChecks",
     "ReconstructionOut",
@@ -678,17 +722,11 @@ __all__ = (
     "RoutingOutProjectProfiles",
     "RoutingOutWorkspaceProfiles",
     "RoutingProfile",
-    "RoutingProfileAssignmentRequest",
-    "RoutingProfileRequest",
-    "RoutingProfileRequestRoutes",
     "RoutingProfileRoutes",
     "RunRecipeV1ProjectsProjectIdPipelinesRecipePostRecipe",
     "RuntimeModes",
     "S3SourceSpec",
     "Sim3",
-    "SimilarityBuildResponse",
-    "SimilarityNeighborOut",
-    "SimilarityQueryResponse",
     "SnapshotListResponse",
     "SnapshotListResponseLinksType0",
     "SpecResponse",
@@ -710,6 +748,7 @@ __all__ = (
     "TaskOutStatus",
     "TaskProgressOut",
     "TaskProgressOutStatus",
+    "TilesIndexV1ReconstructionsReconIdSnapshotsSeqTilesIndexJsonGetResponse200",
     "ToolDetection",
     "ToolDetectionOut",
     "ToolDetectionOutTools",
@@ -725,6 +764,7 @@ __all__ = (
     "UndistortSpec",
     "UndistortSpecBackendOptions",
     "UploadEntrySpec",
+    "UploadFinalizeRequest",
     "UploadInit",
     "UploadOut",
     "UploadOutState",

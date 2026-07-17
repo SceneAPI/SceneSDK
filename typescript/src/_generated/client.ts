@@ -3,9 +3,9 @@
 // `SfmApiClient` when they want fully typed paths/params/responses
 // derived directly from the live server spec.
 //
-// Regenerate via `npm run gen:sdk` (or `uv run python
-// scripts/regen_sdk.py` from the repo root, which dumps a fresh
-// OpenAPI document and then rebuilds both Python + TS generated SDKs).
+// Regenerate via `npm run gen:sdk` from `typescript/` for the SDK-local
+// OpenAPI snapshot, or `uv run python scripts/regen_sdk.py` from the
+// server repo to dump a fresh spec and rebuild both Python + TS clients.
 
 import createClient, { type Client } from "openapi-fetch";
 import type { paths } from "./openapi.js";
@@ -18,6 +18,7 @@ import {
   uploadBytes,
   waitForJob,
   type SseEvent,
+  type JobDetail,
   type StreamEventsOptions,
   type SubmitAndStreamHandle,
   type SubmitAndStreamOptions,
@@ -31,7 +32,7 @@ import {
 export type SfmApiRawClient = Client<paths>;
 
 /// OO wrapper that exposes the ergonomics helpers as instance
-/// methods bound to the configured `baseUrl` / `apiKey` / `fetch`
+  /// methods bound to the configured `baseUrl` / `apiKey` / `headers` / `fetch`
 /// — saves callers from re-passing those on every helper invocation.
 export interface SfmApiGeneratedClient {
   /** Underlying typed paths client (raw `openapi-fetch`). */
@@ -49,11 +50,11 @@ export interface SfmApiGeneratedClient {
   waitForJob(
     jobId: string,
     opts?: Omit<WaitForJobOptions, "baseUrl" | "apiKey" | "fetch">,
-  ): Promise<Record<string, unknown>>;
+  ): Promise<JobDetail>;
   submitAndWait(
     submitFn: () => Promise<{ job_id?: string } | Record<string, unknown>> | { job_id?: string } | Record<string, unknown>,
     opts?: Omit<SubmitAndWaitOptions, "baseUrl" | "apiKey" | "fetch">,
-  ): Promise<Record<string, unknown>>;
+  ): Promise<JobDetail>;
   submitAndStream(
     submitFn: () => Promise<{ job_id?: string } | Record<string, unknown>> | { job_id?: string } | Record<string, unknown>,
     opts?: Omit<SubmitAndStreamOptions, "baseUrl" | "apiKey" | "fetch">,
@@ -81,7 +82,7 @@ export function createSfmApiClient(opts: GeneratedClientOptions): SfmApiGenerate
   const baseUrl = opts.baseUrl.replace(/\/+$/, "");
 
   // Each method merges the client's bound config (baseUrl, apiKey,
-  // fetch) onto the per-call options. Callers may still override
+  // headers, fetch) onto the per-call options. Callers may still override
   // any of those by passing them explicitly.
   function bind<
     T extends
@@ -98,6 +99,9 @@ export function createSfmApiClient(opts: GeneratedClientOptions): SfmApiGenerate
       ...(opts.apiKey !== undefined ? { apiKey: opts.apiKey } : {}),
       ...(opts.fetch !== undefined ? { fetch: opts.fetch } : {}),
       ...(extra ?? {}),
+      ...((opts.headers !== undefined || extra?.headers !== undefined)
+        ? { headers: { ...(opts.headers ?? {}), ...(extra?.headers ?? {}) } }
+        : {}),
     } as T;
   }
 
@@ -135,7 +139,9 @@ export {
   AuthError,
   QuotaExceededError,
   StorageError,
+  CapabilityUnavailableError,
   PycolmapUnavailableError,
+  BackendUnavailableError,
   TransportError,
   buildSfmApiError,
   raiseForStatus,
@@ -159,6 +165,7 @@ export {
 export type {
   UploadBytesOptions,
   SseEvent,
+  JobDetail,
   StreamEventsOptions,
   WaitForJobOptions,
   SubmitAndWaitOptions,

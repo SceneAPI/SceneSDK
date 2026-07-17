@@ -6,61 +6,29 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="SimilarityBuildResponse")
+T = TypeVar("T", bound="ProcessorPipelineStepAttributes")
 
 
 @_attrs_define
-class SimilarityBuildResponse:
-    """``POST /v1/datasets/{id}/similarity:build`` synchronous build
-    response (dhash). Async vlad path returns :class:`JobAcceptedResponse`.
+class ProcessorPipelineStepAttributes:
+    """ """
 
-        Attributes:
-            strategy (str):
-            manifest_hash (str):
-            count (int):
-    """
-
-    strategy: str
-    manifest_hash: str
-    count: int
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
-        strategy = self.strategy
-
-        manifest_hash = self.manifest_hash
-
-        count = self.count
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
-        field_dict.update(
-            {
-                "strategy": strategy,
-                "manifest_hash": manifest_hash,
-                "count": count,
-            }
-        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        strategy = d.pop("strategy")
+        processor_pipeline_step_attributes = cls()
 
-        manifest_hash = d.pop("manifest_hash")
-
-        count = d.pop("count")
-
-        similarity_build_response = cls(
-            strategy=strategy,
-            manifest_hash=manifest_hash,
-            count=count,
-        )
-
-        similarity_build_response.additional_properties = d
-        return similarity_build_response
+        processor_pipeline_step_attributes.additional_properties = d
+        return processor_pipeline_step_attributes
 
     @property
     def additional_keys(self) -> list[str]:

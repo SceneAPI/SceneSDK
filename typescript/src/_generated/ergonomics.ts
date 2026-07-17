@@ -9,6 +9,21 @@
 // Repo-owned, NOT overwritten on `npm run gen:sdk`.
 
 import type { components } from "./openapi.js";
+import {
+  SfmApiError,
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+  AuthError,
+  QuotaExceededError,
+  StorageError,
+  CapabilityUnavailableError,
+  PycolmapUnavailableError,
+  BackendUnavailableError,
+  TransportError,
+  buildSfmApiError as buildSharedSfmApiError,
+} from "../errors.js";
+import { sha256Hex } from "../hash.js";
 
 // ---------------------------------------------------------------------
 // Typed error hierarchy. Mirrors clients/python/sfmapi_client/errors.py
@@ -16,88 +31,18 @@ import type { components } from "./openapi.js";
 // SfmApiError` works regardless of which SDK threw.
 // ---------------------------------------------------------------------
 
-export class SfmApiError extends Error {
-  /** HTTP status code from the failing response. */
-  readonly statusCode: number;
-  /** RFC7807 `detail` field, when present; otherwise the raw body. */
-  readonly detail: string;
-  /** Parsed JSON body when the response was JSON-shaped. */
-  readonly body: Record<string, unknown>;
-
-  constructor(statusCode: number, detail = "", body: Record<string, unknown> = {}) {
-    super(detail || `sfmapi error: ${statusCode}`);
-    this.name = "SfmApiError";
-    this.statusCode = statusCode;
-    this.detail = detail;
-    this.body = body;
-  }
-}
-
-export class NotFoundError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "NotFoundError";
-  }
-}
-
-export class ConflictError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "ConflictError";
-  }
-}
-
-export class ValidationError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "ValidationError";
-  }
-}
-
-export class AuthError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "AuthError";
-  }
-}
-
-export class QuotaExceededError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "QuotaExceededError";
-  }
-}
-
-export class StorageError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "StorageError";
-  }
-}
-
-export class PycolmapUnavailableError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "PycolmapUnavailableError";
-  }
-}
-
-export class TransportError extends SfmApiError {
-  constructor(...args: ConstructorParameters<typeof SfmApiError>) {
-    super(...args);
-    this.name = "TransportError";
-  }
-}
-
-const BY_STATUS: Readonly<Record<number, new (...args: ConstructorParameters<typeof SfmApiError>) => SfmApiError>> = {
-  400: ValidationError,
-  401: AuthError,
-  403: AuthError,
-  404: NotFoundError,
-  409: ConflictError,
-  422: ValidationError,
-  429: QuotaExceededError,
-  501: PycolmapUnavailableError,
+export {
+  SfmApiError,
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+  AuthError,
+  QuotaExceededError,
+  StorageError,
+  CapabilityUnavailableError,
+  PycolmapUnavailableError,
+  BackendUnavailableError,
+  TransportError,
 };
 
 /** Translate a non-2xx response from `openapi-fetch` (or any other
@@ -108,17 +53,7 @@ export function buildSfmApiError(
   statusCode: number,
   body: unknown,
 ): SfmApiError {
-  let detail = "";
-  let parsedBody: Record<string, unknown> = {};
-  if (body && typeof body === "object" && !Array.isArray(body)) {
-    parsedBody = body as Record<string, unknown>;
-    const d = parsedBody["detail"] ?? parsedBody["title"];
-    if (typeof d === "string") detail = d;
-  } else if (typeof body === "string") {
-    detail = body;
-  }
-  const Cls = BY_STATUS[statusCode] ?? SfmApiError;
-  return new Cls(statusCode, detail, parsedBody);
+  return buildSharedSfmApiError(statusCode, body);
 }
 
 /** Convenience wrapper around `buildSfmApiError` that throws. */
@@ -131,6 +66,7 @@ export function raiseForStatus(statusCode: number, body: unknown): never {
 // ---------------------------------------------------------------------
 
 type CapabilitiesOut = components["schemas"]["CapabilitiesOut"];
+export type JobDetail = components["schemas"]["JobDetail"];
 
 /** Return true iff the capabilities snapshot advertises `name`.
  * Treats unknown / absent feature names as false (per the wire spec —
@@ -149,6 +85,8 @@ export const DEFAULT_CHUNK_SIZE = 1 * 1024 * 1024;
 export interface UploadBytesOptions {
   baseUrl: string;
   apiKey?: string;
+  /** Extra headers merged onto each helper request. */
+  headers?: Record<string, string>;
   chunkSize?: number;
   contentType?: string;
   /** Custom fetch (Node ≤17 needs node-fetch; tests inject mocks). */
@@ -167,8 +105,9 @@ export async function uploadBytes(
   const baseUrl = opts.baseUrl.replace(/\/+$/, "");
   const chunkSize = opts.chunkSize ?? DEFAULT_CHUNK_SIZE;
   const contentType = opts.contentType ?? "application/octet-stream";
-  const baseHeaders: Record<string, string> = {};
+  const baseHeaders: Record<string, string> = { ...(opts.headers ?? {}) };
   if (opts.apiKey) baseHeaders["Authorization"] = `Bearer ${opts.apiKey}`;
+  const expectedSha = await sha256Hex(data);
 
   const init = await fetchFn(`${baseUrl}/v1/uploads`, {
     method: "POST",
@@ -176,6 +115,7 @@ export async function uploadBytes(
     body: JSON.stringify({
       expected_size: data.length,
       content_type: contentType,
+      expected_sha: expectedSha,
     }),
   });
   if (init.status !== 200 && init.status !== 201) {
@@ -209,12 +149,15 @@ export async function uploadBytes(
 
   const fin = await fetchFn(`${baseUrl}/v1/uploads/${uploadId}:finalize`, {
     method: "POST",
-    headers: baseHeaders,
+    headers: { ...baseHeaders, "X-Content-SHA256": expectedSha },
   });
   if (fin.status !== 200 && fin.status !== 201) {
     throw await _errorFromResponse(fin);
   }
   const finBody = (await fin.json()) as { blob_sha: string };
+  if (finBody.blob_sha !== expectedSha) {
+    throw new Error(`uploadBytes: blob sha mismatch: ${finBody.blob_sha} != ${expectedSha}`);
+  }
   return finBody.blob_sha;
 }
 
@@ -229,7 +172,9 @@ async function _errorFromResponse(resp: Response): Promise<SfmApiError> {
       body = {};
     }
   }
-  return buildSfmApiError(resp.status, body);
+  const err = buildSfmApiError(resp.status, body);
+  err.response = resp;
+  return err;
 }
 
 // ---------------------------------------------------------------------
@@ -291,6 +236,8 @@ export function parseSseBuffer(body: string): SseEvent[] {
 export interface StreamEventsOptions {
   baseUrl: string;
   apiKey?: string;
+  /** Extra headers merged onto each helper request. */
+  headers?: Record<string, string>;
   /** Server honors the standard `Last-Event-ID` header for resume. */
   lastEventId?: number | string;
   /** Custom fetch (Node ≤17 needs node-fetch; tests inject mocks). */
@@ -311,6 +258,7 @@ export async function* streamEvents(
   const fetchFn = opts.fetch ?? fetch;
   const baseUrl = opts.baseUrl.replace(/\/+$/, "");
   const headers: Record<string, string> = {
+    ...(opts.headers ?? {}),
     Accept: "text/event-stream",
   };
   if (opts.apiKey) headers["Authorization"] = `Bearer ${opts.apiKey}`;
@@ -386,6 +334,8 @@ export const TERMINAL_JOB_STATES: ReadonlySet<string> = new Set([
 export interface WaitForJobOptions {
   baseUrl: string;
   apiKey?: string;
+  /** Extra headers merged onto each helper request. */
+  headers?: Record<string, string>;
   /** Called once per new ProgressEvent observed during the wait. */
   onEvent?: (ev: SseEvent) => void;
   /** Poll cadence in seconds. Defaults to 0.25. */
@@ -402,12 +352,12 @@ export interface WaitForJobOptions {
 export async function waitForJob(
   jobId: string,
   opts: WaitForJobOptions,
-): Promise<Record<string, unknown>> {
+): Promise<JobDetail> {
   const fetchFn = opts.fetch ?? fetch;
   const baseUrl = opts.baseUrl.replace(/\/+$/, "");
   const pollInterval = (opts.pollInterval ?? 0.25) * 1000;
   const deadline = Date.now() + (opts.timeout ?? 600) * 1000;
-  const baseHeaders: Record<string, string> = {};
+  const baseHeaders: Record<string, string> = { ...(opts.headers ?? {}) };
   if (opts.apiKey) baseHeaders["Authorization"] = `Bearer ${opts.apiKey}`;
   let seenEventId = -1;
   while (true) {
@@ -416,8 +366,8 @@ export async function waitForJob(
       headers: baseHeaders,
     });
     if (resp.status !== 200) throw await _errorFromResponse(resp);
-    const body = (await resp.json()) as Record<string, unknown>;
-    const status = String(body["status"] ?? "");
+    const body = (await resp.json()) as JobDetail;
+    const status = String(body.status ?? "");
     if (opts.onEvent) {
       const evHeaders: Record<string, string> = {
         ...baseHeaders,
@@ -464,9 +414,9 @@ export interface SubmitAndStreamHandle {
   /** AsyncIterable of progress events. Resolves once the server
    * closes the SSE stream. */
   events: AsyncIterable<SseEvent>;
-  /** Resolves with the terminal JobDetail once the stream closes
-   * AND the job has rolled up to a terminal status. */
-  result: Promise<Record<string, unknown>>;
+  /** Resolves with the terminal JobDetail independently of event
+   * consumption. Consume `events` when stream drainage matters. */
+  result: Promise<JobDetail>;
 }
 
 export interface SubmitAndStreamOptions extends StreamEventsOptions {
@@ -475,9 +425,8 @@ export interface SubmitAndStreamOptions extends StreamEventsOptions {
   // request shape.
 }
 
-/** Run ``submitFn`` to enqueue a job, then immediately stream
- * progress events. After the stream closes, polls one final
- * ``wait_for_job`` to hand back the terminal JobDetail. */
+/** Run ``submitFn`` to enqueue a job, then immediately expose a
+ * progress-event stream and a terminal JobDetail promise. */
 export async function submitAndStream(
   submitFn: () => Promise<{ job_id?: string } | Record<string, unknown>> | { job_id?: string } | Record<string, unknown>,
   opts: SubmitAndStreamOptions,
@@ -492,9 +441,9 @@ export async function submitAndStream(
       `submitAndStream: submitFn returned no job_id (got ${typeof accepted})`,
     );
   }
-  // Clone a child iterator that yields the SSE events; the final
-  // `result` promise resolves once the iterator drains AND a single
-  // wait_for_job poll comes back terminal.
+  // Clone a child iterator that yields the SSE events. The `result`
+  // promise polls independently so callers may await it without racing
+  // the iterator's own reads.
   const events = streamEvents(jobId, opts);
   const drained: SseEvent[] = [];
   async function* tap(): AsyncIterable<SseEvent> {
@@ -505,13 +454,11 @@ export async function submitAndStream(
   }
   const tapped = tap();
   const result = (async () => {
-    // Drive the iterator to completion before polling for terminal.
-    // The caller may (or may not) be consuming `tapped` themselves;
-    // attaching .next() chained reads here would race. Instead, the
     // caller owns drainage — we just await a final wait_for_job poll.
     return waitForJob(jobId, {
       baseUrl: opts.baseUrl,
       ...(opts.apiKey !== undefined ? { apiKey: opts.apiKey } : {}),
+      ...(opts.headers !== undefined ? { headers: opts.headers } : {}),
       ...(opts.fetch !== undefined ? { fetch: opts.fetch } : {}),
       pollInterval: 0.05,
     });
@@ -539,7 +486,7 @@ export interface SubmitAndWaitOptions extends WaitForJobOptions {
 export async function submitAndWait(
   submitFn: () => Promise<{ job_id?: string } | Record<string, unknown>> | { job_id?: string } | Record<string, unknown>,
   opts: SubmitAndWaitOptions,
-): Promise<Record<string, unknown>> {
+): Promise<JobDetail> {
   const accepted = await submitFn();
   const jobId =
     accepted && typeof accepted === "object" && "job_id" in accepted

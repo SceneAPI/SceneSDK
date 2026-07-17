@@ -28,7 +28,6 @@ class RadianceSnapshotOut:
         snapshot_id (str):
         radiance_field_id (str):
         seq (int):
-        sealed_path (str):
         created_at (datetime.datetime):
         field_links (None | RadianceSnapshotOutLinksType0 | Unset):
         summary (None | RadianceSnapshotOutSummaryType0 | Unset):
@@ -37,7 +36,6 @@ class RadianceSnapshotOut:
     snapshot_id: str
     radiance_field_id: str
     seq: int
-    sealed_path: str
     created_at: datetime.datetime
     field_links: None | RadianceSnapshotOutLinksType0 | Unset = UNSET
     summary: None | RadianceSnapshotOutSummaryType0 | Unset = UNSET
@@ -56,8 +54,6 @@ class RadianceSnapshotOut:
         radiance_field_id = self.radiance_field_id
 
         seq = self.seq
-
-        sealed_path = self.sealed_path
 
         created_at = self.created_at.isoformat()
 
@@ -84,7 +80,6 @@ class RadianceSnapshotOut:
                 "snapshot_id": snapshot_id,
                 "radiance_field_id": radiance_field_id,
                 "seq": seq,
-                "sealed_path": sealed_path,
                 "created_at": created_at,
             }
         )
@@ -110,8 +105,6 @@ class RadianceSnapshotOut:
         radiance_field_id = d.pop("radiance_field_id")
 
         seq = d.pop("seq")
-
-        sealed_path = d.pop("sealed_path")
 
         created_at = datetime.datetime.fromisoformat(d.pop("created_at"))
 
@@ -157,7 +150,6 @@ class RadianceSnapshotOut:
             snapshot_id=snapshot_id,
             radiance_field_id=radiance_field_id,
             seq=seq,
-            sealed_path=sealed_path,
             created_at=created_at,
             field_links=field_links,
             summary=summary,

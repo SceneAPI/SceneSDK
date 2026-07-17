@@ -5,9 +5,9 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.http_validation_error import HTTPValidationError
 from ...models.list_v1_jobs_get_status_type_0 import ListV1JobsGetStatusType0
 from ...models.page_job_out import PageJobOut
+from ...models.problem_response import ProblemResponse
 from ...types import UNSET, Response, Unset
 
 
@@ -51,16 +51,69 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | PageJobOut | None:
+) -> PageJobOut | ProblemResponse | None:
+    if response.status_code >= 400 and client.raise_on_unexpected_status:
+        raise errors.UnexpectedStatus(response.status_code, response.content)
+
     if response.status_code == 200:
         response_200 = PageJobOut.from_dict(response.json())
 
         return response_200
 
+    if response.status_code == 400:
+        response_400 = ProblemResponse.from_dict(response.json())
+
+        return response_400
+
+    if response.status_code == 401:
+        response_401 = ProblemResponse.from_dict(response.json())
+
+        return response_401
+
+    if response.status_code == 403:
+        response_403 = ProblemResponse.from_dict(response.json())
+
+        return response_403
+
+    if response.status_code == 404:
+        response_404 = ProblemResponse.from_dict(response.json())
+
+        return response_404
+
+    if response.status_code == 409:
+        response_409 = ProblemResponse.from_dict(response.json())
+
+        return response_409
+
+    if response.status_code == 413:
+        response_413 = ProblemResponse.from_dict(response.json())
+
+        return response_413
+
     if response.status_code == 422:
-        response_422 = HTTPValidationError.from_dict(response.json())
+        response_422 = ProblemResponse.from_dict(response.json())
 
         return response_422
+
+    if response.status_code == 429:
+        response_429 = ProblemResponse.from_dict(response.json())
+
+        return response_429
+
+    if response.status_code == 501:
+        response_501 = ProblemResponse.from_dict(response.json())
+
+        return response_501
+
+    if response.status_code == 503:
+        response_503 = ProblemResponse.from_dict(response.json())
+
+        return response_503
+
+    if response.status_code == 507:
+        response_507 = ProblemResponse.from_dict(response.json())
+
+        return response_507
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -70,7 +123,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | PageJobOut]:
+) -> Response[PageJobOut | ProblemResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -85,7 +138,7 @@ def sync_detailed(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     status: ListV1JobsGetStatusType0 | None | Unset = UNSET,
-) -> Response[HTTPValidationError | PageJobOut]:
+) -> Response[PageJobOut | ProblemResponse]:
     """List
 
      List jobs for the caller's tenant (AIP-158 paginated).
@@ -103,11 +156,11 @@ def sync_detailed(
             set: pending | running | succeeded | failed | cancelled | cancelled_dirty.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | PageJobOut]
+        Response[PageJobOut | ProblemResponse]
     """
 
     kwargs = _get_kwargs(
@@ -129,7 +182,7 @@ def sync(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     status: ListV1JobsGetStatusType0 | None | Unset = UNSET,
-) -> HTTPValidationError | PageJobOut | None:
+) -> PageJobOut | ProblemResponse | None:
     """List
 
      List jobs for the caller's tenant (AIP-158 paginated).
@@ -147,11 +200,11 @@ def sync(
             set: pending | running | succeeded | failed | cancelled | cancelled_dirty.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | PageJobOut
+        PageJobOut | ProblemResponse
     """
 
     return sync_detailed(
@@ -168,7 +221,7 @@ async def asyncio_detailed(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     status: ListV1JobsGetStatusType0 | None | Unset = UNSET,
-) -> Response[HTTPValidationError | PageJobOut]:
+) -> Response[PageJobOut | ProblemResponse]:
     """List
 
      List jobs for the caller's tenant (AIP-158 paginated).
@@ -186,11 +239,11 @@ async def asyncio_detailed(
             set: pending | running | succeeded | failed | cancelled | cancelled_dirty.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | PageJobOut]
+        Response[PageJobOut | ProblemResponse]
     """
 
     kwargs = _get_kwargs(
@@ -210,7 +263,7 @@ async def asyncio(
     page_token: None | str | Unset = UNSET,
     page_size: int | Unset = 50,
     status: ListV1JobsGetStatusType0 | None | Unset = UNSET,
-) -> HTTPValidationError | PageJobOut | None:
+) -> PageJobOut | ProblemResponse | None:
     """List
 
      List jobs for the caller's tenant (AIP-158 paginated).
@@ -228,11 +281,11 @@ async def asyncio(
             set: pending | running | succeeded | failed | cancelled | cancelled_dirty.
 
     Raises:
-        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        errors.UnexpectedStatus: If the server returns any HTTP error status (>=400) and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | PageJobOut
+        PageJobOut | ProblemResponse
     """
 
     return (

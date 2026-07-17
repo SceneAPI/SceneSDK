@@ -33,5 +33,13 @@ build-backend = "hatchling.build"
 exclude = ["__pycache__", "*.pyc", "*.pyo"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["."]
-only-include = ["api", "models", "client.py", "errors.py", "types.py", "__init__.py", "py.typed", "_ergonomics.py"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"api" = "sfmapi_client_gen/api"
+"models" = "sfmapi_client_gen/models"
+"client.py" = "sfmapi_client_gen/client.py"
+"errors.py" = "sfmapi_client_gen/errors.py"
+"types.py" = "sfmapi_client_gen/types.py"
+"__init__.py" = "sfmapi_client_gen/__init__.py"
+"py.typed" = "sfmapi_client_gen/py.typed"
+"_ergonomics.py" = "sfmapi_client_gen/_ergonomics.py"

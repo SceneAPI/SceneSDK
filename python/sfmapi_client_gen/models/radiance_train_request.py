@@ -29,7 +29,7 @@ class RadianceTrainRequest:
             name (None | str | Unset):
             dataset_id (None | str | Unset):
             recon_id (None | str | Unset):
-            provider (str | Unset):  Default: 'stub'.
+            provider (None | str | Unset):
             method (str | Unset):  Default: 'stub'.
             max_steps (int | Unset):  Default: 1.
             eval_ (None | RadianceEvalConfig | Unset):
@@ -40,7 +40,7 @@ class RadianceTrainRequest:
     name: None | str | Unset = UNSET
     dataset_id: None | str | Unset = UNSET
     recon_id: None | str | Unset = UNSET
-    provider: str | Unset = "stub"
+    provider: None | str | Unset = UNSET
     method: str | Unset = "stub"
     max_steps: int | Unset = 1
     eval_: None | RadianceEvalConfig | Unset = UNSET
@@ -68,7 +68,11 @@ class RadianceTrainRequest:
         else:
             recon_id = self.recon_id
 
-        provider = self.provider
+        provider: None | str | Unset
+        if isinstance(self.provider, Unset):
+            provider = UNSET
+        else:
+            provider = self.provider
 
         method = self.method
 
@@ -152,7 +156,14 @@ class RadianceTrainRequest:
 
         recon_id = _parse_recon_id(d.pop("recon_id", UNSET))
 
-        provider = d.pop("provider", UNSET)
+        def _parse_provider(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        provider = _parse_provider(d.pop("provider", UNSET))
 
         method = d.pop("method", UNSET)
 

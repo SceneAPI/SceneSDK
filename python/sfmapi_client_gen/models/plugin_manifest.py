@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, TypeVar, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    TypeVar,
+    cast,
+)
 
 from attrs import define as _attrs_define
 
@@ -12,6 +18,13 @@ if TYPE_CHECKING:
     from ..models.compatibility import Compatibility
     from ..models.conformance import Conformance
     from ..models.license_info import LicenseInfo
+    from ..models.plugin_data_type_manifest import PluginDataTypeManifest
+    from ..models.plugin_dependency_manifest import PluginDependencyManifest
+    from ..models.plugin_pipeline_manifest import PluginPipelineManifest
+    from ..models.plugin_processor_extension_manifest import (
+        PluginProcessorExtensionManifest,
+    )
+    from ..models.plugin_processor_manifest import PluginProcessorManifest
     from ..models.provider_manifest import ProviderManifest
     from ..models.runtime_modes import RuntimeModes
     from ..models.upstream_project import UpstreamProject
@@ -32,10 +45,16 @@ class PluginManifest:
         entry_points (list[str]):
         providers (list[ProviderManifest]):
         runtime_modes (RuntimeModes):
+        schema_version (Literal[1] | Unset):  Default: 1.
         capabilities (list[str] | Unset):
         backend_actions (list[str] | Unset):
         config_schemas (list[str] | Unset):
         artifact_contracts (list[str] | Unset):
+        datatypes (list[PluginDataTypeManifest] | Unset):
+        processors (list[PluginProcessorManifest] | Unset):
+        pipelines (list[PluginPipelineManifest] | Unset):
+        processor_extensions (list[PluginProcessorExtensionManifest] | Unset):
+        plugin_dependencies (list[PluginDependencyManifest] | Unset):
         licenses (list[LicenseInfo] | Unset):
         upstream_projects (list[UpstreamProject] | Unset):
         compatibility (Compatibility | Unset):
@@ -51,10 +70,16 @@ class PluginManifest:
     entry_points: list[str]
     providers: list[ProviderManifest]
     runtime_modes: RuntimeModes
+    schema_version: Literal[1] | Unset = 1
     capabilities: list[str] | Unset = UNSET
     backend_actions: list[str] | Unset = UNSET
     config_schemas: list[str] | Unset = UNSET
     artifact_contracts: list[str] | Unset = UNSET
+    datatypes: list[PluginDataTypeManifest] | Unset = UNSET
+    processors: list[PluginProcessorManifest] | Unset = UNSET
+    pipelines: list[PluginPipelineManifest] | Unset = UNSET
+    processor_extensions: list[PluginProcessorExtensionManifest] | Unset = UNSET
+    plugin_dependencies: list[PluginDependencyManifest] | Unset = UNSET
     licenses: list[LicenseInfo] | Unset = UNSET
     upstream_projects: list[UpstreamProject] | Unset = UNSET
     compatibility: Compatibility | Unset = UNSET
@@ -81,6 +106,8 @@ class PluginManifest:
 
         runtime_modes = self.runtime_modes.to_dict()
 
+        schema_version = self.schema_version
+
         capabilities: list[str] | Unset = UNSET
         if not isinstance(self.capabilities, Unset):
             capabilities = self.capabilities
@@ -96,6 +123,41 @@ class PluginManifest:
         artifact_contracts: list[str] | Unset = UNSET
         if not isinstance(self.artifact_contracts, Unset):
             artifact_contracts = self.artifact_contracts
+
+        datatypes: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.datatypes, Unset):
+            datatypes = []
+            for datatypes_item_data in self.datatypes:
+                datatypes_item = datatypes_item_data.to_dict()
+                datatypes.append(datatypes_item)
+
+        processors: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.processors, Unset):
+            processors = []
+            for processors_item_data in self.processors:
+                processors_item = processors_item_data.to_dict()
+                processors.append(processors_item)
+
+        pipelines: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.pipelines, Unset):
+            pipelines = []
+            for pipelines_item_data in self.pipelines:
+                pipelines_item = pipelines_item_data.to_dict()
+                pipelines.append(pipelines_item)
+
+        processor_extensions: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.processor_extensions, Unset):
+            processor_extensions = []
+            for processor_extensions_item_data in self.processor_extensions:
+                processor_extensions_item = processor_extensions_item_data.to_dict()
+                processor_extensions.append(processor_extensions_item)
+
+        plugin_dependencies: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.plugin_dependencies, Unset):
+            plugin_dependencies = []
+            for plugin_dependencies_item_data in self.plugin_dependencies:
+                plugin_dependencies_item = plugin_dependencies_item_data.to_dict()
+                plugin_dependencies.append(plugin_dependencies_item)
 
         licenses: list[dict[str, Any]] | Unset = UNSET
         if not isinstance(self.licenses, Unset):
@@ -137,6 +199,8 @@ class PluginManifest:
                 "runtime_modes": runtime_modes,
             }
         )
+        if schema_version is not UNSET:
+            field_dict["schema_version"] = schema_version
         if capabilities is not UNSET:
             field_dict["capabilities"] = capabilities
         if backend_actions is not UNSET:
@@ -145,6 +209,16 @@ class PluginManifest:
             field_dict["config_schemas"] = config_schemas
         if artifact_contracts is not UNSET:
             field_dict["artifact_contracts"] = artifact_contracts
+        if datatypes is not UNSET:
+            field_dict["datatypes"] = datatypes
+        if processors is not UNSET:
+            field_dict["processors"] = processors
+        if pipelines is not UNSET:
+            field_dict["pipelines"] = pipelines
+        if processor_extensions is not UNSET:
+            field_dict["processor_extensions"] = processor_extensions
+        if plugin_dependencies is not UNSET:
+            field_dict["plugin_dependencies"] = plugin_dependencies
         if licenses is not UNSET:
             field_dict["licenses"] = licenses
         if upstream_projects is not UNSET:
@@ -163,6 +237,13 @@ class PluginManifest:
         from ..models.compatibility import Compatibility
         from ..models.conformance import Conformance
         from ..models.license_info import LicenseInfo
+        from ..models.plugin_data_type_manifest import PluginDataTypeManifest
+        from ..models.plugin_dependency_manifest import PluginDependencyManifest
+        from ..models.plugin_pipeline_manifest import PluginPipelineManifest
+        from ..models.plugin_processor_extension_manifest import (
+            PluginProcessorExtensionManifest,
+        )
+        from ..models.plugin_processor_manifest import PluginProcessorManifest
         from ..models.provider_manifest import ProviderManifest
         from ..models.runtime_modes import RuntimeModes
         from ..models.upstream_project import UpstreamProject
@@ -189,6 +270,12 @@ class PluginManifest:
 
         runtime_modes = RuntimeModes.from_dict(d.pop("runtime_modes"))
 
+        schema_version = cast(Literal[1] | Unset, d.pop("schema_version", UNSET))
+        if schema_version != 1 and not isinstance(schema_version, Unset):
+            raise ValueError(
+                f"schema_version must match const 1, got '{schema_version}'"
+            )
+
         capabilities = cast(list[str], d.pop("capabilities", UNSET))
 
         backend_actions = cast(list[str], d.pop("backend_actions", UNSET))
@@ -196,6 +283,57 @@ class PluginManifest:
         config_schemas = cast(list[str], d.pop("config_schemas", UNSET))
 
         artifact_contracts = cast(list[str], d.pop("artifact_contracts", UNSET))
+
+        _datatypes = d.pop("datatypes", UNSET)
+        datatypes: list[PluginDataTypeManifest] | Unset = UNSET
+        if _datatypes is not UNSET:
+            datatypes = []
+            for datatypes_item_data in _datatypes:
+                datatypes_item = PluginDataTypeManifest.from_dict(datatypes_item_data)
+
+                datatypes.append(datatypes_item)
+
+        _processors = d.pop("processors", UNSET)
+        processors: list[PluginProcessorManifest] | Unset = UNSET
+        if _processors is not UNSET:
+            processors = []
+            for processors_item_data in _processors:
+                processors_item = PluginProcessorManifest.from_dict(
+                    processors_item_data
+                )
+
+                processors.append(processors_item)
+
+        _pipelines = d.pop("pipelines", UNSET)
+        pipelines: list[PluginPipelineManifest] | Unset = UNSET
+        if _pipelines is not UNSET:
+            pipelines = []
+            for pipelines_item_data in _pipelines:
+                pipelines_item = PluginPipelineManifest.from_dict(pipelines_item_data)
+
+                pipelines.append(pipelines_item)
+
+        _processor_extensions = d.pop("processor_extensions", UNSET)
+        processor_extensions: list[PluginProcessorExtensionManifest] | Unset = UNSET
+        if _processor_extensions is not UNSET:
+            processor_extensions = []
+            for processor_extensions_item_data in _processor_extensions:
+                processor_extensions_item = PluginProcessorExtensionManifest.from_dict(
+                    processor_extensions_item_data
+                )
+
+                processor_extensions.append(processor_extensions_item)
+
+        _plugin_dependencies = d.pop("plugin_dependencies", UNSET)
+        plugin_dependencies: list[PluginDependencyManifest] | Unset = UNSET
+        if _plugin_dependencies is not UNSET:
+            plugin_dependencies = []
+            for plugin_dependencies_item_data in _plugin_dependencies:
+                plugin_dependencies_item = PluginDependencyManifest.from_dict(
+                    plugin_dependencies_item_data
+                )
+
+                plugin_dependencies.append(plugin_dependencies_item)
 
         _licenses = d.pop("licenses", UNSET)
         licenses: list[LicenseInfo] | Unset = UNSET
@@ -247,10 +385,16 @@ class PluginManifest:
             entry_points=entry_points,
             providers=providers,
             runtime_modes=runtime_modes,
+            schema_version=schema_version,
             capabilities=capabilities,
             backend_actions=backend_actions,
             config_schemas=config_schemas,
             artifact_contracts=artifact_contracts,
+            datatypes=datatypes,
+            processors=processors,
+            pipelines=pipelines,
+            processor_extensions=processor_extensions,
+            plugin_dependencies=plugin_dependencies,
             licenses=licenses,
             upstream_projects=upstream_projects,
             compatibility=compatibility,

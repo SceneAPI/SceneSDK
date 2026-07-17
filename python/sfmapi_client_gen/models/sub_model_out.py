@@ -28,9 +28,9 @@ class SubModelOut:
     the model came out of a hierarchical merge / split. ``summary``
     carries per-component stats (image count, point count, mean
     reprojection error) so collection endpoints don't need to crack
-    the snapshot. ``snapshot_seq`` / ``sealed_path`` point at the
-    on-disk sealed snapshot; clients read points / cameras / images
-    from there.
+    the snapshot. ``snapshot_seq`` identifies the sealed snapshot;
+    clients read points / cameras / images through the links rather
+    than receiving server filesystem paths.
 
         Attributes:
             submodel_id (str):
