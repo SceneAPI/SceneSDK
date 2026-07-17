@@ -1,21 +1,21 @@
-// Verifies the generated SDK's binary wire-format parsers decode
+// Verifies the generated SDK's binary wire-format parser decodes
 // canonical byte buffers correctly. Synthesizes payloads via
 // DataView so the test runs without a live server; cross-language
 // parity is enforced by Python's
-// test_e_generated_ergonomics.py::test_parse_*_round_trip_against_server_encoder.
+// test_e_generated_ergonomics.py::test_parse_points_binary_round_trip_against_server_encoder
+// and the server-owned golden fixture in golden_points.test.ts.
+// (The depth / normal parsers were removed per lean-audit item 5.4 —
+// no server route emits those formats.)
 
 import { describe, expect, it } from "vitest";
 
 import {
   parsePointsBinary,
-  parseDepthMap,
-  parseNormalMap,
   WireFormatError,
 } from "../src/_generated/client.js";
 
 const POINTS_HEADER_SIZE = 44;
 const POINTS_RECORD_SIZE = 26;
-const MAP_HEADER_SIZE = 32;
 
 function writeMagic(view: DataView, magic: number[]) {
   for (let i = 0; i < magic.length; i++) view.setUint8(i, magic[i]!);
@@ -55,36 +55,6 @@ function makePointsBlob(points: Array<{
   return buf;
 }
 
-function makeDepthBlob(width: number, height: number, dmin: number, dmax: number, pixels: Float32Array): ArrayBuffer {
-  const total = MAP_HEADER_SIZE + width * height * 4;
-  const buf = new ArrayBuffer(total);
-  const view = new DataView(buf);
-  writeMagic(view, [0x53, 0x46, 0x4d, 0x44, 0x50, 0x54, 0x48, 0x00]);
-  view.setUint32(8, 1, true);
-  view.setUint32(12, width, true);
-  view.setUint32(16, height, true);
-  view.setFloat32(20, dmin, true);
-  view.setFloat32(24, dmax, true);
-  view.setUint32(28, 0, true); // pad
-  new Float32Array(buf, MAP_HEADER_SIZE, width * height).set(pixels);
-  return buf;
-}
-
-function makeNormalBlob(width: number, height: number, pixels: Float32Array): ArrayBuffer {
-  const total = MAP_HEADER_SIZE + width * height * 3 * 4;
-  const buf = new ArrayBuffer(total);
-  const view = new DataView(buf);
-  writeMagic(view, [0x53, 0x46, 0x4d, 0x4e, 0x52, 0x4d, 0x00, 0x00]);
-  view.setUint32(8, 1, true);
-  view.setUint32(12, width, true);
-  view.setUint32(16, height, true);
-  view.setFloat32(20, 0, true);
-  view.setFloat32(24, 0, true);
-  view.setUint32(28, 0, true);
-  new Float32Array(buf, MAP_HEADER_SIZE, width * height * 3).set(pixels);
-  return buf;
-}
-
 describe("generated TS parsePointsBinary", () => {
   it("round-trips a synthesized 2-point payload", () => {
     const buf = makePointsBlob(
@@ -114,39 +84,5 @@ describe("generated TS parsePointsBinary", () => {
 
   it("rejects short buffer", () => {
     expect(() => parsePointsBinary(new ArrayBuffer(8))).toThrow(WireFormatError);
-  });
-});
-
-describe("generated TS parseDepthMap", () => {
-  it("round-trips a synthesized 3x2 depth map", () => {
-    const pixels = new Float32Array([0.5, 1.0, 1.5, 2.0, 2.5, 3.0]);
-    const buf = makeDepthBlob(3, 2, 0.5, 3.0, pixels);
-    const out = parseDepthMap(buf);
-    expect(out.width).toBe(3);
-    expect(out.height).toBe(2);
-    expect(out.depth_min).toBe(0.5);
-    expect(out.depth_max).toBe(3.0);
-    expect(Array.from(out.pixels)).toEqual(Array.from(pixels));
-  });
-
-  it("rejects short buffer", () => {
-    expect(() => parseDepthMap(new ArrayBuffer(0))).toThrow(WireFormatError);
-  });
-});
-
-describe("generated TS parseNormalMap", () => {
-  it("round-trips a synthesized 2x1 normal map", () => {
-    const pixels = new Float32Array([0, 1, 0, 0, 0, 1]);
-    const buf = makeNormalBlob(2, 1, pixels);
-    const out = parseNormalMap(buf);
-    expect(out.width).toBe(2);
-    expect(out.height).toBe(1);
-    expect(Array.from(out.pixels)).toEqual(Array.from(pixels));
-  });
-
-  it("rejects bad magic", () => {
-    const buf = new ArrayBuffer(MAP_HEADER_SIZE);
-    new DataView(buf).setUint32(0, 0xCAFEBABE, true);
-    expect(() => parseNormalMap(buf)).toThrow(WireFormatError);
   });
 });

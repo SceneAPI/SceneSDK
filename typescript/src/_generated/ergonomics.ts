@@ -501,22 +501,21 @@ export async function submitAndWait(
 }
 
 // ---------------------------------------------------------------------
-// Binary wire-format parsers. Mirror `clients/typescript/src/binary.ts`
-// (and `app/schemas/points_binary.py` / `app/schemas/depth_map_binary.py`
-// on the server). Zero deps.
+// Binary wire-format parser. Mirrors the server's canonical encoder in
+// `sfmapi/server/schemas/points_binary.py`. Zero deps.
+//
+// `application/x-sfm-points-v1` is the ONLY sfm binary format on the
+// wire. The depth / normal parsers were removed per lean-audit item
+// 5.4 (2026-07): no server route emits those formats. Reintroducing
+// them requires a server-side emitter + an SFMAPI-SPEC entry first.
 // ---------------------------------------------------------------------
 
 export const POINTS_MEDIA_TYPE = "application/x-sfm-points-v1";
-export const DEPTH_MEDIA_TYPE = "application/x-sfm-depth-v1";
-export const NORMAL_MEDIA_TYPE = "application/x-sfm-normal-v1";
 
 const MAGIC_POINTS = [0x53, 0x46, 0x4d, 0x50, 0x33, 0x44, 0x00, 0x00]; // "SFMP3D\0\0"
-const MAGIC_DEPTH = [0x53, 0x46, 0x4d, 0x44, 0x50, 0x54, 0x48, 0x00]; // "SFMDPTH\0"
-const MAGIC_NORMAL = [0x53, 0x46, 0x4d, 0x4e, 0x52, 0x4d, 0x00, 0x00]; // "SFMNRM\0\0"
 
 const POINTS_HEADER_SIZE = 44;
 const POINTS_RECORD_SIZE = 26;
-const MAP_HEADER_SIZE = 32;
 
 export class WireFormatError extends Error {
   constructor(message: string) {
@@ -594,70 +593,4 @@ export function parsePointsBinary(buffer: ArrayBuffer): PointsBinary {
     };
   }
   return { count, bbox_min: bboxMin, bbox_max: bboxMax, records };
-}
-
-export interface DepthMap {
-  width: number;
-  height: number;
-  depth_min: number;
-  depth_max: number;
-  /** Row-major float32 array of length `width * height`. */
-  pixels: Float32Array;
-}
-
-export function parseDepthMap(buffer: ArrayBuffer): DepthMap {
-  if (buffer.byteLength < MAP_HEADER_SIZE) {
-    throw new WireFormatError("depth-binary: buffer too small for header");
-  }
-  const view = new DataView(buffer);
-  if (!_eqMagic(view, MAGIC_DEPTH)) {
-    throw new WireFormatError("depth-binary: bad magic");
-  }
-  const version = view.getUint32(8, true);
-  if (version !== 1) {
-    throw new WireFormatError(`depth-binary: unknown version ${version}`);
-  }
-  const width = view.getUint32(12, true);
-  const height = view.getUint32(16, true);
-  const depthMin = view.getFloat32(20, true);
-  const depthMax = view.getFloat32(24, true);
-  const expected = MAP_HEADER_SIZE + width * height * 4;
-  if (buffer.byteLength < expected) {
-    throw new WireFormatError(
-      `depth-binary: body short - got ${buffer.byteLength}, expected ${expected}`,
-    );
-  }
-  const pixels = new Float32Array(buffer, MAP_HEADER_SIZE, width * height);
-  return { width, height, depth_min: depthMin, depth_max: depthMax, pixels };
-}
-
-export interface NormalMap {
-  width: number;
-  height: number;
-  /** Row-major float32 array of length `width * height * 3` (xyz triples). */
-  pixels: Float32Array;
-}
-
-export function parseNormalMap(buffer: ArrayBuffer): NormalMap {
-  if (buffer.byteLength < MAP_HEADER_SIZE) {
-    throw new WireFormatError("normal-binary: buffer too small for header");
-  }
-  const view = new DataView(buffer);
-  if (!_eqMagic(view, MAGIC_NORMAL)) {
-    throw new WireFormatError("normal-binary: bad magic");
-  }
-  const version = view.getUint32(8, true);
-  if (version !== 1) {
-    throw new WireFormatError(`normal-binary: unknown version ${version}`);
-  }
-  const width = view.getUint32(12, true);
-  const height = view.getUint32(16, true);
-  const expected = MAP_HEADER_SIZE + width * height * 3 * 4;
-  if (buffer.byteLength < expected) {
-    throw new WireFormatError(
-      `normal-binary: body short - got ${buffer.byteLength}, expected ${expected}`,
-    );
-  }
-  const pixels = new Float32Array(buffer, MAP_HEADER_SIZE, width * height * 3);
-  return { width, height, pixels };
 }

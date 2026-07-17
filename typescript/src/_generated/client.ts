@@ -155,12 +155,8 @@ export {
   submitAndWait,
   submitAndStream,
   parsePointsBinary,
-  parseDepthMap,
-  parseNormalMap,
   WireFormatError,
   POINTS_MEDIA_TYPE,
-  DEPTH_MEDIA_TYPE,
-  NORMAL_MEDIA_TYPE,
 } from "./ergonomics.js";
 export type {
   UploadBytesOptions,
@@ -173,6 +169,4 @@ export type {
   SubmitAndStreamHandle,
   Point3DRecord,
   PointsBinary,
-  DepthMap,
-  NormalMap,
 } from "./ergonomics.js";

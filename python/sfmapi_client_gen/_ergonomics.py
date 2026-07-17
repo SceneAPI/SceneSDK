@@ -6,9 +6,10 @@ The generated SDK is intentionally minimal: it exposes typed
 `from_dict` / `to_dict` decoders and per-endpoint API methods, plus a
 single `UnexpectedStatus` exception. This module adds the
 typed-exception hierarchy, the `supports()` capability helper, the
-chunked-upload convenience, the SSE event iterator, and the binary
-wire-format parsers that the hand-rolled `sfmapi_client` package
-ships, so consumers of the generated SDK don't have to reinvent them.
+chunked-upload convenience, the SSE event iterator, and the
+`application/x-sfm-points-v1` binary wire-format parser that the
+hand-rolled `sfmapi_client` package ships, so consumers of the
+generated SDK don't have to reinvent them.
 
 This file is OWNED by the repo (preserved across `regen_sdk.py`
 runs); it does NOT come from the generator.
@@ -689,23 +690,23 @@ def iter_paginated(
 
 
 # ---------------------------------------------------------------------
-# Binary wire-format parsers. Mirror `clients/python/sfmapi_client/binary.py`
-# (and `app/schemas/points_binary.py` / `app/schemas/depth_map_binary.py`
-# on the server). Pure-stdlib (struct + bytes); no NumPy required.
+# Binary wire-format parser. Mirrors the server's canonical encoder in
+# `sfmapi/server/schemas/points_binary.py`. Pure-stdlib (struct +
+# bytes); no NumPy required.
+#
+# `application/x-sfm-points-v1` is the ONLY sfm binary format on the
+# wire. The depth / normal parsers were removed per lean-audit item
+# 5.4 (2026-07): no server route emits those formats. Reintroducing
+# them requires a server-side emitter + an SFMAPI-SPEC entry first.
 # ---------------------------------------------------------------------
 
 
 POINTS_MAGIC = b"SFMP3D\x00\x00"
-DEPTH_MAGIC = b"SFMDPTH\x00"
-NORMAL_MAGIC = b"SFMNRM\x00\x00"
 
 POINTS_HEADER_SIZE = 44
 POINTS_RECORD_SIZE = 26
-MAP_HEADER_SIZE = 32
 
 POINTS_MEDIA_TYPE = "application/x-sfm-points-v1"
-DEPTH_MEDIA_TYPE = "application/x-sfm-depth-v1"
-NORMAL_MEDIA_TYPE = "application/x-sfm-normal-v1"
 
 
 class WireFormatError(ValueError):
@@ -758,69 +759,8 @@ def parse_points_binary(data: bytes) -> PointsBinary:
     return PointsBinary(count=count, bbox_min=bbox_min, bbox_max=bbox_max, records=records)
 
 
-@dataclass
-class DepthMap:
-    width: int
-    height: int
-    depth_min: float
-    depth_max: float
-    pixels: bytes  # raw float32 little-endian, length = width*height*4
-
-
-def parse_depth_map(data: bytes) -> DepthMap:
-    """Decode an ``application/x-sfm-depth-v1`` blob.
-
-    ``pixels`` is the raw float32 little-endian byte buffer of length
-    ``width * height * 4``. Use ``struct``, ``array.array("f")``, or
-    ``np.frombuffer(pixels, dtype="<f4")`` to materialize it.
-    """
-    if len(data) < MAP_HEADER_SIZE:
-        raise WireFormatError("depth-binary: buffer too small for header")
-    if data[:8] != DEPTH_MAGIC:
-        raise WireFormatError("depth-binary: bad magic")
-    version = struct.unpack_from("<I", data, 8)[0]
-    if version != 1:
-        raise WireFormatError(f"depth-binary: unknown version {version}")
-    w, h = struct.unpack_from("<II", data, 12)
-    dmin, dmax = struct.unpack_from("<ff", data, 20)
-    expected = MAP_HEADER_SIZE + w * h * 4
-    if len(data) < expected:
-        raise WireFormatError(f"depth-binary: body short - got {len(data)}, expected {expected}")
-    pixels = bytes(data[MAP_HEADER_SIZE : MAP_HEADER_SIZE + w * h * 4])
-    return DepthMap(width=w, height=h, depth_min=dmin, depth_max=dmax, pixels=pixels)
-
-
-@dataclass
-class NormalMap:
-    width: int
-    height: int
-    pixels: bytes  # raw float32 little-endian, length = width*height*3*4
-
-
-def parse_normal_map(data: bytes) -> NormalMap:
-    """Decode an ``application/x-sfm-normal-v1`` blob."""
-    if len(data) < MAP_HEADER_SIZE:
-        raise WireFormatError("normal-binary: buffer too small for header")
-    if data[:8] != NORMAL_MAGIC:
-        raise WireFormatError("normal-binary: bad magic")
-    version = struct.unpack_from("<I", data, 8)[0]
-    if version != 1:
-        raise WireFormatError(f"normal-binary: unknown version {version}")
-    w, h = struct.unpack_from("<II", data, 12)
-    expected = MAP_HEADER_SIZE + w * h * 3 * 4
-    if len(data) < expected:
-        raise WireFormatError(f"normal-binary: body short - got {len(data)}, expected {expected}")
-    pixels = bytes(data[MAP_HEADER_SIZE : MAP_HEADER_SIZE + w * h * 3 * 4])
-    return NormalMap(width=w, height=h, pixels=pixels)
-
-
 __all__ = [
     "DEFAULT_CHUNK_SIZE",
-    "DEPTH_MAGIC",
-    "DEPTH_MEDIA_TYPE",
-    "MAP_HEADER_SIZE",
-    "NORMAL_MAGIC",
-    "NORMAL_MEDIA_TYPE",
     "POINTS_HEADER_SIZE",
     "POINTS_MAGIC",
     "POINTS_MEDIA_TYPE",
@@ -830,8 +770,6 @@ __all__ = [
     "BackendUnavailableError",
     "CapabilityUnavailableError",
     "ConflictError",
-    "DepthMap",
-    "NormalMap",
     "NotFoundError",
     "Point3DRecord",
     "PointsBinary",
@@ -844,8 +782,6 @@ __all__ = [
     "ValidationError",
     "WireFormatError",
     "buildhttp_error",
-    "parse_depth_map",
-    "parse_normal_map",
     "parse_points_binary",
     "parse_sse_buffer",
     "raise_for_status",
