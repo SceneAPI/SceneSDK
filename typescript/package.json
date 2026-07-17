@@ -1,7 +1,7 @@
 {
-  "name": "@sfmapi/client",
-  "version": "0.0.1",
-  "description": "Typed TypeScript SDK for sfmapi (browser + Node).",
+  "name": "@sceneapi/client",
+  "version": "0.1.0",
+  "description": "Typed TypeScript SDK for sceneapi (browser + Node).",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -57,7 +57,8 @@
     "directory": "typescript"
   },
   "keywords": [
-    "sfmapi",
+    "sceneapi",
+    "sfm",
     "structure-from-motion",
     "colmap",
     "sdk"

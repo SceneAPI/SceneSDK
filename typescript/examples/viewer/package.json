@@ -1,5 +1,5 @@
 {
-  "name": "sfmapi-viewer-example",
+  "name": "sceneapi-viewer-example",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sfmapi/client": "file:../..",
+    "@sceneapi/client": "file:../..",
     "three": "^0.171.0"
   },
   "devDependencies": {

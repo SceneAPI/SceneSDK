@@ -1,14 +1,14 @@
-# sfmapi point-cloud viewer (example)
+# sceneapi point-cloud viewer (example)
 
 A small Vite + Three.js single-page app that uses
-[`@sfmapi/client`](../../) to fetch a sealed snapshot's `points.bin`
+[`@sceneapi/client`](../../) to fetch a sealed snapshot's `points.bin`
 and render it as an orbitable point cloud.
 
 ## Run locally
 
 ```bash
 cd typescript                  # build the SDK once first (the example
-npm install                    # uses a `file:` dep on @sfmapi/client)
+npm install                    # uses a `file:` dep on @sceneapi/client)
 npm run build
 
 cd examples/viewer
@@ -29,7 +29,7 @@ pan, wheel = zoom, <kbd>R</kbd> = reset camera, <kbd>F</kbd> = fit.
 
 ## What it demonstrates
 
-- Using `@sfmapi/client` from a browser (no Node-isms).
+- Using `@sceneapi/client` from a browser (no Node-isms).
 - Decoding the `application/x-sfm-points-v1` binary format with a
   vanilla `DataView` parser (`src/binary.ts`).
 - sRGB-to-linear color conversion so Three.js' color management
@@ -38,14 +38,14 @@ pan, wheel = zoom, <kbd>R</kbd> = reset camera, <kbd>F</kbd> = fit.
 
 ## CORS
 
-If your sfmapi web container is on a different origin than the viewer
+If your sceneapi web container is on a different origin than the viewer
 during dev, add a permissive CORS middleware. The default deploy does
 not enable CORS — that's a deliberate choice so production tenants
 front the API with their own gateway.
 
 For a local dev session, the simplest fix is to run the viewer behind
 the same origin as the API (`vite build && cp -r dist /workspaces/...`)
-or to add this to `app/main.py` in dev only:
+or to add this to `sceneapi/server/main.py` in dev only:
 
 ```python
 from fastapi.middleware.cors import CORSMiddleware
