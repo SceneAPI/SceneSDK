@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for sceneapi_client_gen._ergonomics.iter_paginated."""
+"""Unit tests for scenesdk._ergonomics.iter_paginated."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from sceneapi_client_gen._ergonomics import iter_paginated
+from scenesdk._ergonomics import iter_paginated
 
 
 def test_iter_paginated_dict_pages_walks_until_no_token() -> None:

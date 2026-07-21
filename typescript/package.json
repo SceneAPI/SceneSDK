@@ -1,5 +1,5 @@
 {
-  "name": "@sceneapi/client",
+  "name": "@scenesdk/client",
   "version": "0.1.0",
   "description": "Typed TypeScript SDK for sceneapi (browser + Node).",
   "license": "Apache-2.0",

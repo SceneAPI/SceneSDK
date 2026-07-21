@@ -1,14 +1,14 @@
 # sceneapi point-cloud viewer (example)
 
 A small Vite + Three.js single-page app that uses
-[`@sceneapi/client`](../../) to fetch a sealed snapshot's `points.bin`
+[`@scenesdk/client`](../../) to fetch a sealed snapshot's `points.bin`
 and render it as an orbitable point cloud.
 
 ## Run locally
 
 ```bash
 cd typescript                  # build the SDK once first (the example
-npm install                    # uses a `file:` dep on @sceneapi/client)
+npm install                    # uses a `file:` dep on @scenesdk/client)
 npm run build
 
 cd examples/viewer
@@ -29,7 +29,7 @@ pan, wheel = zoom, <kbd>R</kbd> = reset camera, <kbd>F</kbd> = fit.
 
 ## What it demonstrates
 
-- Using `@sceneapi/client` from a browser (no Node-isms).
+- Using `@scenesdk/client` from a browser (no Node-isms).
 - Decoding the `application/x-sfm-points-v1` binary format with a
   vanilla `DataView` parser (`src/binary.ts`).
 - sRGB-to-linear color conversion so Three.js' color management

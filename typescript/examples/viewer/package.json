@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sceneapi/client": "file:../..",
+    "@scenesdk/client": "file:../..",
     "three": "^0.171.0"
   },
   "devDependencies": {

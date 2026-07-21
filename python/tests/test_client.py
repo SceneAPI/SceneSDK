@@ -4,7 +4,7 @@ We only assert the SDK's request shape, response parsing, and typed
 error surface; the server contract itself is covered by the server
 repo's contract tests. The hand-rolled ``sfmapi_client`` package these
 tests once exercised was removed at 0.1.0 as scheduled — the generated
-``sceneapi_client_gen`` package is the only Python SDK surface.
+``scenesdk`` package is the only Python SDK surface.
 """
 
 from __future__ import annotations
@@ -12,13 +12,13 @@ from __future__ import annotations
 import pytest
 import respx
 from httpx import Response
-from sceneapi_client_gen import Client
-from sceneapi_client_gen import errors as generated_errors
-from sceneapi_client_gen._ergonomics import NotFoundError as GeneratedNotFoundError
-from sceneapi_client_gen._ergonomics import SfmApiError as GeneratedSfmApiError
-from sceneapi_client_gen._ergonomics import raise_for_status
-from sceneapi_client_gen.api.projects import get_v1_projects_project_id_get as get_project
-from sceneapi_client_gen.models import ArtifactConversionPlanRequest, ArtifactConvertRequest
+from scenesdk import Client
+from scenesdk import errors as generated_errors
+from scenesdk._ergonomics import NotFoundError as GeneratedNotFoundError
+from scenesdk._ergonomics import SfmApiError as GeneratedSfmApiError
+from scenesdk._ergonomics import raise_for_status
+from scenesdk.api.projects import get_v1_projects_project_id_get as get_project
+from scenesdk.models import ArtifactConversionPlanRequest, ArtifactConvertRequest
 
 BASE = "http://api.test"
 

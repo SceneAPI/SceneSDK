@@ -11,20 +11,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC_PATH = ROOT / "openapi.json"
-PYTHON_OUT = ROOT / "python" / "sceneapi_client_gen"
+PYTHON_OUT = ROOT / "python" / "scenesdk"
 TS_ROOT = ROOT / "typescript"
 TS_OUT = TS_ROOT / "src" / "_generated" / "openapi.d.ts"
 PYTHON_METADATA_FILES = ("pyproject.toml", "README.md", "py.typed", "_ergonomics.py")
 CODEGEN_PROVENANCE_PATHS = (
     "openapi.json",
-    "python/sceneapi_client_gen/api",
-    "python/sceneapi_client_gen/models",
-    "python/sceneapi_client_gen/client.py",
-    "python/sceneapi_client_gen/__init__.py",
-    "python/sceneapi_client_gen/errors.py",
-    "python/sceneapi_client_gen/types.py",
-    "python/sceneapi_client_gen/_ergonomics.py",
-    "python/sceneapi_client_gen/pyproject.toml",
+    "python/scenesdk/api",
+    "python/scenesdk/models",
+    "python/scenesdk/client.py",
+    "python/scenesdk/__init__.py",
+    "python/scenesdk/errors.py",
+    "python/scenesdk/types.py",
+    "python/scenesdk/_ergonomics.py",
+    "python/scenesdk/pyproject.toml",
     "typescript/src/_generated",
     "typescript/src/errors.ts",
     "typescript/src/index.ts",

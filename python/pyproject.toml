@@ -1,7 +1,7 @@
 [project]
-name = "sceneapi-client"
+name = "scenesdk"
 version = "0.1.0"
-description = "Auto-generated typed Python SDK for sceneapi (import package sceneapi_client_gen)."
+description = "Auto-generated typed Python SDK for sceneapi (import package scenesdk)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
@@ -37,12 +37,12 @@ Documentation = "https://sfmapi.github.io/"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# Dev-install build root for the same `sceneapi-client` distribution the
-# self-contained root at sceneapi_client_gen/pyproject.toml publishes:
+# Dev-install build root for the same `scenesdk` distribution the
+# self-contained root at scenesdk/pyproject.toml publishes:
 # `pip install -e .` here yields the generated package plus the test
-# extras. Release builds/publishes run from sceneapi_client_gen/ only.
+# extras. Release builds/publishes run from scenesdk/ only.
 [tool.hatch.build.targets.wheel]
-packages = ["sceneapi_client_gen"]
+packages = ["scenesdk"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

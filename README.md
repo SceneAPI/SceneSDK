@@ -6,12 +6,12 @@ hub, backend interfaces, and conformance tests live in
 
 This repository is client-only:
 
-- `python/sceneapi_client_gen/`: **supported** generated Python SDK
-  (dist `sceneapi-client`, import `sceneapi_client_gen`; covers the full
+- `python/scenesdk/`: **supported** generated Python SDK
+  (dist `scenesdk`, import `scenesdk`; covers the full
   surface including radiance, backend actions, config-schemas, and the
   latest pipeline specs). The deprecated hand-written `sfmapi_client`
   compatibility SDK (and its CLI) was removed at 0.1.0 as scheduled.
-- `typescript/`: browser and Node TypeScript SDK (`@sceneapi/client`).
+- `typescript/`: browser and Node TypeScript SDK (`@scenesdk/client`).
 - `cpp/`: header-only C++17 client helpers.
 - `openapi.json`: OpenAPI snapshot used to regenerate clients.
 

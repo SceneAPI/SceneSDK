@@ -1,5 +1,5 @@
 [project]
-name = "sceneapi-client"
+name = "scenesdk"
 version = "0.1.0"
 description = "Auto-generated typed Python SDK for sceneapi. Generated from the live OpenAPI spec by openapi-python-client."
 readme = "README.md"
@@ -35,11 +35,11 @@ exclude = ["__pycache__", "*.pyc", "*.pyo"]
 [tool.hatch.build.targets.wheel]
 
 [tool.hatch.build.targets.wheel.force-include]
-"api" = "sceneapi_client_gen/api"
-"models" = "sceneapi_client_gen/models"
-"client.py" = "sceneapi_client_gen/client.py"
-"errors.py" = "sceneapi_client_gen/errors.py"
-"types.py" = "sceneapi_client_gen/types.py"
-"__init__.py" = "sceneapi_client_gen/__init__.py"
-"py.typed" = "sceneapi_client_gen/py.typed"
-"_ergonomics.py" = "sceneapi_client_gen/_ergonomics.py"
+"api" = "scenesdk/api"
+"models" = "scenesdk/models"
+"client.py" = "scenesdk/client.py"
+"errors.py" = "scenesdk/errors.py"
+"types.py" = "scenesdk/types.py"
+"__init__.py" = "scenesdk/__init__.py"
+"py.typed" = "scenesdk/py.typed"
+"_ergonomics.py" = "scenesdk/_ergonomics.py"

@@ -1,4 +1,4 @@
-# @sceneapi/client
+# @scenesdk/client
 
 Typed TypeScript SDK for [sceneapi](https://github.com/SFMAPI/sfmapi).
 
@@ -13,7 +13,7 @@ npm run build
 ## Usage
 
 ```ts
-import { createSfmApiClient } from "@sceneapi/client/generated";
+import { createSfmApiClient } from "@scenesdk/client/generated";
 
 const c = createSfmApiClient({
   baseUrl: "http://localhost:8080",
@@ -66,12 +66,12 @@ for await (const event of c.streamEvents(job.job_id)) {
 ## Compatibility Client
 
 The package also exports the older handwritten `SfmApiClient` wrapper
-from `@sceneapi/client`. It remains available for compatibility and
+from `@scenesdk/client`. It remains available for compatibility and
 migration, but new code should prefer the generated client above because
 its raw endpoint surface is derived directly from the OpenAPI contract.
 
 ```ts
-import { SfmApiClient } from "@sceneapi/client";
+import { SfmApiClient } from "@scenesdk/client";
 
 const c = new SfmApiClient({
   baseUrl: "http://localhost:8080",

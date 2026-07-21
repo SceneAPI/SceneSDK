@@ -56,7 +56,7 @@ jobs:
           expected = os.environ["VERSION"]
           if actual != expected:
               raise SystemExit(f"python package version {actual!r} does not match tag {expected!r}")
-          generated = tomllib.loads(Path("sceneapi_client_gen/pyproject.toml").read_text())["project"]["version"]
+          generated = tomllib.loads(Path("scenesdk/pyproject.toml").read_text())["project"]["version"]
           if generated != expected:
               raise SystemExit(
                   f"generated package version {generated!r} does not match tag {expected!r}"
@@ -72,9 +72,9 @@ jobs:
       - name: Test Python SDK
         run: uv run pytest -q
       - name: Import generated Python SDK
-        run: uv run python -c "import sceneapi_client_gen, sceneapi_client_gen.models; print(sceneapi_client_gen.__name__)"
+        run: uv run python -c "import scenesdk, scenesdk.models; print(scenesdk.__name__)"
       - name: Build package
-        run: .venv/bin/python -m build sceneapi_client_gen --sdist --wheel
+        run: .venv/bin/python -m build scenesdk --sdist --wheel
 
   typescript:
     needs: [resolve, cpp]
@@ -157,10 +157,10 @@ jobs:
           from pathlib import Path
 
           version = os.environ["VERSION"]
-          # Both build roots carry the same sceneapi-client distribution;
-          # only python/sceneapi_client_gen/dist is published.
+          # Both build roots carry the same scenesdk distribution;
+          # only python/scenesdk/dist is published.
           packages = [
-              ("sceneapi-client", Path("python/sceneapi_client_gen/pyproject.toml")),
+              ("scenesdk", Path("python/scenesdk/pyproject.toml")),
           ]
           dev_root_version = tomllib.loads(
               Path("python/pyproject.toml").read_text()
@@ -204,7 +204,7 @@ jobs:
         run: |
           uv venv --seed
           uv pip install build
-          .venv/bin/python -m build sceneapi_client_gen --sdist --wheel
+          .venv/bin/python -m build scenesdk --sdist --wheel
       - name: Install npm dependencies
         if: env.HAS_NPM_TOKEN == 'true'
         working-directory: typescript
@@ -216,7 +216,7 @@ jobs:
       - name: Publish Python SDK
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: python/sceneapi_client_gen/dist
+          packages-dir: python/scenesdk/dist
       - name: Publish npm package
         if: env.HAS_NPM_TOKEN == 'true'
         working-directory: typescript

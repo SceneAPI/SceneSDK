@@ -228,7 +228,7 @@ wheels = [
 ]
 
 [[package]]
-name = "sceneapi-client"
+name = "scenesdk"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

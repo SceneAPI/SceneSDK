@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Unit tests for sceneapi_client_gen._ergonomics.wait_for_job_typed and
+"""Unit tests for scenesdk._ergonomics.wait_for_job_typed and
 submit_and_wait_typed."""
 
 from __future__ import annotations
@@ -7,8 +7,8 @@ from __future__ import annotations
 from typing import Any
 from unittest import mock
 
-import sceneapi_client_gen._ergonomics as ergonomics
-from sceneapi_client_gen._ergonomics import (
+import scenesdk._ergonomics as ergonomics
+from scenesdk._ergonomics import (
     JobDetail,
     submit_and_wait_typed,
     wait_for_job_typed,
@@ -37,7 +37,7 @@ def _minimal_job_body(status: str = "succeeded") -> dict[str, Any]:
 def test_wait_for_job_typed_returns_jobdetail() -> None:
     body = _minimal_job_body()
     with mock.patch(
-        "sceneapi_client_gen._ergonomics.wait_for_job",
+        "scenesdk._ergonomics.wait_for_job",
         return_value=body,
     ) as wait_for_job:
         result = wait_for_job_typed(
@@ -62,7 +62,7 @@ def test_wait_for_job_typed_returns_jobdetail() -> None:
 def test_submit_and_wait_typed_returns_jobdetail() -> None:
     body = _minimal_job_body(status="failed")
     with mock.patch(
-        "sceneapi_client_gen._ergonomics.submit_and_wait",
+        "scenesdk._ergonomics.submit_and_wait",
         return_value=body,
     ) as submit_and_wait:
         result = submit_and_wait_typed(
